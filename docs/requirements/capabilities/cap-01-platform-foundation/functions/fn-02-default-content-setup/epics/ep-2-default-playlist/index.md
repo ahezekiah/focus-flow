@@ -1,0 +1,14 @@
+# Ep-2: Default Playlist
+
+## Overview
+A designer authors the default playlist so that when a new customer enters the experience, curated music is already playing — hooking their interest before they've made any selections.
+
+## Acceptance Criteria
+- Songs in the playlist are playable
+- New customers can hear the sound
+- A default playlist exists at launch
+- Volume is controllable
+- The playlist contains an ordered list of songs
+
+## Stories
+- [story-01-designer-creates-a-playlist](stories/story-01-designer-creates-a-playlist.md)
