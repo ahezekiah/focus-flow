@@ -9,7 +9,6 @@
 ## Acceptance Criteria
 
 - Theme includes both a visual style and an associated ambient sound set
-- Theme is saved and reusable across sessions
 
 ## Given / When / Then
 
