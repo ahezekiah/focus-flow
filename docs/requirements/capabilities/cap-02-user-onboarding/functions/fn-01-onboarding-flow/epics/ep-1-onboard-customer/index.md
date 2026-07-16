@@ -11,6 +11,8 @@
 - User reaches their personalized dashboard by the end of onboarding
 - Onboarding can be skipped for returning/experienced users
 
+The guided first-time selection of theme, playlist, task, and session lives in [ep-2-first-time-setup](../ep-2-first-time-setup/index.md).
+
 ## Given / When / Then
 **Given** a new user has just registered
 **When** they log in for the first time

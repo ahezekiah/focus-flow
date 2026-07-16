@@ -4,21 +4,20 @@
 
 **As a** Business Owner/Admin,
 **I want** to set up shop
-**so that** the FocusFlow platform is ready to accept and onboard new users.
+**so that** the FocusFlow platform is deployed and ready for visitors to experience.
 
 ## Acceptance Criteria
 
 - The application is deployed and publicly accessible
-- Landing page, sign-up, and login flows are live
-- Core infrastructure (database, auth, hosting) is configured and stable
-- Basic legal/informational pages exist (about, terms, privacy)
-- Default themes, playlist and music are created
+- Core infrastructure (database, hosting) is configured and stable
+- A landing page is live and visitors can reach the app without being forced to sign up
+- Default theme, playlist, and music are created and available to visitors
 
 ## Given / When / Then
 
 **Given** the platform has been deployed to production
 **When** a visitor navigates to the FocusFlow URL
-**Then** they see a fully functioning landing page with working sign-up and login options.
+**Then** they see a working landing page with the default theme applied and the default playlist ready to play — no account required.
 
 ## Stories
 
