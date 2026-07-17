@@ -2,18 +2,19 @@
 
 ## Epic-Level User Story
 **As a** User,
-**I want** to stay motivated
-**so that** I keep returning to FocusFlow and building consistent focus habits.
+**I want** my focus streak to be tracked and displayed
+**so that** I stay motivated, keep returning to FocusFlow, and build consistent focus habits.
 
 ## Acceptance Criteria
 - App provides positive reinforcement for consistent use (streaks, achievements)
-- App provides social reinforcement (group congratulations/notifications)
-- App reduces friction to returning daily (dashboard greeting, quick-start options)
+- App records consecutive days with at least one completed session
+- App displays user's current streak on dashboard
+- App informs when streak changes
 
 ## Given / When / Then
-**Given** a user has been inconsistent with their focus habits
-**When** they log in after a gap and complete a session
-**Then** the app acknowledges their return and encourages continued engagement.
+**Given** a user has completed at least one focus session,
+**When** the session is successfully recorded,
+**Then** their streak increases if they have kept consecutive daily activity.
 
 ## Stories
 - [story-01-streaks-to-motivate-user](stories/story-01-streaks-to-motivate-user.md)
