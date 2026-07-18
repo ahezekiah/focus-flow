@@ -15,30 +15,30 @@
 
 ### Scenario 1: User creates an account
 
-**Given** a new user is on the registration page  
-**When** they enter valid account information and submit the registration form  
-**Then** the system shall create their account and begin the onboarding process.
+* **Given** a new user is on the registration page  
+* **When** they enter valid account information and submit the registration form  
+* **Then** the system shall create their account and begin the onboarding process.
 
 ---
 
 ### Scenario 2: User is introduced to core features
 
-**Given** a new user has started onboarding  
-**When** they progress through the onboarding screens  
-**Then** the system shall introduce sessions, projects, tasks, music, and streaks before onboarding is completed.
+* **Given** a new user has started onboarding  
+* **When** they progress through the onboarding screens  
+* **Then** the system shall introduce sessions, projects, tasks, music, and streaks before onboarding is completed.
 
 ---
 
 ### Scenario 3: User completes onboarding
 
-**Given** a new user has completed or skipped all onboarding steps  
-**When** they finish the onboarding flow  
-**Then** the system shall redirect them to their personalized dashboard.
+* **Given** a new user has completed or skipped all onboarding steps  
+* **When** they finish the onboarding flow  
+* **Then** the system shall redirect them to their personalized dashboard.
 
 ---
 
 ### Scenario 4: Returning user logs in
 
-**Given** a user has previously completed onboarding  
-**When** they log in to FocusFlow  
-**Then** the system shall bypass the onboarding flow and display the personalized dashboard immediately.
+* **Given** a user has previously completed onboarding  
+* **When** they log in to FocusFlow  
+* **Then** the system shall bypass the onboarding flow and display the personalized dashboard immediately.

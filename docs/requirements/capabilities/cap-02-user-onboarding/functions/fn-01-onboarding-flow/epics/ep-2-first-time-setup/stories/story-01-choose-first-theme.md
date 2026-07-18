@@ -16,32 +16,32 @@ The underlying user-facing theme selection is [story-01-choosing-a-theme-environ
 
 ### Scenario 1: User views available themes
 
-**Given** a new user has reached the theme selection step during onboarding  
-**When** the theme selection page is displayed  
-**Then** the system shall display the available default themes with previews.
+* **Given** a new user has reached the theme selection step during onboarding  
+* **When** the theme selection page is displayed  
+* **Then** the system shall display the available default themes with previews.
 
 ---
 
 ### Scenario 2: User selects a theme
 
-**Given** a new user is on the theme selection step  
-**When** they select the "Forest" theme and click **Continue**  
-**Then** the system shall save the selected theme to the user's profile  
-**And** display the selected theme on the next onboarding screen.
+* **Given** a new user is on the theme selection step  
+* **When** they select the "Forest" theme and click **Continue**  
+* **Then** the system shall save the selected theme to the user's profile  
+* **And** display the selected theme on the next onboarding screen.
 
 ---
 
 ### Scenario 3: User skips theme selection
 
-**Given** a new user is on the theme selection step  
-**When** they click **Skip**  
-**Then** the system shall apply the platform's default theme to the user's account  
-**And** continue to the next onboarding step.
+* **Given** a new user is on the theme selection step  
+* **When** they click **Skip**  
+* **Then** the system shall apply the platform's default theme to the user's account  
+* **And** continue to the next onboarding step.
 
 ---
 
 ### Scenario 4: Theme is applied to future sessions
 
-**Given** a user has completed onboarding with a selected theme  
-**When** they start a new focus session  
-**Then** the system shall automatically apply the saved theme to the session.
+* **Given** a user has completed onboarding with a selected theme  
+* **When** they start a new focus session  
+* **Then** the system shall automatically apply the saved theme to the session.

@@ -17,31 +17,31 @@ The underlying user-facing task setup is [story-01-set-up-a-task](../../../../..
 
 ### Scenario 1: User creates their first task
 
-**Given** a new user has reached the task setup step during onboarding  
-**When** they enter a task title and click **Continue**  
-**Then** the system shall save the task to the user's task list.
+* **Given** a new user has reached the task setup step during onboarding  
+* **When** they enter a task title and click **Continue**  
+* **Then** the system shall save the task to the user's task list.
 
 ---
 
 ### Scenario 2: User attaches the task to a project
 
-**Given** a new user has created a task during onboarding  
-**When** they select an existing project or create a starter project  
-**Then** the system shall associate the task with the selected project.
+* **Given** a new user has created a task during onboarding  
+* **When** they select an existing project or create a starter project  
+* **Then** the system shall associate the task with the selected project.
 
 ---
 
 ### Scenario 3: User views the saved task
 
-**Given** a new user has completed task creation during onboarding  
-**When** they continue to the session setup step or finish onboarding  
-**Then** the created task shall be available in the user's task list.
+* **Given** a new user has completed task creation during onboarding  
+* **When** they continue to the session setup step or finish onboarding  
+* **Then** the created task shall be available in the user's task list.
 
 ---
 
 ### Scenario 4: User skips task creation
 
-**Given** a new user has reached the task setup step during onboarding  
-**When** they click **Skip**  
-**Then** the system shall continue to the next onboarding step without creating a task  
-**And** the user shall be able to create tasks later.
+* **Given** a new user has reached the task setup step during onboarding  
+* **When** they click **Skip**  
+* **Then** the system shall continue to the next onboarding step without creating a task  
+* **And** the user shall be able to create tasks later.

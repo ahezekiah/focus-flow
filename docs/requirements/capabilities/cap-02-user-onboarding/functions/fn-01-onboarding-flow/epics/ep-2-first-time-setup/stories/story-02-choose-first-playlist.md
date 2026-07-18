@@ -17,32 +17,32 @@ The underlying user-facing playlist selection is [story-02-choosing-a-playlist-o
 
 ### Scenario 1: User views available playlists and sounds
 
-**Given** a new user has reached the audio selection step during onboarding  
-**When** the audio selection page is displayed  
-**Then** the system shall display the available playlists and ambient sounds with previews.
+* **Given** a new user has reached the audio selection step during onboarding  
+* **When** the audio selection page is displayed  
+* **Then** the system shall display the available playlists and ambient sounds with previews.
 
 ---
 
 ### Scenario 2: User selects a playlist or ambient sound
 
-**Given** a new user is on the audio selection step  
-**When** they select the "Rain" ambient sound and click **Continue**  
-**Then** the system shall save the selected audio to the user's profile  
-**And** use it as the default audio for future focus sessions.
+* **Given** a new user is on the audio selection step  
+* **When** they select the "Rain" ambient sound and click **Continue**  
+* **Then** the system shall save the selected audio to the user's profile  
+* **And** use it as the default audio for future focus sessions.
 
 ---
 
 ### Scenario 3: User adjusts the preview volume
 
-**Given** a new user is previewing a playlist or ambient sound  
-**When** they adjust the volume slider  
-**Then** the system shall update the preview volume without changing the saved system volume.
+* **Given** a new user is previewing a playlist or ambient sound  
+* **When** they adjust the volume slider  
+* **Then** the system shall update the preview volume without changing the saved system volume.
 
 ---
 
 ### Scenario 4: User skips audio selection
 
-**Given** a new user is on the audio selection step  
-**When** they click **Skip**  
-**Then** the system shall assign the platform's default playlist to the user's profile  
-**And** continue to the next onboarding step.
+* **Given** a new user is on the audio selection step  
+* **When** they click **Skip**  
+* **Then** the system shall assign the platform's default playlist to the user's profile  
+* **And** continue to the next onboarding step.
