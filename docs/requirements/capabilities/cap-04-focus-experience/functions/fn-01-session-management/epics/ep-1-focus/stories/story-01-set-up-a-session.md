@@ -14,3 +14,13 @@
 **Given** a user is on the session setup screen
 **When** they select "45 minutes" as the duration
 **Then** the session timer is configured to count down from 45 minutes.
+
+## Given / When / Then
+**Given** the user has pre-existing projects and tasks saved in their profile.
+**When** they configure a new session and select a specific project and task from the dropdowns.
+**Then** the session configuration associates itself with that project and task ID.
+
+## Given / When / Then
+**Given** the user has filled out their duration and objective on the setup screen.
+**When** they confirm and initiate the session.
+**Then** the system creates a database record containing the startedAt timestamp, the durationMinutes value, and the specified objective text.
