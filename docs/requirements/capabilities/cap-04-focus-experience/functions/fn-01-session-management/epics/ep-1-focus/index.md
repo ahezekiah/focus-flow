@@ -6,8 +6,7 @@
 **so that** I can be productive without having to switch between apps.
 
 ## Acceptance Criteria
-- User can begin a distraction-free work environment from a single workspace
-- Focus mode combines timer, task context, and audio in one place
+- User can begin a distraction-free work environment that combines timer, task context, and audio in one place
 
 ## Given / When / Then
 **Given** a user wants to focus on their work
