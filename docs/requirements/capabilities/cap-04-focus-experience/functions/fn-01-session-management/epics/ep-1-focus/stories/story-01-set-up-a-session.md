@@ -7,7 +7,6 @@
 
 ## Acceptance Criteria
 - Duration options include 25, 45, 60, 90 minutes, or Custom
-- Objective options include Coding, Homework, Reading, Writing, Design, Research, or Custom
 - User can optionally link the session to an existing project and task
 - Session setup saves startedAt, durationMinutes, and objective
 
