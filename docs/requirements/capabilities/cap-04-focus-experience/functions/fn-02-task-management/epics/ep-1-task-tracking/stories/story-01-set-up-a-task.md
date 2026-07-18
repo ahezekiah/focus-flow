@@ -7,8 +7,6 @@
 
 ## Acceptance Criteria
 - Task can be created, edited, completed, and deleted
-- Task can be assigned to a project
-- Task can be assigned to a focus session
 
 ## Given / When / Then
 **Given** a user has an existing project

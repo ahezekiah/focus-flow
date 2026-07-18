@@ -1,7 +1,7 @@
 # Ep-1: Audio Selection
 
 ## Overview
-Before starting a session, a user should be able to browse the available default themes and individual ambient sounds, preview them, and pick one (with volume control) that persists for the session.
+Before starting a session, a user is able to browse the available default themes and individual ambient sounds, preview them, and pick one (with volume control) that persists for the session.
 
 ## Acceptance Criteria
 - Default themes are visible without needing to create an account

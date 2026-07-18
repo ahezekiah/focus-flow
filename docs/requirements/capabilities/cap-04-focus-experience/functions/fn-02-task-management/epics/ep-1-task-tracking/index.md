@@ -1,7 +1,7 @@
 # Ep-1: Task Tracking
 
 ## Overview
-Users need lightweight task records so they can associate a specific unit of work with a project and with a focus session. This epic covers the CRUD surface for tasks and the linking of tasks to projects and sessions.
+Users need task records so they can associate a specific unit of work with a project and with a focus session. This epic covers the CRUD surface for tasks and the linking of tasks to projects and sessions.
 
 ## Acceptance Criteria
 - Users can create, edit, complete, and delete tasks

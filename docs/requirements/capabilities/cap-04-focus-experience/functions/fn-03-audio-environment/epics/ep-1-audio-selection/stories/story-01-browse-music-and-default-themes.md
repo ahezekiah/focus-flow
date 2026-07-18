@@ -1,15 +1,13 @@
 # Story-01: Browse Music and Default Themes
 
 ## User Story
-**As a** User,
-**I want** to browse music and default themes
-**so that** I can choose background sounds for my focus session.
+**As a** Designer,
+**I want** create default themes and make the app so that the user can browse music
+**so that** when the user enters the experience they are interested and/or curious.
 
 ## Acceptance Criteria
-- Default themes are visible without needing to create an account
-- User can preview each theme/sound before selecting
 - Selecting a theme applies it to the current session
-- Available ambient sounds include rain, café, fireplace, ocean, forest, and thunder
+- User can choose from default themes/music or browse for other themes/music
 
 ## Given / When / Then
 **Given** a new user has not yet selected a theme

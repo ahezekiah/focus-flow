@@ -3,12 +3,12 @@
 ## User Story
 **As a** User,
 **I want** to choose a theme/environment
-**so that** my session feels immersive and reduces distraction.
+**so that** my session feels immersive and reduces distractions.
 
 ## Acceptance Criteria
-- User can select a saved or default theme before starting a session
-- Theme choice affects both visuals and background audio
-- Theme selection is saved with the session record
+- A user can choose between different types of themes/environments
+- A theme/environment is applied after starting a session
+
 
 ## Given / When / Then
 **Given** a user has multiple themes available

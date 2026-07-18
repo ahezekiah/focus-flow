@@ -9,7 +9,6 @@
 - "Start Focus Session" button is accessible from the dashboard
 - Starting a session begins the countdown timer immediately
 - Session can be paused, resumed, and ended
-- Ending a session saves startedAt, endedAt, durationMinutes, and status to the database
 
 ## Given / When / Then
 **Given** a user has completed session setup
