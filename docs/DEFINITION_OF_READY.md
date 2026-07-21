@@ -1,0 +1,3 @@
+- UI based stories have a mockup, or match the existing UI style.
+- Product Owner, OR Backup Product Owner approves design.
+- Each Team member is comfortable with taking the ticket without doubling back on Product Owner or teammates for clarifications.

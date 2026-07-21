@@ -8,10 +8,11 @@
 
 ## Acceptance Criteria
 
-- Default theme, playlist, and music (from [ep-2-default-theme](../../ep-2-default-theme/index.md) and [ep-3-default-playlist](../../ep-3-default-playlist/index.md)) are wired in and available on landing
+- App exists and is viewable from the web.
+- Placeholder text exists: "Welcome to FocusFlow! Site is a WIP, come back later!"
 
 ## Given / When / Then
 
 **Given** the platform is accessible
 **When** a user visits the FocusFlow system
-**Then** they see a working landing page with the default theme and playlist ready — no account required.
+**Then** they see a working landing page with the default placholder text up
