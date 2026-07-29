@@ -34,3 +34,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.claude/agents/requirements-consistency-checker.md
+.claude/README.md
+.claude/agents/requirements-grader.md
+.claude/agents/requirements-report-writer.md
+.claude/skills/grade-requirements/SKILL.md
+docs/requirements/grading criteria/*
