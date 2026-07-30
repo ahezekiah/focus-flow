@@ -1,0 +1,2 @@
+We decided to use REST API's because it is better for us to use velocity wise for the next 5 weeks.
+We considered the lambdas and api gateway and thought it would be better to learn and iterate better than graphql.

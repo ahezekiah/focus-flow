@@ -41,6 +41,7 @@ GET    /api/playlists
 - **Good for CRUD features:** Tasks, projects, sessions, playlists, and themes can be created, read, updated, and deleted through predictable routes.
 - **Easy to test:** Individual endpoints can be tested with tools such as Postman or Insomnia.
 - **Supports standard HTTP caching:** Public resources, such as default themes and playlists, can be cached efficiently.
+- **Useful for real-time features:** REST API's subscriptions could support live accountability updates or session activity.
 
 ---
 
@@ -51,6 +52,8 @@ GET    /api/playlists
 - **Can under-fetch data:** One response may not contain enough connected information, forcing the frontend to make another request.
 - **More endpoints to maintain:** As Focus Flow gains features, the backend could contain many routes.
 - **Frontend changes may require new endpoints:** A new dashboard design may need a special endpoint that combines several resources.
+- **Lambdas:** Is a bit of a learning curve in a short time frame.
+- **AWS API Gateway:** Have to expose the Lambda to REST API endpoint.
 
 ---
 
@@ -135,7 +138,7 @@ Instead of requesting several REST endpoints, Focus Flow could request connected
 
 ## GraphQL Pros
 
-- **Retrieves connected data in one request:** Tasks, sessions, streaks, themes, and playlists can be requested together.
+- **Retrieves connected data in one request from the frontend:** Tasks, sessions, streaks, themes, and playlists can be requested together.
 - **Returns only requested fields:** The frontend controls the shape of the response.
 - **Reduces over-fetching and under-fetching:** Pages receive the exact information they need.
 - **Strongly typed schema:** Developers can clearly see which queries, mutations, fields, and data types are available.
