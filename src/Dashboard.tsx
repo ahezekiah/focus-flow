@@ -5,6 +5,8 @@ import {
   Flame, Target, ChevronRight, Check, ArrowRight,
   Clock, TrendingUp, Plus, Upload, X, ListMusic,
 } from "lucide-react";
+import { ThemeSelectionView } from "./dash/ThemeSelectionView";
+import { themeCssVars, useThemeSelection, type DashTheme } from "./dash/themes";
 
 // ── Types ──────────────────────────────────────────────────────
 type Nav = "home" | "focus" | "music" | "sounds" | "analytics" | "themes";
@@ -31,157 +33,6 @@ interface Track {
   duration: number;
   size: string;
 }
-
-interface AppTheme {
-  id: string;
-  name: string;
-  emoji: string;
-  desc: string;
-  background: string;
-  card: string;
-  sidebar: string;
-  primary: string;
-  accent: string;
-  muted: string;
-  mutedFg: string;
-  foreground: string;
-  border: string;
-  ring: string;
-  greetingBg: string;
-  greetingOverlay: string;
-}
-
-// ── Themes ─────────────────────────────────────────────────────
-const THEMES: Record<string, AppTheme> = {
-  "focusflow": {
-    id: "focusflow",
-    name: "FocusFlow",
-    emoji: "🌌",
-    desc: "Default deep space — violet primary, amber CTAs",
-    background: "#09091c",
-    card: "#0f0f26",
-    sidebar: "#0c0c1e",
-    primary: "#7c6ef7",
-    accent: "#e88c45",
-    muted: "#141432",
-    mutedFg: "#6868a0",
-    foreground: "#e4e4f2",
-    border: "rgba(255,255,255,0.07)",
-    ring: "#7c6ef7",
-    greetingBg: "linear-gradient(135deg, #1a1040 0%, #130c38 50%, #0d0828 100%)",
-    greetingOverlay: "rgba(124,110,247,0.12)",
-  },
-  "cozy-cabin": {
-    id: "cozy-cabin",
-    name: "Cozy Cabin",
-    emoji: "🏠",
-    desc: "Fireplace warmth — ember orange glow, dark wood tones",
-    background: "#0d0a06",
-    card: "#140e08",
-    sidebar: "#100c07",
-    primary: "#d4753a",
-    accent: "#c4a548",
-    muted: "#1c1408",
-    mutedFg: "#7a5e3a",
-    foreground: "#f0ddc0",
-    border: "rgba(212,117,58,0.09)",
-    ring: "#d4753a",
-    greetingBg: "linear-gradient(135deg, #2e1408 0%, #1e0d06 50%, #120808 100%)",
-    greetingOverlay: "rgba(212,117,58,0.14)",
-  },
-  "modern-workspace": {
-    id: "modern-workspace",
-    name: "Modern Workspace",
-    emoji: "🖥️",
-    desc: "Clean & minimal — electric blue on near-black",
-    background: "#060810",
-    card: "#0b0d1c",
-    sidebar: "#090b16",
-    primary: "#4a9eff",
-    accent: "#00d4b0",
-    muted: "#0f1220",
-    mutedFg: "#4a5080",
-    foreground: "#e4e8f8",
-    border: "rgba(74,158,255,0.09)",
-    ring: "#4a9eff",
-    greetingBg: "linear-gradient(135deg, #04102c 0%, #050a1c 50%, #04060e 100%)",
-    greetingOverlay: "rgba(74,158,255,0.12)",
-  },
-  "library": {
-    id: "library",
-    name: "Library",
-    emoji: "📚",
-    desc: "Warm lamplight — aged gold on antique dark",
-    background: "#09080a",
-    card: "#120f12",
-    sidebar: "#0e0c0e",
-    primary: "#b89060",
-    accent: "#d4a848",
-    muted: "#181418",
-    mutedFg: "#6a5a48",
-    foreground: "#ede0cc",
-    border: "rgba(184,144,96,0.09)",
-    ring: "#b89060",
-    greetingBg: "linear-gradient(135deg, #201508 0%, #160f08 50%, #0c0808 100%)",
-    greetingOverlay: "rgba(184,144,96,0.12)",
-  },
-  "night-city": {
-    id: "night-city",
-    name: "Night City",
-    emoji: "🌃",
-    desc: "Cyberpunk neon — hot pink & cyan on void black",
-    background: "#050310",
-    card: "#09061e",
-    sidebar: "#070418",
-    primary: "#ff3eb5",
-    accent: "#00ffcc",
-    muted: "#0e0828",
-    mutedFg: "#6030a0",
-    foreground: "#f0d8ff",
-    border: "rgba(255,62,181,0.09)",
-    ring: "#ff3eb5",
-    greetingBg: "linear-gradient(135deg, #1e0430 0%, #120220 50%, #060112 100%)",
-    greetingOverlay: "rgba(255,62,181,0.14)",
-  },
-  "forest": {
-    id: "forest",
-    name: "Forest",
-    emoji: "🌲",
-    desc: "Ancient woods — deep green with leaf gold accents",
-    background: "#060d08",
-    card: "#0a1410",
-    sidebar: "#081008",
-    primary: "#4caf7a",
-    accent: "#88c84a",
-    muted: "#0e1812",
-    mutedFg: "#406050",
-    foreground: "#d0eedc",
-    border: "rgba(76,175,122,0.09)",
-    ring: "#4caf7a",
-    greetingBg: "linear-gradient(135deg, #082416 0%, #060e08 50%, #040a06 100%)",
-    greetingOverlay: "rgba(76,175,122,0.12)",
-  },
-  "space-station": {
-    id: "space-station",
-    name: "Space Station",
-    emoji: "🚀",
-    desc: "Cold orbital — ion blue on deep space black",
-    background: "#04050e",
-    card: "#07091a",
-    sidebar: "#060814",
-    primary: "#4080ff",
-    accent: "#20c8ff",
-    muted: "#090c1e",
-    mutedFg: "#2848a0",
-    foreground: "#c8d8ff",
-    border: "rgba(64,128,255,0.09)",
-    ring: "#4080ff",
-    greetingBg: "linear-gradient(135deg, #080430 0%, #050210 50%, #020208 100%)",
-    greetingOverlay: "rgba(64,128,255,0.12)",
-  },
-};
-
-const THEME_ORDER = ["focusflow", "cozy-cabin", "modern-workspace", "library", "night-city", "forest", "space-station"];
 
 // ── Helpers ────────────────────────────────────────────────────
 function getTimeOfDay(): TimeOfDay {
@@ -301,7 +152,7 @@ const INIT_TASKS: Task[] = [
 const HEATMAP = generateHeatmap();
 
 // ── Sidebar ────────────────────────────────────────────────────
-function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => void; theme: AppTheme }) {
+function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => void; theme: DashTheme }) {
   const items: { id: Nav; icon: ElementType; label: string }[] = [
     { id: "home", icon: Home, label: "Home" },
     { id: "focus", icon: Timer, label: "Focus" },
@@ -319,7 +170,7 @@ function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => voi
       <div className="px-5 mb-7">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: theme.primary }}>
-            <Timer className="w-4 h-4 text-white" />
+            <Timer className="w-4 h-4" style={{ color: theme.primaryFg }} />
           </div>
           <span className="font-display font-bold text-sm tracking-tight" style={{ color: theme.foreground }}>FocusFlow</span>
         </div>
@@ -337,7 +188,7 @@ function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => voi
                 background: isActive ? `${theme.primary}20` : undefined,
                 color: isActive ? theme.primary : theme.mutedFg,
               }}
-              onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = theme.foreground; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; } }}
+              onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = theme.foreground; (e.currentTarget as HTMLElement).style.background = theme.overlay(0.05); } }}
               onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = theme.mutedFg; (e.currentTarget as HTMLElement).style.background = ""; } }}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -348,9 +199,9 @@ function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => voi
       </nav>
 
       <div className="mx-3 mb-3 mt-4">
-        <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${theme.border}` }}>
+        <div className="rounded-xl p-3" style={{ background: theme.overlay(0.03), border: `1px solid ${theme.border}` }}>
           <p className="text-xs mb-1" style={{ color: theme.mutedFg }}>Daily Goal</p>
-          <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+          <div className="h-1 rounded-full overflow-hidden" style={{ background: theme.overlay(0.08) }}>
             <div className="h-full rounded-full" style={{ width: "31%", background: `linear-gradient(to right, ${theme.primary}, ${theme.accent})` }} />
           </div>
           <p className="text-xs mt-1.5" style={{ color: theme.mutedFg }}>
@@ -362,8 +213,8 @@ function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => voi
       <div className="px-4 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
-            style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})` }}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+            style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, color: theme.primaryFg }}
           >
             A
           </div>
@@ -387,7 +238,7 @@ function HomeView({
   onStartFocus: () => void;
   tasks: Task[];
   onToggleTask: (id: number) => void;
-  theme: AppTheme;
+  theme: DashTheme;
 }) {
   const tod = getTimeOfDay();
   const cfg = TOD[tod];
@@ -414,8 +265,8 @@ function HomeView({
           </div>
           <button
             onClick={onStartFocus}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-colors duration-150 shrink-0 mt-1 text-white"
-            style={{ background: theme.accent }}
+            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-colors duration-150 shrink-0 mt-1"
+            style={{ background: theme.accent, color: theme.accentFg }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
           >
@@ -441,7 +292,7 @@ function HomeView({
             <div className="flex justify-between text-xs mb-1.5" style={{ color: theme.mutedFg }}>
               <span>Completed: 1h 15m</span><span>31%</span>
             </div>
-            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: theme.overlay(0.05) }}>
               <div className="h-full rounded-full" style={{ width: "31%", background: `linear-gradient(to right, ${theme.primary}, ${theme.accent})` }} />
             </div>
           </div>
@@ -467,7 +318,7 @@ function HomeView({
           </div>
           <div className="flex gap-1 mt-4">
             {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className="flex-1 h-1 rounded-full" style={{ background: i < 5 ? theme.accent : "rgba(255,255,255,0.08)" }} />
+              <div key={i} className="flex-1 h-1 rounded-full" style={{ background: i < 5 ? theme.accent : theme.overlay(0.08) }} />
             ))}
           </div>
         </div>
@@ -486,10 +337,10 @@ function HomeView({
                 key={i}
                 className="w-full flex items-center gap-3 p-2.5 rounded-xl text-left group transition-colors duration-150"
                 style={{} }
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = theme.overlay(0.04); }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ""; }}
               >
-                <span className="text-xl w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <span className="text-xl w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: theme.overlay(0.05) }}>
                   {p.emoji}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -498,7 +349,7 @@ function HomeView({
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs font-data" style={{ color: theme.mutedFg }}>{p.plays}</span>
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: "rgba(255,255,255,0.05)" }}>
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: theme.overlay(0.05) }}>
                     <Play className="w-3 h-3 fill-current" style={{ color: theme.mutedFg }} />
                   </div>
                 </div>
@@ -520,17 +371,17 @@ function HomeView({
                 key={task.id}
                 onClick={() => onToggleTask(task.id)}
                 className="w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors"
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = theme.overlay(0.04); }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ""; }}
               >
                 <div
                   className="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all duration-150"
                   style={{
                     background: task.done ? theme.primary : "transparent",
-                    borderColor: task.done ? theme.primary : "rgba(255,255,255,0.18)",
+                    borderColor: task.done ? theme.primary : theme.overlay(0.18),
                   }}
                 >
-                  {task.done && <Check className="w-3 h-3 text-white" />}
+                  {task.done && <Check className="w-3 h-3" style={{ color: theme.primaryFg }} />}
                 </div>
                 <span
                   className="text-sm transition-colors"
@@ -569,7 +420,7 @@ function HomeView({
                     className="w-full rounded-t-lg transition-all"
                     style={{
                       height: h > 0 ? `${(h / maxH) * 100}%` : "8%",
-                      background: i === 3 ? theme.primary : h > 0 ? `${theme.primary}35` : "rgba(255,255,255,0.05)",
+                      background: i === 3 ? theme.primary : h > 0 ? `${theme.primary}35` : theme.overlay(0.05),
                     }}
                   />
                 </div>
@@ -585,7 +436,7 @@ function HomeView({
 }
 
 // ── Focus Setup ────────────────────────────────────────────────
-function FocusSetupView({ onBegin, theme }: { onBegin: (cfg: FocusConfig) => void; theme: AppTheme }) {
+function FocusSetupView({ onBegin, theme }: { onBegin: (cfg: FocusConfig) => void; theme: DashTheme }) {
   const [duration, setDuration] = useState(45);
   const [music, setMusic] = useState("Coding");
   const [ambience, setAmbience] = useState("Rain");
@@ -664,8 +515,8 @@ function FocusSetupView({ onBegin, theme }: { onBegin: (cfg: FocusConfig) => voi
 
         <button
           onClick={() => onBegin({ duration, music, ambience, objective })}
-          className="w-full py-4 font-bold text-base rounded-xl transition-opacity duration-150 text-white"
-          style={{ background: theme.accent }}
+          className="w-full py-4 font-bold text-base rounded-xl transition-opacity duration-150"
+          style={{ background: theme.accent, color: theme.accentFg }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
         >
@@ -684,7 +535,7 @@ function ActiveSessionView({
   secondsLeft: number;
   totalSeconds: number;
   onEnd: () => void;
-  theme: AppTheme;
+  theme: DashTheme;
 }) {
   const r = 90;
   const circ = 2 * Math.PI * r;
@@ -698,7 +549,7 @@ function ActiveSessionView({
 
       <div className="relative mb-10">
         <svg width="224" height="224" className="-rotate-90">
-          <circle cx="112" cy="112" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="6" />
+          <circle cx="112" cy="112" r={r} fill="none" stroke={theme.overlay(0.04)} strokeWidth="6" />
           <circle
             cx="112" cy="112" r={r} fill="none"
             stroke={theme.primary} strokeWidth="6"
@@ -722,7 +573,7 @@ function ActiveSessionView({
           <span
             key={label}
             className="px-3.5 py-1.5 rounded-full text-xs"
-            style={{ background: "rgba(255,255,255,0.04)", border: `1px solid rgba(255,255,255,0.07)`, color }}
+            style={{ background: theme.overlay(0.04), border: `1px solid ${theme.overlay(0.07)}`, color }}
           >
             {label}
           </span>
@@ -743,7 +594,7 @@ function ActiveSessionView({
 }
 
 // ── Session Complete ───────────────────────────────────────────
-function SessionCompleteView({ config, onDone, theme }: { config: FocusConfig; onDone: () => void; theme: AppTheme }) {
+function SessionCompleteView({ config, onDone, theme }: { config: FocusConfig; onDone: () => void; theme: DashTheme }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] px-8 py-12 text-center">
       <div className="text-6xl mb-6">🎉</div>
@@ -767,8 +618,8 @@ function SessionCompleteView({ config, onDone, theme }: { config: FocusConfig; o
       </div>
       <button
         onClick={onDone}
-        className="px-8 py-3 font-semibold rounded-xl transition-opacity text-white"
-        style={{ background: theme.primary }}
+        className="px-8 py-3 font-semibold rounded-xl transition-opacity"
+        style={{ background: theme.primary, color: theme.primaryFg }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
       >
@@ -803,7 +654,7 @@ function NowPlayingBars({ color }: { color: string }) {
 
 // ── Library View ────────────────────────────────────────────────
 interface LibraryViewProps {
-  theme: AppTheme;
+  theme: DashTheme;
   playlist: Track[];
   currentTrackIdx: number | null;
   isPlaying: boolean;
@@ -904,7 +755,7 @@ function LibraryView({
                     borderBottom: `1px solid ${theme.border}`,
                   }}
                   onClick={() => onSelectTrack(idx)}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)"; }}
+                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = theme.overlay(0.03); }}
                   onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                 >
                   {/* Track number / playing indicator */}
@@ -930,7 +781,7 @@ function LibraryView({
                   {/* Waveform icon */}
                   <div
                     className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base"
-                    style={{ background: isActive ? `${theme.primary}20` : "rgba(255,255,255,0.05)" }}
+                    style={{ background: isActive ? `${theme.primary}20` : theme.overlay(0.05) }}
                   >
                     🎵
                   </div>
@@ -954,7 +805,7 @@ function LibraryView({
                   {/* Remove button */}
                   <button
                     className="opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-                    style={{ background: "rgba(255,255,255,0.06)" }}
+                    style={{ background: theme.overlay(0.06) }}
                     onClick={e => { e.stopPropagation(); onRemoveTrack(track.id); }}
                   >
                     <X className="w-3 h-3" style={{ color: theme.mutedFg }} />
@@ -971,7 +822,7 @@ function LibraryView({
 
 // ── Music View ─────────────────────────────────────────────────
 interface MusicViewProps {
-  theme: AppTheme;
+  theme: DashTheme;
   playlist: Track[];
   currentTrackIdx: number | null;
   isPlaying: boolean;
@@ -991,7 +842,7 @@ function MusicView({ theme, playlist, currentTrackIdx, isPlaying, onSelectTrack,
         <p className="text-sm mt-0.5" style={{ color: theme.mutedFg }}>Organized for focused work</p>
       </div>
 
-      <div className="flex gap-1 rounded-xl p-1 mb-6 w-fit overflow-x-auto scrollbar-hide" style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${theme.border}` }}>
+      <div className="flex gap-1 rounded-xl p-1 mb-6 w-fit overflow-x-auto scrollbar-hide" style={{ background: theme.overlay(0.04), border: `1px solid ${theme.border}` }}>
         {tabs.map(t => (
           <button
             key={t}
@@ -1039,7 +890,7 @@ function MusicView({ theme, playlist, currentTrackIdx, isPlaying, onSelectTrack,
             >
               <div className="flex items-start justify-between mb-4">
                 <span className="text-3xl">{p.emoji}</span>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: theme.overlay(0.05) }}>
                   <Play className="w-3.5 h-3.5 fill-current" style={{ color: theme.mutedFg }} />
                 </div>
               </div>
@@ -1055,7 +906,7 @@ function MusicView({ theme, playlist, currentTrackIdx, isPlaying, onSelectTrack,
 }
 
 // ── Sounds View ────────────────────────────────────────────────
-function SoundsView({ theme }: { theme: AppTheme }) {
+function SoundsView({ theme }: { theme: DashTheme }) {
   const defaultLevels = Object.fromEntries(SOUNDS_DATA.map(s => [s.id, s.default]));
   const [levels, setLevels] = useState<Record<string, number>>(defaultLevels);
   const active = SOUNDS_DATA.filter(s => levels[s.id] > 0);
@@ -1103,7 +954,7 @@ function SoundsView({ theme }: { theme: AppTheme }) {
               <div
                 key={s.id}
                 className="flex items-center gap-1.5 rounded-lg px-3 py-1.5"
-                style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${theme.border}` }}
+                style={{ background: theme.overlay(0.05), border: `1px solid ${theme.border}` }}
               >
                 <span className="text-sm">{s.emoji}</span>
                 <span className="text-xs" style={{ color: theme.foreground }}>{s.name}</span>
@@ -1140,7 +991,7 @@ function SoundsView({ theme }: { theme: AppTheme }) {
 }
 
 // ── Analytics View ─────────────────────────────────────────────
-function AnalyticsView({ theme }: { theme: AppTheme }) {
+function AnalyticsView({ theme }: { theme: DashTheme }) {
   const intensityAlphas = [0.04, 0.25, 0.45, 0.70, 1];
 
   return (
@@ -1216,7 +1067,7 @@ function AnalyticsView({ theme }: { theme: AppTheme }) {
               key={i}
               className="rounded-xl p-4 transition-all"
               style={{
-                background: a.earned ? `${theme.primary}10` : "rgba(255,255,255,0.02)",
+                background: a.earned ? `${theme.primary}10` : theme.overlay(0.02),
                 border: `1px solid ${a.earned ? `${theme.primary}30` : theme.border}`,
                 opacity: a.earned ? 1 : 0.45,
               }}
@@ -1237,93 +1088,9 @@ function AnalyticsView({ theme }: { theme: AppTheme }) {
   );
 }
 
-// ── Themes View ────────────────────────────────────────────────
-function ThemesView({ activeThemeId, onSelect, theme }: { activeThemeId: string; onSelect: (id: string) => void; theme: AppTheme }) {
-  return (
-    <div className="p-6 max-w-5xl">
-      <div className="mb-6">
-        <h2 className="font-display text-xl font-bold" style={{ color: theme.foreground }}>Themes</h2>
-        <p className="text-sm mt-0.5" style={{ color: theme.mutedFg }}>Choose your workspace environment</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-        {THEME_ORDER.map(tid => {
-          const t = THEMES[tid];
-          const isActive = tid === activeThemeId;
-          return (
-            <button
-              key={tid}
-              onClick={() => onSelect(tid)}
-              className="rounded-2xl overflow-hidden text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.99]"
-              style={{
-                boxShadow: isActive ? `0 0 0 2px ${t.primary}, 0 0 24px ${t.primary}30` : "none",
-              }}
-            >
-              {/* Visual preview */}
-              <div className="h-32 relative overflow-hidden" style={{ background: t.greetingBg }}>
-                <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 70% 30%, ${t.greetingOverlay}, transparent 60%)` }} />
-
-                {/* Mini UI mockup inside preview */}
-                <div
-                  className="absolute inset-3 rounded-xl overflow-hidden"
-                  style={{ background: `${t.card}cc`, border: `1px solid ${t.border}` }}
-                >
-                  <div className="p-3 space-y-2">
-                    {/* fake header bar */}
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 rounded-md" style={{ background: t.primary }} />
-                      <div className="h-1.5 rounded-full w-14" style={{ background: `${t.foreground}30` }} />
-                    </div>
-                    {/* fake progress bar */}
-                    <div className="h-1 rounded-full overflow-hidden" style={{ background: `${t.foreground}10` }}>
-                      <div className="h-full rounded-full w-2/5" style={{ background: `linear-gradient(to right, ${t.primary}, ${t.accent})` }} />
-                    </div>
-                    {/* fake cards row */}
-                    <div className="flex gap-1.5 mt-1">
-                      <div className="h-8 flex-1 rounded-lg" style={{ background: `${t.primary}20`, border: `1px solid ${t.primary}30` }} />
-                      <div className="h-8 flex-1 rounded-lg" style={{ background: `${t.foreground}06` }} />
-                      <div className="h-8 flex-1 rounded-lg" style={{ background: `${t.foreground}06` }} />
-                    </div>
-                  </div>
-                </div>
-
-                {isActive && (
-                  <div
-                    className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
-                    style={{ background: t.primary }}
-                  >
-                    <Check className="w-3.5 h-3.5 text-white" />
-                  </div>
-                )}
-              </div>
-
-              {/* Theme info */}
-              <div className="p-3.5" style={{ background: t.card, borderTop: `1px solid ${t.border}` }}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-base">{t.emoji}</span>
-                  <span className="text-sm font-semibold font-display" style={{ color: t.foreground }}>{t.name}</span>
-                  {isActive && (
-                    <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${t.primary}25`, color: t.primary }}>Active</span>
-                  )}
-                </div>
-                <p className="text-xs leading-relaxed" style={{ color: t.mutedFg }}>{t.desc}</p>
-                <div className="flex gap-1.5 mt-3">
-                  {[t.background, t.card, t.primary, t.accent, t.foreground].map((c, ci) => (
-                    <div key={ci} className="w-4 h-4 rounded-full border" style={{ background: c, borderColor: `${t.foreground}15` }} />
-                  ))}
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // ── Bottom Player ──────────────────────────────────────────────
 interface BottomPlayerProps {
-  theme: AppTheme;
+  theme: DashTheme;
   playlist: Track[];
   currentTrackIdx: number | null;
   isPlaying: boolean;
@@ -1437,7 +1204,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
           </span>
           <div
             className="flex-1 h-1 rounded-full overflow-hidden cursor-pointer group relative"
-            style={{ background: "rgba(255,255,255,0.08)" }}
+            style={{ background: theme.overlay(0.08) }}
             onClick={handleSeek}
           >
             <div
@@ -1475,7 +1242,7 @@ export default function Dashboard() {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [tasks, setTasks] = useState(INIT_TASKS);
-  const [activeThemeId, setActiveThemeId] = useState("focusflow");
+  const { themeId, theme, setThemeId } = useThemeSelection();
 
   // ── Playlist & audio ──
   const [playlist, setPlaylist] = useState<Track[]>([]);
@@ -1486,32 +1253,8 @@ export default function Dashboard() {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const theme = THEMES[activeThemeId];
-
   // Build CSS variable overrides for the active theme
-  const themeVars = {
-    "--background": theme.background,
-    "--foreground": theme.foreground,
-    "--card": theme.card,
-    "--card-foreground": theme.foreground,
-    "--popover": theme.card,
-    "--popover-foreground": theme.foreground,
-    "--primary": theme.primary,
-    "--primary-foreground": "#ffffff",
-    "--secondary": theme.muted,
-    "--secondary-foreground": theme.foreground,
-    "--muted": theme.muted,
-    "--muted-foreground": theme.mutedFg,
-    "--accent": theme.accent,
-    "--accent-foreground": "#ffffff",
-    "--border": theme.border,
-    "--input": theme.border,
-    "--ring": theme.ring,
-    "--sidebar": theme.sidebar,
-    "--sidebar-foreground": theme.foreground,
-    "--sidebar-primary": theme.primary,
-    "--sidebar-border": theme.border,
-  } as React.CSSProperties;
+  const themeVars = themeCssVars(theme);
 
   const handleNav = (n: Nav) => {
     setNav(n);
@@ -1660,10 +1403,22 @@ export default function Dashboard() {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ ...themeVars, background: theme.background, color: theme.foreground, fontFamily: "'Outfit', system-ui, sans-serif" }}>
+    <div
+      className="h-screen flex flex-col overflow-hidden"
+      style={{
+        ...themeVars,
+        background: theme.background,
+        color: theme.foreground,
+        fontFamily: theme.fontFamily,
+        transition: theme.transition("background-color", "color"),
+      }}
+    >
       <div className="flex flex-1 overflow-hidden">
         <Sidebar active={nav} onNav={handleNav} theme={theme} />
-        <main className="flex-1 overflow-y-auto scrollbar-hide" style={{ background: theme.background }}>
+        <main
+          className="flex-1 overflow-y-auto scrollbar-hide"
+          style={{ background: theme.background, transition: theme.transition("background-color") }}
+        >
           {nav === "home" && (
             <HomeView onStartFocus={() => { setNav("focus"); setPhase("setup"); }} tasks={tasks} onToggleTask={toggleTask} theme={theme} />
           )}
@@ -1692,7 +1447,7 @@ export default function Dashboard() {
           )}
           {nav === "sounds" && <SoundsView theme={theme} />}
           {nav === "analytics" && <AnalyticsView theme={theme} />}
-          {nav === "themes" && <ThemesView activeThemeId={activeThemeId} onSelect={setActiveThemeId} theme={theme} />}
+          {nav === "themes" && <ThemeSelectionView activeThemeId={themeId} onSelect={setThemeId} theme={theme} />}
         </main>
       </div>
       <BottomPlayer
