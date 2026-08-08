@@ -67,6 +67,8 @@ GET    /api/themes
 GET    /api/playlists
 GET    /api/audio-files
 POST   /api/audio-files
+GET    /api/audio-files/{audioFileId}
+PATCH  /api/audio-files/{audioFileId}
 ```
 
 Conventions:
@@ -85,9 +87,13 @@ Conventions:
 Audio uploads go to S3, not into the repository. The `/public/audio` folder used by the
 prototype is a local-development convenience only and does not ship to production.
 
-1. The client requests an upload target from the REST API.
-2. The file is uploaded to S3.
-3. The API stores the file's name and location and returns the created record.
+1. `POST /api/audio-files` records the name and file details and returns a short-lived
+   signed upload URL.
+2. The browser uploads the file straight to S3 with that URL.
+3. `PATCH /api/audio-files/{audioFileId}` marks the file ready once the upload succeeds.
+
+`GET /api/audio-files` returns only ready files, each with a signed playback URL, so the
+browser never needs its own credentials for the bucket.
 
 ---
 

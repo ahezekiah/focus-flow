@@ -16,6 +16,18 @@ There is no GraphQL in the stack.
 
 `amplify.yml` at the repository root is the Amplify Hosting build spec.
 
+### Running with a backend
+
+The backend lives in [amplify/](amplify/). To get your own isolated copy while developing:
+
+```bash
+npx ampx sandbox      # deploys your sandbox and writes amplify_outputs.json
+npm run dev           # in a second terminal
+```
+
+`amplify_outputs.json` is generated, git-ignored, and picked up automatically. Without it the
+app still runs — pages that need the backend say so instead of failing.
+
 ## Onboarding: AWS Amplify Access (Ben's Account)
 
 To get access to the project's AWS Amplify account for deployments and environment management, follow these steps:

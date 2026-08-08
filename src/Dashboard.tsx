@@ -3,13 +3,15 @@ import {
   Home, Music2, Waves, BarChart2, Timer, Palette,
   Play, Pause, SkipForward, SkipBack, Volume2,
   Flame, Target, ChevronRight, Check, ArrowRight,
-  Clock, TrendingUp, Plus, Upload, X, ListMusic,
+  Clock, TrendingUp, Plus, Upload, X, ListMusic, Library,
 } from "lucide-react";
 import { ThemeSelectionView } from "./dash/ThemeSelectionView";
+import { AudioFilesView } from "./dash/AudioFilesView";
 import { themeCssVars, useThemeSelection, type DashTheme } from "./dash/themes";
+import type { AudioFile } from "./lib/api";
 
 // ── Types ──────────────────────────────────────────────────────
-type Nav = "home" | "focus" | "music" | "sounds" | "analytics" | "themes";
+type Nav = "home" | "focus" | "music" | "audio" | "sounds" | "analytics" | "themes";
 type FocusPhase = "idle" | "setup" | "active" | "complete";
 type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 
@@ -151,12 +153,22 @@ const INIT_TASKS: Task[] = [
 
 const HEATMAP = generateHeatmap();
 
+/** An audio file from the Audio Files page, as a playable track. */
+const cloudTrack = (file: AudioFile): Track => ({
+  id: `cloud:${file.id}`,
+  name: file.name,
+  url: file.playUrl ?? "",
+  duration: 0,
+  size: fmtBytes(file.sizeBytes),
+});
+
 // ── Sidebar ────────────────────────────────────────────────────
 function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => void; theme: DashTheme }) {
   const items: { id: Nav; icon: ElementType; label: string }[] = [
     { id: "home", icon: Home, label: "Home" },
     { id: "focus", icon: Timer, label: "Focus" },
     { id: "music", icon: Music2, label: "Music" },
+    { id: "audio", icon: Library, label: "Audio Files" },
     { id: "sounds", icon: Waves, label: "Sounds" },
     { id: "analytics", icon: BarChart2, label: "Analytics" },
     { id: "themes", icon: Palette, label: "Themes" },
@@ -1356,6 +1368,32 @@ export default function Dashboard() {
     });
   }, []);
 
+  // Audio files added through the Audio Files page — playable alongside local tracks
+  const handleLibraryChange = useCallback((files: AudioFile[]) => {
+    setPlaylist(prev => {
+      const known = new Set(prev.map(t => t.id));
+      const additions = files
+        .filter(f => f.playUrl && !known.has(`cloud:${f.id}`))
+        .map(cloudTrack);
+      return additions.length ? [...prev, ...additions] : prev;
+    });
+  }, []);
+
+  const handlePlayAudioFile = useCallback((file: AudioFile) => {
+    if (!file.playUrl) return;
+    setPlaylist(prev => {
+      const existingIdx = prev.findIndex(t => t.id === `cloud:${file.id}`);
+      if (existingIdx >= 0) {
+        setCurrentTrackIdx(existingIdx);
+        setIsPlaying(true);
+        return prev;
+      }
+      setCurrentTrackIdx(prev.length);
+      setIsPlaying(true);
+      return [...prev, cloudTrack(file)];
+    });
+  }, []);
+
   const handleRemoveTrack = useCallback((id: string) => {
     setPlaylist(prev => {
       const idx = prev.findIndex(t => t.id === id);
@@ -1443,6 +1481,13 @@ export default function Dashboard() {
               onSelectTrack={handleSelectTrack}
               onAddTracks={handleAddTracks}
               onRemoveTrack={handleRemoveTrack}
+            />
+          )}
+          {nav === "audio" && (
+            <AudioFilesView
+              theme={theme}
+              onPlay={handlePlayAudioFile}
+              onLibraryChange={handleLibraryChange}
             />
           )}
           {nav === "sounds" && <SoundsView theme={theme} />}
