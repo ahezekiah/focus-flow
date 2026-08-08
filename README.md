@@ -3,6 +3,19 @@
 
 FocusFlow is a web application designed to help students and professionals stay focused while working. Instead of switching between a music app, a timer, a task list, and/or a habit tracker, Focus Flow combines these tools into one workspace that encourages deep, distraction-free work.
 
+## Architecture
+
+Focus Flow runs on AWS Amplify. The frontend is a React + TypeScript + Vite single-page app
+served by Amplify Hosting; the backend is defined with Amplify Gen 2. The API is **REST** on
+API Gateway + Lambda, with data in DynamoDB, auth through Cognito, and uploaded audio in S3.
+There is no GraphQL in the stack.
+
+- [AWS architecture reference](docs/tech-stack/AWS_Architecture.md)
+- [Tech stack](docs/tech-stack/TeckStack.md)
+- [Decision record](docs/decisions/Decision_Record.md)
+
+`amplify.yml` at the repository root is the Amplify Hosting build spec.
+
 ## Onboarding: AWS Amplify Access (Ben's Account)
 
 To get access to the project's AWS Amplify account for deployments and environment management, follow these steps:
