@@ -1,0 +1,5 @@
+- Step 1. Check Out Production branch
+ - 
+- Step 2. Pull from branch with changes
+- Step 3. Resolve any conflicts
+- Step 4. Commit and Push to Prod
