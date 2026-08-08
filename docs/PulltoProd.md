@@ -4,3 +4,4 @@
 - Step 3. Resolve any conflicts
  - Test Application
 - Step 4. Commit and Push to Prod
+- Step 5. Test in Prod
