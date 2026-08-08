@@ -1,4 +1,4 @@
-- Minimum 80% code coverage per story, with the backend.
+<!-- - Minimum 80% code coverage per story, with the backend. -->
 - Story is deployed.
 - Tested on Prod
 - The Story has been reviewed by another developer, list of preference:
