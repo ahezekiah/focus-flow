@@ -1,0 +1,7 @@
+- Step 1. Check Out Production branch
+ - 
+- Step 2. Pull from branch with changes
+- Step 3. Resolve any conflicts
+ - Test Application Locally
+- Step 4. Commit and Push to Prod
+- Step 5. Test in Prod
