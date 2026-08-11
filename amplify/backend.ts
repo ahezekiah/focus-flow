@@ -16,7 +16,7 @@ const backend = defineBackend({ auth, storage, audioFiles });
 const apiStack = backend.createStack("FocusFlowApi");
 
 // ── Data ───────────────────────────────────────────────────────
-const audioFileTable = new Table(apiStack, "AudioFileTable", {
+const audioFileTable = new Table(backend.stack, "AudioFileTable", {
   partitionKey: { name: "id", type: AttributeType.STRING },
   billingMode: BillingMode.PAY_PER_REQUEST,
 });
