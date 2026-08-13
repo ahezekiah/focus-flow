@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/run-e2e.js",
+            "shell": "powershell",
+            "timeout": 60,
+            "statusMessage": "Running e2e tests...",
+            "asyncRewake": true,
+            "rewakeSummary": "E2E tests complete"
+          }
+        ]
+      }
+    ]
+  }
+}
