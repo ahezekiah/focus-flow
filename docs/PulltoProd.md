@@ -2,6 +2,6 @@
  - 
 - Step 2. Pull from branch with changes
 - Step 3. Resolve any conflicts
- - Test Application Locally
+ - Test Application
 - Step 4. Commit and Push to Prod
 - Step 5. Test in Prod
