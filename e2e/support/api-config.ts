@@ -35,6 +35,12 @@ export const AUDIO_BUCKET = outputs.storage?.bucket_name ?? "";
 export const AUDIO_FILE_TABLE = process.env.E2E_AUDIO_FILE_TABLE ?? "";
 
 /**
+ * Set `E2E_PLAYLIST_TABLE` to the sandbox's playlist table name to have teardown remove the
+ * playlists each spec saved. Left unset, they stay in the sandbox under their isolated names.
+ */
+export const PLAYLIST_TABLE = process.env.E2E_PLAYLIST_TABLE ?? "";
+
+/**
  * An already-confirmed account to sign in with. Set both to run without AWS credentials;
  * left unset, each test creates and then disables its own account through Cognito.
  */

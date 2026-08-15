@@ -12,6 +12,22 @@ export interface AudioFile {
   playUrl?: string;
 }
 
+/** One audio file as it sits in a playlist, ready to play. */
+export interface PlaylistTrack {
+  id: string;
+  name: string;
+  playUrl: string;
+}
+
+export interface Playlist {
+  id: string;
+  name: string;
+  /** True for the playlist a customer hears when they enter the experience. */
+  isDefault: boolean;
+  createdAt: string;
+  tracks: PlaylistTrack[];
+}
+
 /** Thrown for any non-2xx response so callers can show the server's message. */
 export class ApiError extends Error {
   status: number;
@@ -95,4 +111,42 @@ export async function addAudioFile(name: string, file: File): Promise<AudioFile>
     method: "PATCH",
     body: JSON.stringify({ status: "ready" }),
   });
+}
+
+/** GET /playlists — every playlist a designer has saved, with its playable tracks. */
+export async function listPlaylists(): Promise<Playlist[]> {
+  const { playlists } = await request<{ playlists: Playlist[] }>("/playlists");
+  return playlists;
+}
+
+/**
+ * GET /playlists/default — the playlist a customer hears on arrival.
+ * Resolves with `null` while no playlist has been created yet.
+ */
+export async function getDefaultPlaylist(): Promise<Playlist | null> {
+  try {
+    const { playlist } = await request<{ playlist: Playlist }>("/playlists/default");
+    return playlist;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+/** POST /playlists — saves a playlist under the given name, holding only the chosen audio. */
+export async function createPlaylist(name: string, audioFileIds: string[]): Promise<Playlist> {
+  const { playlist } = await request<{ playlist: Playlist }>("/playlists", {
+    method: "POST",
+    body: JSON.stringify({ name, audioFileIds }),
+  });
+  return playlist;
+}
+
+/** PATCH /playlists/{id} — makes this the playlist new customers hear. */
+export async function makePlaylistDefault(playlistId: string): Promise<Playlist> {
+  const { playlist } = await request<{ playlist: Playlist }>(`/playlists/${playlistId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ isDefault: true }),
+  });
+  return playlist;
 }

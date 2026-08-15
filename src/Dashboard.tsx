@@ -7,11 +7,13 @@ import {
 } from "lucide-react";
 import { ThemeSelectionView } from "./dash/ThemeSelectionView";
 import { AudioFilesView } from "./dash/AudioFilesView";
+import { PlaylistsView } from "./dash/PlaylistsView";
 import { themeCssVars, useThemeSelection, type DashTheme } from "./dash/themes";
-import type { AudioFile } from "./lib/api";
+import { getDefaultPlaylist, type AudioFile, type Playlist } from "./lib/api";
+import { isBackendConfigured } from "./lib/amplify";
 
 // ── Types ──────────────────────────────────────────────────────
-type Nav = "home" | "focus" | "music" | "audio" | "sounds" | "analytics" | "themes";
+type Nav = "home" | "focus" | "music" | "audio" | "playlists" | "sounds" | "analytics" | "themes";
 type FocusPhase = "idle" | "setup" | "active" | "complete";
 type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 
@@ -162,6 +164,12 @@ const cloudTrack = (file: AudioFile): Track => ({
   size: fmtBytes(file.sizeBytes),
 });
 
+/** The tracks of a saved playlist, in the order the designer chose them. */
+const playlistTracks = (playlist: Playlist): Track[] =>
+  playlist.tracks
+    .filter(track => track.playUrl)
+    .map(track => ({ id: `cloud:${track.id}`, name: track.name, url: track.playUrl, duration: 0, size: "" }));
+
 // ── Sidebar ────────────────────────────────────────────────────
 function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => void; theme: DashTheme }) {
   const items: { id: Nav; icon: ElementType; label: string }[] = [
@@ -169,6 +177,7 @@ function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => voi
     { id: "focus", icon: Timer, label: "Focus" },
     { id: "music", icon: Music2, label: "Music" },
     { id: "audio", icon: Library, label: "Audio Files" },
+    { id: "playlists", icon: ListMusic, label: "Playlists" },
     { id: "sounds", icon: Waves, label: "Sounds" },
     { id: "analytics", icon: BarChart2, label: "Analytics" },
     { id: "themes", icon: Palette, label: "Themes" },
@@ -240,17 +249,86 @@ function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => voi
   );
 }
 
+// ── Now Playing ────────────────────────────────────────────────
+/**
+ * What the customer is hearing right now. It is the first thing on the home page so a
+ * new arrival can see the ambience that greeted them and what is coming next.
+ */
+function NowPlayingCard({
+  theme,
+  queueName,
+  playlist,
+  currentTrackIdx,
+  isPlaying,
+}: {
+  theme: DashTheme;
+  queueName: string | null;
+  playlist: Track[];
+  currentTrackIdx: number | null;
+  isPlaying: boolean;
+}) {
+  return (
+    <section
+      aria-label="Now playing"
+      className="rounded-2xl p-5"
+      style={{ background: theme.card, border: `1px solid ${theme.border}` }}
+    >
+      <div className="flex items-center justify-between mb-3 gap-4">
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wider mb-1" style={{ color: theme.mutedFg }}>
+            Now Playing
+          </p>
+          <h3 className="text-lg font-semibold font-display truncate" style={{ color: theme.foreground }}>
+            {queueName ?? "Your library"}
+          </h3>
+          <p className="text-xs mt-0.5" style={{ color: theme.mutedFg }}>
+            <span>{isPlaying ? "Playing" : "Paused"}</span> ·{" "}
+            {playlist.length} {playlist.length === 1 ? "track" : "tracks"}
+          </p>
+        </div>
+        {isPlaying && <NowPlayingBars color={theme.primary} />}
+      </div>
+
+      <ul className="space-y-1" aria-label="Now playing tracks">
+        {playlist.map((track, idx) => {
+          const isActive = currentTrackIdx === idx;
+          return (
+            <li
+              key={track.id}
+              className="flex items-center gap-2.5 text-sm truncate"
+              style={{ color: isActive ? theme.primary : theme.mutedFg }}
+            >
+              <span className="text-xs font-data w-5 shrink-0" style={{ color: theme.mutedFg }}>
+                {String(idx + 1).padStart(2, "0")}
+              </span>
+              <span className="truncate">{track.name}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 // ── Home View ──────────────────────────────────────────────────
 function HomeView({
   onStartFocus,
   tasks,
   onToggleTask,
   theme,
+  queueName,
+  playlist,
+  currentTrackIdx,
+  isPlaying,
 }: {
   onStartFocus: () => void;
   tasks: Task[];
   onToggleTask: (id: number) => void;
   theme: DashTheme;
+  queueName: string | null;
+  playlist: Track[];
+  currentTrackIdx: number | null;
+  isPlaying: boolean;
 }) {
   const tod = getTimeOfDay();
   const cfg = TOD[tod];
@@ -286,6 +364,17 @@ function HomeView({
           </button>
         </div>
       </div>
+
+      {/* Now Playing — the ambience a new arrival is already hearing */}
+      {playlist.length > 0 && (
+        <NowPlayingCard
+          theme={theme}
+          queueName={queueName}
+          playlist={playlist}
+          currentTrackIdx={currentTrackIdx}
+          isPlaying={isPlaying}
+        />
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-4">
@@ -806,7 +895,9 @@ function LibraryView({
                     >
                       {track.name}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: theme.mutedFg }}>{track.size}</p>
+                    {track.size && (
+                      <p className="text-xs mt-0.5" style={{ color: theme.mutedFg }}>{track.size}</p>
+                    )}
                   </div>
 
                   {/* Duration */}
@@ -1104,6 +1195,8 @@ function AnalyticsView({ theme }: { theme: DashTheme }) {
 interface BottomPlayerProps {
   theme: DashTheme;
   playlist: Track[];
+  /** Where the queue came from — a playlist name, or null for the library. */
+  queueName: string | null;
   currentTrackIdx: number | null;
   isPlaying: boolean;
   onPlayPause: () => void;
@@ -1112,7 +1205,7 @@ interface BottomPlayerProps {
   audioRef: React.MutableRefObject<HTMLAudioElement>;
 }
 
-function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause, onNext, onPrev, audioRef }: BottomPlayerProps) {
+function BottomPlayer({ theme, playlist, queueName, currentTrackIdx, isPlaying, onPlayPause, onNext, onPrev, audioRef }: BottomPlayerProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
@@ -1152,7 +1245,8 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
   };
 
   return (
-    <div
+    <section
+      aria-label="Player"
       className="h-20 flex items-center px-6 gap-6 shrink-0"
       style={{ background: theme.sidebar, borderTop: `1px solid ${theme.border}` }}
     >
@@ -1174,7 +1268,15 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
             {track ? track.name : "No track selected"}
           </p>
           <p className="text-xs truncate" style={{ color: theme.mutedFg }}>
-            {track ? `${playlist.length} tracks in library` : "Add files in Music → My Library"}
+            {!track ? (
+              "Add files in Music → My Library"
+            ) : queueName ? (
+              <>
+                <span>{queueName}</span> · {playlist.length} tracks
+              </>
+            ) : (
+              `${playlist.length} tracks in library`
+            )}
           </p>
         </div>
       </div>
@@ -1184,6 +1286,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
         <div className="flex items-center gap-5">
           <button
             onClick={onPrev}
+            aria-label="Previous track"
             className="transition-opacity hover:opacity-70 disabled:opacity-30"
             style={{ color: theme.mutedFg }}
             disabled={playlist.length === 0}
@@ -1192,6 +1295,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
           </button>
           <button
             onClick={onPlayPause}
+            aria-label={isPlaying ? "Pause" : "Play"}
             className="w-9 h-9 rounded-full flex items-center justify-center hover:scale-105 transition-transform active:scale-95 disabled:opacity-30"
             style={{ background: theme.foreground }}
             disabled={playlist.length === 0}
@@ -1202,6 +1306,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
           </button>
           <button
             onClick={onNext}
+            aria-label="Next track"
             className="transition-opacity hover:opacity-70 disabled:opacity-30"
             style={{ color: theme.mutedFg }}
             disabled={playlist.length === 0}
@@ -1211,7 +1316,12 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
         </div>
 
         <div className="flex items-center gap-3 w-full max-w-sm">
-          <span className="text-xs font-data w-8 text-right" style={{ color: theme.mutedFg }}>
+          <span
+            role="timer"
+            aria-label="Elapsed time"
+            className="text-xs font-data w-8 text-right"
+            style={{ color: theme.mutedFg }}
+          >
             {fmtDuration(currentTime)}
           </span>
           <div
@@ -1235,6 +1345,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
         <Volume2 className="w-4 h-4 shrink-0" style={{ color: theme.mutedFg }} />
         <input
           type="range"
+          aria-label="Volume"
           min={0} max={1} step={0.01}
           value={volume}
           onChange={e => setVolume(Number(e.target.value))}
@@ -1242,7 +1353,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
           style={{ accentColor: theme.primary }}
         />
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -1258,6 +1369,7 @@ export default function Dashboard() {
 
   // ── Playlist & audio ──
   const [playlist, setPlaylist] = useState<Track[]>([]);
+  const [queueName, setQueueName] = useState<string | null>(null);
   const [currentTrackIdx, setCurrentTrackIdx] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(new Audio());
@@ -1336,6 +1448,35 @@ export default function Dashboard() {
     return () => audio.removeEventListener("ended", handleEnded);
   }, [playlist.length]);
 
+  // ── Playlists ──
+  /** Puts a saved playlist on and starts it from the top. */
+  const startPlaylist = useCallback((chosen: Playlist) => {
+    const tracks = playlistTracks(chosen);
+    if (tracks.length === 0) return;
+
+    loadedIdRef.current = null;
+    setPlaylist(tracks);
+    setQueueName(chosen.name);
+    setCurrentTrackIdx(0);
+    setIsPlaying(true);
+  }, []);
+
+  /** Whoever arrives hears the default playlist without having chosen anything yet. */
+  useEffect(() => {
+    if (!isBackendConfigured) return;
+    let cancelled = false;
+
+    getDefaultPlaylist()
+      .then(defaultPlaylist => {
+        if (!cancelled && defaultPlaylist) startPlaylist(defaultPlaylist);
+      })
+      .catch((err: unknown) => console.warn("The default playlist could not be loaded", err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [startPlaylist]);
+
   // ── Track management ──
   const handleAddTracks = useCallback((files: FileList) => {
     const incoming = Array.from(files).filter(f => f.type.startsWith("audio/"));
@@ -1348,6 +1489,9 @@ export default function Dashboard() {
       duration: 0,
       size: fmtBytes(f.size),
     }));
+
+    // The queue is no longer just the playlist it started as.
+    setQueueName(null);
 
     setPlaylist(prev => {
       const updated = [...prev, ...newTracks];
@@ -1375,12 +1519,16 @@ export default function Dashboard() {
       const additions = files
         .filter(f => f.playUrl && !known.has(`cloud:${f.id}`))
         .map(cloudTrack);
-      return additions.length ? [...prev, ...additions] : prev;
+      if (!additions.length) return prev;
+
+      setQueueName(null);
+      return [...prev, ...additions];
     });
   }, []);
 
   const handlePlayAudioFile = useCallback((file: AudioFile) => {
     if (!file.playUrl) return;
+    setQueueName(null);
     setPlaylist(prev => {
       const existingIdx = prev.findIndex(t => t.id === `cloud:${file.id}`);
       if (existingIdx >= 0) {
@@ -1458,7 +1606,16 @@ export default function Dashboard() {
           style={{ background: theme.background, transition: theme.transition("background-color") }}
         >
           {nav === "home" && (
-            <HomeView onStartFocus={() => { setNav("focus"); setPhase("setup"); }} tasks={tasks} onToggleTask={toggleTask} theme={theme} />
+            <HomeView
+              onStartFocus={() => { setNav("focus"); setPhase("setup"); }}
+              tasks={tasks}
+              onToggleTask={toggleTask}
+              theme={theme}
+              queueName={queueName}
+              playlist={playlist}
+              currentTrackIdx={currentTrackIdx}
+              isPlaying={isPlaying}
+            />
           )}
           {nav === "focus" && phase === "setup" && (
             <FocusSetupView onBegin={handleBegin} theme={theme} />
@@ -1490,6 +1647,7 @@ export default function Dashboard() {
               onLibraryChange={handleLibraryChange}
             />
           )}
+          {nav === "playlists" && <PlaylistsView theme={theme} onPlay={startPlaylist} />}
           {nav === "sounds" && <SoundsView theme={theme} />}
           {nav === "analytics" && <AnalyticsView theme={theme} />}
           {nav === "themes" && <ThemeSelectionView activeThemeId={themeId} onSelect={setThemeId} theme={theme} />}
@@ -1498,6 +1656,7 @@ export default function Dashboard() {
       <BottomPlayer
         theme={theme}
         playlist={playlist}
+        queueName={queueName}
         currentTrackIdx={currentTrackIdx}
         isPlaying={isPlaying}
         onPlayPause={handlePlayPause}

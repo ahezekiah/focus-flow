@@ -36,6 +36,57 @@ export class FocusFlowDslAssert {
     await this.dsl.driver.expectRowsShareOneList();
   }
 
+  // ── Playlists ────────────────────────────────────────────────
+  /** The designer is told the playlist was saved. */
+  async savingIsConfirmed(): Promise<void> {
+    await this.dsl.driver.waitForText("Playlist saved");
+  }
+
+  /** The playlist is held by the system under the name the designer typed. */
+  async playlistIsSavedAs(nameParam: string): Promise<void> {
+    const name = this.alias(nameParam);
+
+    await this.dsl.driver.waitForItemInList("Playlists", name);
+    await this.dsl.driver.expectStoredPlaylistNamed(name);
+  }
+
+  /** The playlist holds exactly the audio files that were chosen, in that order. */
+  async playlistHolds(nameParam: string, filesParam: string): Promise<void> {
+    const name = this.alias(nameParam);
+    const files = parseParamList(filesParam, "files").map(file => this.dsl.ctx.alias(file));
+
+    for (const file of files) {
+      await this.dsl.driver.waitForItemInList(`Tracks in ${name}`, file);
+    }
+    await this.dsl.driver.expectStoredPlaylistTracks(name, files);
+  }
+
+  /** The audio file was left out of the playlist. */
+  async playlistDoesNotHold(nameParam: string, fileParam: string): Promise<void> {
+    const name = this.alias(nameParam);
+    const file = this.dsl.ctx.alias(parseParam(fileParam, "file"));
+
+    await this.dsl.driver.expectItemMissingFromList(`Tracks in ${name}`, file);
+  }
+
+  /** That playlist is what the customer is hearing right now. */
+  async playlistIsPlaying(nameParam: string): Promise<void> {
+    const name = this.alias(nameParam);
+
+    await this.dsl.driver.waitForTextInPanel("Player", name);
+    // Only a playlist that is playing offers to pause.
+    await this.dsl.driver.waitForButtonInPanel("Player", "Pause");
+    await this.dsl.driver.expectPlaybackToProgress();
+  }
+
+  /** These are the audio files playing, in the order the customer hears them. */
+  async playlistPlaysTracks(namesParam: string): Promise<void> {
+    const names = parseParamList(namesParam, "names").map(name => this.dsl.ctx.alias(name));
+
+    await this.dsl.driver.waitForTextInPanel("Now playing", "Playing");
+    await this.dsl.driver.expectListItemsInOrder("Now playing tracks", names);
+  }
+
   private alias(nameParam: string): string {
     return this.dsl.ctx.alias(parseParam(nameParam, "name"));
   }

@@ -64,7 +64,13 @@ PATCH  /api/sessions/{sessionId}/complete
 
 GET    /api/users/{userId}/streak
 GET    /api/themes
+
 GET    /api/playlists
+POST   /api/playlists
+GET    /api/playlists/default
+GET    /api/playlists/{playlistId}
+PATCH  /api/playlists/{playlistId}
+
 GET    /api/audio-files
 POST   /api/audio-files
 GET    /api/audio-files/{audioFileId}
@@ -94,6 +100,27 @@ prototype is a local-development convenience only and does not ship to productio
 
 `GET /api/audio-files` returns only ready files, each with a signed playback URL, so the
 browser never needs its own credentials for the bucket.
+
+---
+
+## Playlists
+
+A playlist is a name plus the audio files chosen for it, held in its own DynamoDB table. The
+playlist Lambda only reads the audio file table and the bucket, so a playlist never owns the
+audio it names.
+
+- `POST /api/playlists` saves a playlist with the chosen audio file ids, in the chosen order,
+  and rejects any id that is not a ready audio file. The first playlist saved becomes the
+  default so an arrival always has something to hear.
+- `GET /api/playlists` and `GET /api/playlists/{playlistId}` return each playlist with its
+  tracks resolved to names and signed playback URLs.
+- `GET /api/playlists/default` returns the playlist a new visitor hears, falling back to the
+  earliest playlist when none has been marked.
+- `PATCH /api/playlists/{playlistId}` with `{ "isDefault": true }` makes that playlist the
+  default and stands the others down.
+
+Playlists are public reference data, so a visitor hears the default one before signing in;
+saving a playlist or changing the default requires a Cognito token.
 
 ---
 

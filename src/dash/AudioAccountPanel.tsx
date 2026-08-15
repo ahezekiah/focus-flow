@@ -5,15 +5,20 @@ import type { DashTheme } from "./themes";
 type Mode = "signIn" | "signUp" | "confirm";
 
 /**
- * Compact account panel. Adding audio files is a signed-in action, and the
- * dashboard has no sign-in of its own yet, so it lives here.
+ * Compact account panel. Adding audio files and building playlists are signed-in
+ * actions, and the dashboard has no sign-in of its own yet, so it lives here.
  */
 export function AudioAccountPanel({
   theme,
   onSignedIn,
+  purpose = "add audio files",
+  browsingNote = "Browsing is open to everyone — adding audio needs an account.",
 }: {
   theme: DashTheme;
   onSignedIn: () => void;
+  /** What the visitor is signing in to do, e.g. "create playlists". */
+  purpose?: string;
+  browsingNote?: string;
 }) {
   const [mode, setMode] = useState<Mode>("signIn");
   const [email, setEmail] = useState("");
@@ -58,10 +63,10 @@ export function AudioAccountPanel({
       style={{ background: theme.card, border: `1px solid ${theme.border}` }}
     >
       <p className="text-sm font-semibold mb-1" style={{ color: theme.foreground }}>
-        Sign in to add audio files
+        Sign in to {purpose}
       </p>
       <p className="text-xs mb-4" style={{ color: theme.mutedFg }}>
-        Browsing is open to everyone — adding audio needs an account.
+        {browsingNote}
       </p>
 
       <div className="space-y-2.5">

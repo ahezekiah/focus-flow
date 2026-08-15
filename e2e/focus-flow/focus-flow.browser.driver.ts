@@ -13,6 +13,7 @@ import {
   AUDIO_BUCKET,
   AUDIO_FILE_TABLE,
   AWS_REGION,
+  PLAYLIST_TABLE,
   PROVIDED_EMAIL,
   PROVIDED_PASSWORD,
   USER_POOL_ID,
@@ -24,34 +25,60 @@ import type { AudioPayload } from "../support/audio-asset";
  * Method names describe mechanisms, never intent — intent belongs in the DSL.
  */
 
+/** Which collection a record came from, so teardown knows where to release it. */
+type RecordKind = "audio" | "playlist";
+
 /** A record as the API returns it. Only the fields the driver needs to act on. */
 interface ApiRecord {
   id: string;
+  kind: RecordKind;
   name?: string;
   playUrl?: string;
   storageKey?: string;
+  tracks?: { id: string; name: string }[];
 }
 
 /** Meets the pool's policy: 8+ characters with upper, lower, number and symbol. */
 const ACCOUNT_PASSWORD = "E2e-Passw0rd!";
 const RECORD_WAIT_MS = 15_000;
 const RECORD_POLL_MS = 250;
+const PLAYBACK_WAIT_MS = 20_000;
 
 /** Rows on the audio list are the list items carrying a "Play <name>" control. */
 const PLAY_CONTROL = /^Play .+/;
+
+/** What the elapsed-time counter reads before any audio has been heard. */
+const NOTHING_PLAYED_YET = "0:00";
+
+function isRecord(candidate: unknown): boolean {
+  return !!candidate && typeof (candidate as { id?: unknown }).id === "string";
+}
+
+function manyOrOne(many: unknown, one: unknown): unknown[] {
+  if (Array.isArray(many)) return many;
+  return one === undefined ? [] : [one];
+}
 
 function recordsIn(body: unknown): ApiRecord[] {
   if (!body || typeof body !== "object") return [];
   const payload = body as Record<string, unknown>;
 
-  const candidates: unknown[] = Array.isArray(payload.audioFiles)
-    ? payload.audioFiles
-    : [payload.audioFile ?? payload];
+  const groups: [RecordKind, unknown[]][] = [
+    ["audio", manyOrOne(payload.audioFiles, payload.audioFile)],
+    ["playlist", manyOrOne(payload.playlists, payload.playlist)],
+  ];
 
-  return candidates.filter(
-    (candidate): candidate is ApiRecord =>
-      !!candidate && typeof (candidate as ApiRecord).id === "string",
+  const wrapped = groups.flatMap(([kind, candidates]) =>
+    candidates.filter(isRecord).map(candidate => ({ ...(candidate as ApiRecord), kind })),
   );
+  if (wrapped.length > 0) return wrapped;
+
+  // A bare record with no wrapper around it — how the audio-files update answers.
+  return isRecord(payload) ? [{ ...(payload as unknown as ApiRecord), kind: "audio" }] : [];
+}
+
+function tableFor(kind: RecordKind): string {
+  return kind === "playlist" ? PLAYLIST_TABLE : AUDIO_FILE_TABLE;
 }
 
 export class FocusFlowBrowserDriver {
@@ -99,6 +126,10 @@ export class FocusFlowBrowserDriver {
     await this.page.getByPlaceholder(placeholder, { exact: true }).fill(value);
   }
 
+  async checkBoxByName(name: string): Promise<void> {
+    await this.page.getByRole("checkbox", { name, exact: true }).check();
+  }
+
   /**
    * The picker is a hidden input. Scoped away from the multi-select uploader on the
    * music page so it stays unambiguous if both are ever mounted at once.
@@ -137,10 +168,53 @@ export class FocusFlowBrowserDriver {
     ).toHaveCount(1);
   }
 
-  // ── Stored bytes ─────────────────────────────────────────────
+  // ── Named lists and panels ───────────────────────────────────
+  async waitForItemInList(listName: string, text: string): Promise<void> {
+    await expect(this.itemsIn(listName).filter({ hasText: text })).toHaveCount(1);
+  }
+
+  async expectItemMissingFromList(listName: string, text: string): Promise<void> {
+    await expect(this.itemsIn(listName).filter({ hasText: text })).toHaveCount(0);
+  }
+
+  /** One row, found by one piece of its text, showing another. */
+  async waitForItemInListShowing(listName: string, itemText: string, text: string): Promise<void> {
+    await expect(
+      this.itemsIn(listName).filter({ hasText: itemText }).filter({ hasText: text }),
+    ).toHaveCount(1);
+  }
+
+  /** The list holds exactly these entries, in this order. */
+  async expectListItemsInOrder(listName: string, texts: string[]): Promise<void> {
+    const items = this.itemsIn(listName);
+    await expect(items).toHaveCount(texts.length);
+
+    for (const [index, text] of texts.entries()) {
+      await expect(items.nth(index)).toContainText(text);
+    }
+  }
+
+  async waitForTextInPanel(panelName: string, text: string): Promise<void> {
+    await expect(this.panel(panelName).getByText(text, { exact: true }).first()).toBeVisible();
+  }
+
+  async waitForButtonInPanel(panelName: string, buttonName: string): Promise<void> {
+    await expect(this.panel(panelName).getByRole("button", { name: buttonName, exact: true })).toBeVisible();
+  }
+
+  // ── Audio actually running ───────────────────────────────────
+  /** The elapsed counter moving off zero is the browser reporting real playback. */
+  async expectPlaybackToProgress(): Promise<void> {
+    await expect(this.page.getByRole("timer", { name: "Elapsed time" })).not.toHaveText(
+      NOTHING_PLAYED_YET,
+      { timeout: PLAYBACK_WAIT_MS },
+    );
+  }
+
+  // ── What the system itself holds ─────────────────────────────
   /** Fetches what storage serves back for a record and compares it to what was uploaded. */
   async expectStoredBytes(recordName: string, byteLength: number): Promise<void> {
-    const record = await this.recordNamed(recordName);
+    const record = await this.recordNamed(recordName, candidate => !!candidate.playUrl);
     if (!record.playUrl) {
       throw new Error(`The API returned "${recordName}" without a play url, so it cannot be played`);
     }
@@ -148,6 +222,21 @@ export class FocusFlowBrowserDriver {
     const response = await this.api.get(record.playUrl);
     expect(response.status(), `stored audio for "${recordName}" could not be fetched`).toBe(200);
     expect((await response.body()).byteLength).toBe(byteLength);
+  }
+
+  /** The API has answered with a playlist under this name, so the system holds it. */
+  async expectStoredPlaylistNamed(recordName: string): Promise<void> {
+    await this.playlistNamed(recordName);
+  }
+
+  /** The playlist the API answers with holds exactly these tracks, in this order. */
+  async expectStoredPlaylistTracks(recordName: string, trackNames: string[]): Promise<void> {
+    const record = await this.playlistNamed(recordName);
+
+    expect(
+      (record.tracks ?? []).map(track => track.name),
+      `tracks the system holds for "${recordName}"`,
+    ).toEqual(trackNames);
   }
 
   // ── Accounts ─────────────────────────────────────────────────
@@ -207,20 +296,23 @@ export class FocusFlowBrowserDriver {
   }
 
   private async releaseRecords(): Promise<void> {
-    if (!AUDIO_FILE_TABLE || this.created.size === 0) return;
+    if ((!AUDIO_FILE_TABLE && !PLAYLIST_TABLE) || this.created.size === 0) return;
 
     const documents = DynamoDBDocumentClient.from(new DynamoDBClient({ region: AWS_REGION }));
     const s3 = AUDIO_BUCKET ? new S3Client({ region: AWS_REGION }) : undefined;
 
     for (const id of this.created) {
-      const storageKey = this.seen.get(id)?.storageKey;
+      const record = this.seen.get(id);
+      const table = tableFor(record?.kind ?? "audio");
+      if (!table) continue;
+
       try {
-        await documents.send(new DeleteCommand({ TableName: AUDIO_FILE_TABLE, Key: { id } }));
-        if (s3 && storageKey) {
-          await s3.send(new DeleteObjectCommand({ Bucket: AUDIO_BUCKET, Key: storageKey }));
+        await documents.send(new DeleteCommand({ TableName: table, Key: { id } }));
+        if (s3 && record?.storageKey) {
+          await s3.send(new DeleteObjectCommand({ Bucket: AUDIO_BUCKET, Key: record.storageKey }));
         }
       } catch (error) {
-        console.warn(`Could not release audio file ${id}:`, error);
+        console.warn(`Could not release ${record?.kind ?? "audio"} record ${id}:`, error);
       }
     }
   }
@@ -252,6 +344,14 @@ export class FocusFlowBrowserDriver {
       .filter({ has: this.page.getByRole("button", { name: PLAY_CONTROL }) });
   }
 
+  private itemsIn(listName: string): Locator {
+    return this.page.getByRole("list", { name: listName, exact: true }).getByRole("listitem");
+  }
+
+  private panel(panelName: string): Locator {
+    return this.page.getByRole("region", { name: panelName, exact: true });
+  }
+
   /**
    * Records are learned from the app's own API traffic rather than by re-querying, so
    * the driver never needs a second set of credentials to read what the app can see.
@@ -263,8 +363,8 @@ export class FocusFlowBrowserDriver {
       void response
         .json()
         .then((body: unknown) => {
-          const isCreation =
-            !!body && typeof body === "object" && "uploadUrl" in (body as Record<string, unknown>);
+          // 201 is the API's answer to every "this has just been created".
+          const isCreation = response.status() === 201;
 
           for (const record of recordsIn(body)) {
             this.seen.set(record.id, { ...this.seen.get(record.id), ...record });
@@ -277,16 +377,25 @@ export class FocusFlowBrowserDriver {
     });
   }
 
-  private async recordNamed(name: string): Promise<ApiRecord> {
+  private async recordNamed(
+    name: string,
+    isUsable: (record: ApiRecord) => boolean,
+  ): Promise<ApiRecord> {
     const deadline = Date.now() + RECORD_WAIT_MS;
 
     while (Date.now() < deadline) {
-      const match = [...this.seen.values()].find(record => record.name === name && record.playUrl);
+      const match = [...this.seen.values()].find(
+        record => record.name === name && isUsable(record),
+      );
       if (match) return match;
       await this.page.waitForTimeout(RECORD_POLL_MS);
     }
 
-    throw new Error(`No API response carried a playable record named "${name}"`);
+    throw new Error(`No API response carried a usable record named "${name}"`);
+  }
+
+  private playlistNamed(name: string): Promise<ApiRecord> {
+    return this.recordNamed(name, record => record.kind === "playlist");
   }
 
   private cognito(): CognitoIdentityProviderClient {
