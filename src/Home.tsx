@@ -1,12 +1,11 @@
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Rain from "../components/Rain";
-import { isOnboardingComplete } from "./lib/onboarding";
 
 
 // ─── App ───────────────────────────────────────────────────────────────────────
 
-export default function Home() {
+export default function Home({ signedIn, completed }: { signedIn: boolean; completed: boolean }) {
   const navigate = useNavigate();
 
   return (
@@ -87,7 +86,7 @@ export default function Home() {
 
         {/* cta */}
         <button
-          onClick={() => navigate(isOnboardingComplete() ? "/dash" : "/onboarding")}
+          onClick={() => navigate(completed ? "/dash" : "/onboarding")}
           className="mt-2 flex items-center gap-2.5 px-8 py-3.5 rounded-full text-sm font-medium transition-all duration-200 hover:brightness-110 active:scale-95"
           style={{
             background: "#C8924A",
@@ -100,6 +99,16 @@ export default function Home() {
           Start Your First Session
           <ChevronRight size={15} strokeWidth={2.5} />
         </button>
+
+        {!signedIn && (
+          <button
+            onClick={() => navigate("/signin")}
+            className="text-sm underline-offset-4 hover:underline"
+            style={{ color: "#7A6A54", fontFamily: "'DM Sans', sans-serif" }}
+          >
+            Already have an account? Sign in
+          </button>
+        )}
       </div>
     </div>
   );

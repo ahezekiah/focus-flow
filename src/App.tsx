@@ -3,21 +3,44 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './Home'
 import Dashboard from './Dashboard'
 import Onboarding from './Onboarding'
-import { isOnboardingComplete } from './lib/onboarding'
+import SignIn from './SignIn'
+import { getCurrentAccount, signOut, type AccountRecord } from './lib/accounts'
 
 function App() {
-  const [complete, setComplete] = useState(isOnboardingComplete);
+  const [account, setAccount] = useState<AccountRecord | undefined>(getCurrentAccount);
+
+  const signedIn = !!account;
+  const completed = !!account?.onboardingCompleted;
+
+  function handleSignOut() {
+    signOut();
+    setAccount(undefined);
+  }
 
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Home signedIn={signedIn} completed={completed} />} />
+      <Route
+        path="/signin"
+        element={
+          completed ? <Navigate to="/dash" replace />
+          : signedIn ? <Navigate to="/onboarding" replace />
+          : <SignIn onSignedIn={setAccount} />
+        }
+      />
       <Route
         path="/onboarding"
-        element={complete ? <Navigate to="/dash" replace /> : <Onboarding onComplete={() => setComplete(true)} />}
+        element={
+          completed ? <Navigate to="/dash" replace /> : <Onboarding account={account} onAccountChange={setAccount} />
+        }
       />
       <Route
         path="/dash"
-        element={complete ? <Dashboard /> : <Navigate to="/onboarding" replace />}
+        element={
+          completed ? <Dashboard account={account!} onSignOut={handleSignOut} />
+          : signedIn ? <Navigate to="/onboarding" replace />
+          : <Navigate to="/" replace />
+        }
       />
     </Routes>
   )

@@ -1,42 +1,40 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "./components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./components/ui/card";
 import { Input } from "./components/ui/input";
 import { Label } from "./components/ui/label";
 import {
-  getOnboardingState,
-  saveOnboardingState,
-  isEmailTaken,
-  registerEmail,
-  type OnboardingState,
+  createAccount,
+  isEmailRegistered,
+  updateAccount,
+  type AccountRecord,
   type OnboardingStep,
-  type OnboardingAccount,
   type OnboardingSession,
   type OnboardingProject,
   type OnboardingTask,
   type OnboardingMusic,
   type OnboardingStreak,
-} from "./lib/onboarding";
+} from "./lib/accounts";
 
 // ── Shared step data ─────────────────────────────────────────────
-const STEP_ORDER: OnboardingStep[] = ["account", "sessions", "projects", "tasks", "music", "streaks", "done"];
+const STEP_ORDER: OnboardingStep[] = ["sessions", "projects", "tasks", "music", "streaks", "done"];
 
 const SESSION_DURATIONS = [25, 45, 60, 90];
 const SESSION_TYPES = ["Homework", "Coding", "Essay", "Design", "Reading", "Research"];
 const PROJECT_TEMPLATES = ["Coding Sprint", "Study Plan", "Reading List", "Personal Projects"];
-const MUSIC_OPTIONS = ["Lo-fi Beats", "Classical", "Nature Sounds", "Ambient Electronic", "No Music"];
+const MUSIC_OPTIONS = ["Rain", "Café", "Fireplace", "Ocean", "Forest", "Thunder", "No Music"];
 const STREAK_GOALS = ["15 minutes a day", "30 minutes a day", "1 hour a day", "2 hours a day"];
 
 // ── Progress indicator ───────────────────────────────────────────
-function ProgressDots({ step }: { step: OnboardingStep }) {
-  const idx = STEP_ORDER.indexOf(step);
+function ProgressDots({ activeIndex }: { activeIndex: number }) {
   return (
     <div className="flex items-center gap-2 mb-8">
       {STEP_ORDER.map((s, i) => (
         <div
           key={s}
           className="h-1.5 flex-1 rounded-full transition-colors"
-          style={{ background: i <= idx ? "var(--primary)" : "var(--border)" }}
+          style={{ background: i <= activeIndex ? "var(--primary)" : "var(--border)" }}
         />
       ))}
     </div>
@@ -83,7 +81,7 @@ function StepShell({
   explanation: string;
   prompt?: string | null;
   children: ReactNode;
-  onBack: () => void;
+  onBack?: () => void;
   onContinue: () => void;
   continueLabel?: string;
 }) {
@@ -98,7 +96,7 @@ function StepShell({
         {prompt && <p className="text-sm text-destructive">{prompt}</p>}
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
+        {onBack ? <Button type="button" variant="ghost" onClick={onBack}>Back</Button> : <span />}
         <Button type="button" onClick={onContinue}>{continueLabel}</Button>
       </CardFooter>
     </Card>
@@ -106,16 +104,14 @@ function StepShell({
 }
 
 // ── Step: Account ─────────────────────────────────────────────────
-function AccountStep({ initial, onContinue }: {
-  initial?: OnboardingAccount;
-  onContinue: (account: OnboardingAccount) => void;
-}) {
-  const [name, setName] = useState(initial?.name ?? "");
-  const [email, setEmail] = useState(initial?.email ?? "");
+function AccountStep({ onContinue }: { onContinue: (account: AccountRecord) => void }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmedName = name.trim();
     const trimmedEmail = email.trim();
@@ -127,7 +123,7 @@ function AccountStep({ initial, onContinue }: {
       nextErrors.email = "Please enter your email.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       nextErrors.email = "Enter a valid email address.";
-    } else if (isEmailTaken(trimmedEmail)) {
+    } else if (isEmailRegistered(trimmedEmail)) {
       nextErrors.email = "An account with this email already exists.";
     }
 
@@ -140,8 +136,10 @@ function AccountStep({ initial, onContinue }: {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    registerEmail(trimmedEmail);
-    onContinue({ name: trimmedName, email: trimmedEmail });
+    setSubmitting(true);
+    const account = await createAccount(trimmedName, trimmedEmail, password);
+    setSubmitting(false);
+    onContinue(account);
   }
 
   return (
@@ -168,8 +166,13 @@ function AccountStep({ initial, onContinue }: {
             {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
           </div>
         </CardContent>
-        <CardFooter>
-          <Button type="submit" className="w-full">Create account</Button>
+        <CardFooter className="flex flex-col gap-3">
+          <Button type="submit" className="w-full" disabled={submitting}>
+            {submitting ? "Creating account…" : "Create account"}
+          </Button>
+          <Link to="/signin" className="text-sm text-center" style={{ color: "var(--muted-foreground)" }}>
+            Already have an account? Sign in
+          </Link>
         </CardFooter>
       </form>
     </Card>
@@ -177,9 +180,8 @@ function AccountStep({ initial, onContinue }: {
 }
 
 // ── Step: Sessions ────────────────────────────────────────────────
-function SessionsStep({ initial, onBack, onContinue }: {
+function SessionsStep({ initial, onContinue }: {
   initial?: OnboardingSession;
-  onBack: () => void;
   onContinue: (session: OnboardingSession) => void;
 }) {
   const [duration, setDuration] = useState<number | null>(initial?.duration ?? null);
@@ -199,7 +201,6 @@ function SessionsStep({ initial, onBack, onContinue }: {
       title="Sessions"
       explanation="A session is a focused block of time you set aside for one task, with music and ambience tuned to help you concentrate."
       prompt={prompt}
-      onBack={onBack}
       onContinue={handleContinue}
     >
       <div className="space-y-1.5">
@@ -313,7 +314,7 @@ function MusicStep({ initial, onBack, onContinue }: {
   return (
     <StepShell
       title="Music"
-      explanation="Music sets the mood for a session. Choose a genre or playlist, or go with no music at all."
+      explanation="Music sets the mood for a session — pick a focus soundscape, or go with no music at all."
       prompt={prompt}
       onBack={onBack}
       onContinue={handleContinue}
@@ -355,21 +356,19 @@ function StreaksStep({ initial, onBack, onContinue }: {
 }
 
 // ── Step: Done ────────────────────────────────────────────────────
-function DoneStep({ state, onFinish }: { state: OnboardingState; onFinish: () => void }) {
+function DoneStep({ account, onFinish }: { account: AccountRecord; onFinish: () => void }) {
   return (
     <Card className="w-full max-w-md text-center">
       <CardHeader>
-        <CardTitle className="font-display text-xl">
-          You're all set{state.account?.name ? `, ${state.account.name}` : ""}!
-        </CardTitle>
+        <CardTitle className="font-display text-xl">You're all set, {account.name}!</CardTitle>
         <CardDescription>Here's what you've set up for your first session.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 text-left text-sm">
-        {state.session && <p><span className="text-muted-foreground">Session:</span> {state.session.duration}m of {state.session.type}</p>}
-        {state.project && <p><span className="text-muted-foreground">Project:</span> {state.project.name}</p>}
-        {state.task && <p><span className="text-muted-foreground">Task:</span> {state.task.title}</p>}
-        {state.music && <p><span className="text-muted-foreground">Music:</span> {state.music.option}</p>}
-        {state.streak && <p><span className="text-muted-foreground">Daily goal:</span> {state.streak.goal}</p>}
+        {account.session && <p><span className="text-muted-foreground">Session:</span> {account.session.duration}m of {account.session.type}</p>}
+        {account.project && <p><span className="text-muted-foreground">Project:</span> {account.project.name}</p>}
+        {account.task && <p><span className="text-muted-foreground">Task:</span> {account.task.title}</p>}
+        {account.music && <p><span className="text-muted-foreground">Music:</span> {account.music.option}</p>}
+        {account.streak && <p><span className="text-muted-foreground">Daily goal:</span> {account.streak.goal}</p>}
       </CardContent>
       <CardFooter>
         <Button className="w-full" onClick={onFinish}>Get Started</Button>
@@ -379,57 +378,51 @@ function DoneStep({ state, onFinish }: { state: OnboardingState; onFinish: () =>
 }
 
 // ── Onboarding flow ───────────────────────────────────────────────
-export default function Onboarding({ onComplete }: { onComplete: () => void }) {
-  const [state, setState] = useState<OnboardingState>(() => getOnboardingState());
+export default function Onboarding({ account, onAccountChange }: {
+  account?: AccountRecord;
+  onAccountChange: (account: AccountRecord) => void;
+}) {
+  const step: OnboardingStep | "account" = account ? account.onboardingStep : "account";
+  const activeIndex = account ? STEP_ORDER.indexOf(account.onboardingStep) : -1;
 
-  function advance(partial: Partial<OnboardingState>, nextStep: OnboardingStep) {
-    setState(prev => {
-      const updated = { ...prev, ...partial, step: nextStep };
-      saveOnboardingState(updated);
-      return updated;
-    });
+  function advance(partial: Partial<AccountRecord>, nextStep: OnboardingStep) {
+    if (!account) return;
+    onAccountChange(updateAccount(account.email, { ...partial, onboardingStep: nextStep }));
   }
 
-  function goTo(step: OnboardingStep) {
-    setState(prev => {
-      const updated = { ...prev, step };
-      saveOnboardingState(updated);
-      return updated;
-    });
+  function goTo(prevStep: OnboardingStep) {
+    if (!account) return;
+    onAccountChange(updateAccount(account.email, { onboardingStep: prevStep }));
   }
 
   function handleFinish() {
-    const updated = { ...state, completed: true, step: "done" as const };
-    saveOnboardingState(updated);
-    setState(updated);
-    onComplete();
+    if (!account) return;
+    onAccountChange(updateAccount(account.email, { onboardingCompleted: true, onboardingStep: "done" }));
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
-        <ProgressDots step={state.step} />
+        <ProgressDots activeIndex={activeIndex} />
       </div>
 
-      {state.step === "account" && (
-        <AccountStep initial={state.account} onContinue={account => advance({ account }, "sessions")} />
+      {step === "account" && <AccountStep onContinue={onAccountChange} />}
+      {account && step === "sessions" && (
+        <SessionsStep initial={account.session} onContinue={session => advance({ session }, "projects")} />
       )}
-      {state.step === "sessions" && (
-        <SessionsStep initial={state.session} onBack={() => goTo("account")} onContinue={session => advance({ session }, "projects")} />
+      {account && step === "projects" && (
+        <ProjectsStep initial={account.project} onBack={() => goTo("sessions")} onContinue={project => advance({ project }, "tasks")} />
       )}
-      {state.step === "projects" && (
-        <ProjectsStep initial={state.project} onBack={() => goTo("sessions")} onContinue={project => advance({ project }, "tasks")} />
+      {account && step === "tasks" && (
+        <TasksStep project={account.project} initial={account.task} onBack={() => goTo("projects")} onContinue={task => advance({ task }, "music")} />
       )}
-      {state.step === "tasks" && (
-        <TasksStep project={state.project} initial={state.task} onBack={() => goTo("projects")} onContinue={task => advance({ task }, "music")} />
+      {account && step === "music" && (
+        <MusicStep initial={account.music} onBack={() => goTo("tasks")} onContinue={music => advance({ music }, "streaks")} />
       )}
-      {state.step === "music" && (
-        <MusicStep initial={state.music} onBack={() => goTo("tasks")} onContinue={music => advance({ music }, "streaks")} />
+      {account && step === "streaks" && (
+        <StreaksStep initial={account.streak} onBack={() => goTo("music")} onContinue={streak => advance({ streak }, "done")} />
       )}
-      {state.step === "streaks" && (
-        <StreaksStep initial={state.streak} onBack={() => goTo("music")} onContinue={streak => advance({ streak }, "done")} />
-      )}
-      {state.step === "done" && <DoneStep state={state} onFinish={handleFinish} />}
+      {account && step === "done" && <DoneStep account={account} onFinish={handleFinish} />}
     </div>
   );
 }
