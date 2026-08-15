@@ -1,0 +1,1996 @@
+{
+ "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.24.0\",\"stackType\":\"custom\",\"metadata\":{}}",
+ "Resources": {
+  "FocusFlowRestApiFCD56347": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Name": "focus-flow-api",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Resource"
+   }
+  },
+  "FocusFlowRestApiCloudWatchRoleA6628433": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "apigateway.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/CloudWatchRole/Resource"
+   }
+  },
+  "FocusFlowRestApiAccount1D28D34F": {
+   "Type": "AWS::ApiGateway::Account",
+   "Properties": {
+    "CloudWatchRoleArn": {
+     "Fn::GetAtt": [
+      "FocusFlowRestApiCloudWatchRoleA6628433",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "FocusFlowRestApiFCD56347"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Account"
+   }
+  },
+  "FocusFlowRestApiDeployment27C50ED9af2c5da4b3919a0e976da63873c679e1": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "Automatically created by the RestApi construct",
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "DependsOn": [
+    "FocusFlowRestApiaudiofilesaudioFileIdGETA992E2A6",
+    "FocusFlowRestApiaudiofilesaudioFileIdOPTIONSFEFE1D4A",
+    "FocusFlowRestApiaudiofilesaudioFileIdPATCH48908DCE",
+    "FocusFlowRestApiaudiofilesaudioFileId3185E0B6",
+    "FocusFlowRestApiaudiofilesGET38F87FB8",
+    "FocusFlowRestApiaudiofilesOPTIONSFC1E8FF0",
+    "FocusFlowRestApiaudiofilesPOSTA4F62B6D",
+    "FocusFlowRestApiaudiofilesEA4653EC",
+    "FocusFlowRestApiOPTIONS8C532DE3",
+    "FocusFlowRestApiplaylistsplaylistIdGET44478EF0",
+    "FocusFlowRestApiplaylistsplaylistIdOPTIONS6E54757E",
+    "FocusFlowRestApiplaylistsplaylistIdPATCHA4850538",
+    "FocusFlowRestApiplaylistsplaylistId2C778709",
+    "FocusFlowRestApiplaylistsdefaultGET1848193D",
+    "FocusFlowRestApiplaylistsdefaultOPTIONSC9D69415",
+    "FocusFlowRestApiplaylistsdefault8FA9C5F7",
+    "FocusFlowRestApiplaylistsGET4B162494",
+    "FocusFlowRestApiplaylistsOPTIONS3F1FDCB6",
+    "FocusFlowRestApiplaylistsPOST3155E341",
+    "FocusFlowRestApiplaylistsBF3E9429"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Deployment/Resource",
+    "aws:cdk:do-not-refactor": true
+   }
+  },
+  "FocusFlowRestApiDeploymentStageapi35F23768": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "FocusFlowRestApiDeployment27C50ED9af2c5da4b3919a0e976da63873c679e1"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    },
+    "StageName": "api",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "DependsOn": [
+    "FocusFlowRestApiAccount1D28D34F"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/DeploymentStage.api/Resource"
+   }
+  },
+  "FocusFlowRestApiOPTIONS8C532DE3": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PATCH,OPTIONS'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Fn::GetAtt": [
+      "FocusFlowRestApiFCD56347",
+      "RootResourceId"
+     ]
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/OPTIONS/Resource"
+   }
+  },
+  "FocusFlowRestApiaudiofilesEA4653EC": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "FocusFlowRestApiFCD56347",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "audio-files",
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/Resource"
+   }
+  },
+  "FocusFlowRestApiaudiofilesOPTIONSFC1E8FF0": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PATCH,OPTIONS'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiaudiofilesEA4653EC"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/OPTIONS/Resource"
+   }
+  },
+  "FocusFlowRestApiaudiofilesGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETaudiofiles104D0994": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/GET/audio-files"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..audio-files"
+   }
+  },
+  "FocusFlowRestApiaudiofilesGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETaudiofiles36C1A9AA": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/GET/audio-files"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..audio-files"
+   }
+  },
+  "FocusFlowRestApiaudiofilesGET38F87FB8": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiaudiofilesEA4653EC"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/GET/Resource"
+   }
+  },
+  "FocusFlowRestApiaudiofilesPOSTApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTaudiofilesF5705EF6": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/POST/audio-files"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/POST/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..audio-files"
+   }
+  },
+  "FocusFlowRestApiaudiofilesPOSTApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTaudiofiles7C888C30": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/POST/audio-files"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/POST/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..audio-files"
+   }
+  },
+  "FocusFlowRestApiaudiofilesPOSTA4F62B6D": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "FocusFlowAuthorizer0EA7C201"
+    },
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiaudiofilesEA4653EC"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/POST/Resource"
+   }
+  },
+  "FocusFlowRestApiaudiofilesaudioFileId3185E0B6": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "FocusFlowRestApiaudiofilesEA4653EC"
+    },
+    "PathPart": "{audioFileId}",
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/Resource"
+   }
+  },
+  "FocusFlowRestApiaudiofilesaudioFileIdOPTIONSFEFE1D4A": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PATCH,OPTIONS'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiaudiofilesaudioFileId3185E0B6"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/OPTIONS/Resource"
+   }
+  },
+  "FocusFlowRestApiaudiofilesaudioFileIdGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETaudiofilesaudioFileIdF95853BE": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/GET/audio-files/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..audio-files.{audioFileId}"
+   }
+  },
+  "FocusFlowRestApiaudiofilesaudioFileIdGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETaudiofilesaudioFileId8114A24D": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/GET/audio-files/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..audio-files.{audioFileId}"
+   }
+  },
+  "FocusFlowRestApiaudiofilesaudioFileIdGETA992E2A6": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiaudiofilesaudioFileId3185E0B6"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/GET/Resource"
+   }
+  },
+  "FocusFlowRestApiaudiofilesaudioFileIdPATCHApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHaudiofilesaudioFileIdCAE1F11F": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/PATCH/audio-files/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/PATCH/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..audio-files.{audioFileId}"
+   }
+  },
+  "FocusFlowRestApiaudiofilesaudioFileIdPATCHApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHaudiofilesaudioFileIdC4ACBE2B": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/PATCH/audio-files/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/PATCH/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..audio-files.{audioFileId}"
+   }
+  },
+  "FocusFlowRestApiaudiofilesaudioFileIdPATCH48908DCE": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "FocusFlowAuthorizer0EA7C201"
+    },
+    "HttpMethod": "PATCH",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiaudiofilesaudioFileId3185E0B6"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/PATCH/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsBF3E9429": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "FocusFlowRestApiFCD56347",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "playlists",
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsOPTIONS3F1FDCB6": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PATCH,OPTIONS'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiplaylistsBF3E9429"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/OPTIONS/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylists7F298B62": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/GET/playlists"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists"
+   }
+  },
+  "FocusFlowRestApiplaylistsGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylists54260C74": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/GET/playlists"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists"
+   }
+  },
+  "FocusFlowRestApiplaylistsGET4B162494": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiplaylistsBF3E9429"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/GET/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsPOSTApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTplaylists1A69E996": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/POST/playlists"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/POST/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..playlists"
+   }
+  },
+  "FocusFlowRestApiplaylistsPOSTApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTplaylists44BC5955": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/POST/playlists"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/POST/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..playlists"
+   }
+  },
+  "FocusFlowRestApiplaylistsPOST3155E341": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "FocusFlowAuthorizer0EA7C201"
+    },
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiplaylistsBF3E9429"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/POST/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsdefault8FA9C5F7": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "FocusFlowRestApiplaylistsBF3E9429"
+    },
+    "PathPart": "default",
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsdefaultOPTIONSC9D69415": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PATCH,OPTIONS'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiplaylistsdefault8FA9C5F7"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/OPTIONS/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsdefaultGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylistsdefaultB9A99C9E": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/GET/playlists/default"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists.default"
+   }
+  },
+  "FocusFlowRestApiplaylistsdefaultGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylistsdefault187280A3": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/GET/playlists/default"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists.default"
+   }
+  },
+  "FocusFlowRestApiplaylistsdefaultGET1848193D": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiplaylistsdefault8FA9C5F7"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/GET/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsplaylistId2C778709": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "FocusFlowRestApiplaylistsBF3E9429"
+    },
+    "PathPart": "{playlistId}",
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsplaylistIdOPTIONS6E54757E": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PATCH,OPTIONS'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiplaylistsplaylistId2C778709"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/OPTIONS/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsplaylistIdGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylistsplaylistId081DD7DA": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/GET/playlists/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists.{playlistId}"
+   }
+  },
+  "FocusFlowRestApiplaylistsplaylistIdGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylistsplaylistId60BE5861": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/GET/playlists/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists.{playlistId}"
+   }
+  },
+  "FocusFlowRestApiplaylistsplaylistIdGET44478EF0": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiplaylistsplaylistId2C778709"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/GET/Resource"
+   }
+  },
+  "FocusFlowRestApiplaylistsplaylistIdPATCHApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHplaylistsplaylistIdB2D335F4": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/PATCH/playlists/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/PATCH/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..playlists.{playlistId}"
+   }
+  },
+  "FocusFlowRestApiplaylistsplaylistIdPATCHApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHplaylistsplaylistId2A685950": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/PATCH/playlists/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/PATCH/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..playlists.{playlistId}"
+   }
+  },
+  "FocusFlowRestApiplaylistsplaylistIdPATCHA4850538": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "FocusFlowAuthorizer0EA7C201"
+    },
+    "HttpMethod": "PATCH",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApiplaylistsplaylistId2C778709"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/PATCH/Resource"
+   }
+  },
+  "FocusFlowAuthorizer0EA7C201": {
+   "Type": "AWS::ApiGateway::Authorizer",
+   "Properties": {
+    "IdentitySource": "method.request.header.Authorization",
+    "Name": "amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowAuthorizerF7E7F2D7",
+    "ProviderARNs": [
+     {
+      "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671authNestedStackauthNestedStackResource72674CCCOutputsamplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BArn"
+     }
+    ],
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    },
+    "Type": "COGNITO_USER_POOLS"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowAuthorizer/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02OwU7DMAyGn2X3NKBM4l7GFZg6cUZe43XekriKHapR9d1RaUE7+fv/T5btrHva2scNDFK1/loFOtrxDUXRHxTaq4FBPkfoqQPFAW52bFC07snsTukO67blktS8YB/4FjHp3N6lg0KHc7dAg8Ilt/gMguYV9cx+liv92fXIytwlUv4QzHvmIHXRM2f6xvz7wH+aDEG0Y8Nh2eeAkwkQjx7s7pT2mCOJEKdp1u9F+6KTSezRXuThyznrttZtLkJU5ZKUItpmmT//O9aoLgEAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "FocusFlowRestApiEndpoint2E4CCBEC": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "FocusFlowRestApiFCD56347"
+      },
+      ".execute-api.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi88AFA0A8Ref": {
+   "Value": {
+    "Ref": "FocusFlowRestApiFCD56347"
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApiDeploymentStageapiA6E14F74Ref": {
+   "Value": {
+    "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+   }
+  }
+ },
+ "Conditions": {
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Parameters": {
+  "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn": {
+   "Type": "String"
+  },
+  "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn": {
+   "Type": "String"
+  },
+  "referencetoamplifymyappAdjunctsandbox2582cd4671authNestedStackauthNestedStackResource72674CCCOutputsamplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BArn": {
+   "Type": "String"
+  }
+ }
+}
