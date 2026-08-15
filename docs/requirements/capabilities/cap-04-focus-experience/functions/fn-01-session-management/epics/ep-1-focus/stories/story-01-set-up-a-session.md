@@ -4,19 +4,34 @@
 
 **As a** User,
 **I want** to set up a session
-**so that** I can choose my duration, objective, project, and task before I start focusing.
+**so that** I can choose my duration, objective, and task before I start focusing.
 
 ## Acceptance Criteria
 
-- Duration options include 25, 45, 60, 90 minutes, or Custom
-- User can optionally link the session to an existing project and task
+- Session length can be chosen from 25, 45, 60, or 90 minutes, or set to a custom length
 
-## Given / When / Then
+  **Given** a user is setting up a new session
+  **When** they choose 45 minutes as the session length
+  **Then** the session is set to run for 45 minutes.
 
-**Given** a user is on the session setup screen
-**When** they select "45 minutes" as the duration
-**Then** the session timer is configured to count down from 45 minutes.
+  **Given** a user is setting up a new session
+  **When** they choose a custom length and enter their own number of minutes
+  **Then** the session is set to run for the length they entered.
 
-**Given** the user has pre-existing projects and tasks saved in their profile.
-**When** they configure a new session and select a specific project and task from the dropdowns.
-**Then** the session configuration associates itself with that project and task ID.
+- An objective can be recorded for the session
+
+  **Given** a user is setting up a new session
+  **When** they enter what they want to accomplish during the session
+  **Then** that objective is saved with the session and shown back to them before they start.
+
+- A task can be named for the session
+
+  **Given** a user is setting up a new session
+  **When** they name the task they will be working on
+  **Then** that task is saved with the session and shown back to them before they start.
+
+- A session cannot be created until a length, an objective, and a task have been provided
+
+  **Given** a user has not yet provided a session length, an objective, and a task
+  **When** they attempt to create the session
+  **Then** the session is not created and they are told what is still missing.

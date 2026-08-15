@@ -1,0 +1,749 @@
+{
+ "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.18.2\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+ "Resources": {
+  "audiofileslambdaServiceRole4E9B6309": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "audio-files"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/audio-files-lambda/ServiceRole/Resource"
+   }
+  },
+  "audiofileslambdaServiceRoleDefaultPolicyE685917E": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DArn"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DArn"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FArn"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FArn"
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "audiofileslambdaServiceRoleDefaultPolicyE685917E",
+    "Roles": [
+     {
+      "Ref": "audiofileslambdaServiceRole4E9B6309"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/audio-files-lambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "audiofileslambda980FDE60": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "x86_64"
+    ],
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "b3ab6e25f8275636b22a2920b23bff1b5d55f91776fed7a4ac2ea0331c546bf9.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AMPLIFY_SSM_ENV_CONFIG": "{}",
+      "AUDIO_FILE_TABLE": {
+       "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DRef"
+      },
+      "AUDIO_BUCKET": {
+       "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FRef"
+      }
+     }
+    },
+    "EphemeralStorage": {
+     "Size": 512
+    },
+    "Handler": "index.handler",
+    "MemorySize": 512,
+    "Role": {
+     "Fn::GetAtt": [
+      "audiofileslambdaServiceRole4E9B6309",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs22.x",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "audio-files"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "audiofileslambdaServiceRoleDefaultPolicyE685917E",
+    "audiofileslambdaServiceRole4E9B6309"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/audio-files-lambda/Resource",
+    "aws:asset:path": "asset.b3ab6e25f8275636b22a2920b23bff1b5d55f91776fed7a4ac2ea0331c546bf9",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "playlistslambdaServiceRoleD9EB3CAB": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "playlists"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/playlists-lambda/ServiceRole/Resource"
+   }
+  },
+  "playlistslambdaServiceRoleDefaultPolicyD3BB523D": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Arn"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Arn"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DArn"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DArn"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FArn"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FArn"
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "playlistslambdaServiceRoleDefaultPolicyD3BB523D",
+    "Roles": [
+     {
+      "Ref": "playlistslambdaServiceRoleD9EB3CAB"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/playlists-lambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "playlistslambda83C94385": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "x86_64"
+    ],
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "2330108486725e60baa9e30d60d1c2099d47f7109cebd21f8a5e398bfb4ca834.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AMPLIFY_SSM_ENV_CONFIG": "{}",
+      "PLAYLIST_TABLE": {
+       "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Ref"
+      },
+      "AUDIO_FILE_TABLE": {
+       "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DRef"
+      },
+      "AUDIO_BUCKET": {
+       "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FRef"
+      }
+     }
+    },
+    "EphemeralStorage": {
+     "Size": 512
+    },
+    "Handler": "index.handler",
+    "MemorySize": 512,
+    "Role": {
+     "Fn::GetAtt": [
+      "playlistslambdaServiceRoleD9EB3CAB",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs22.x",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "playlists"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "playlistslambdaServiceRoleDefaultPolicyD3BB523D",
+    "playlistslambdaServiceRoleD9EB3CAB"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/playlists-lambda/Resource",
+    "aws:asset:path": "asset.2330108486725e60baa9e30d60d1c2099d47f7109cebd21f8a5e398bfb4ca834",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zWNwQqDMBBEv8X7ui0J9F6FHkvRD5A1WSUaE+jGShH/vaj09GZgeKNQ3TReM1okN3bMvWtxfbIktnUiMwIt0qyeptZSE6LlQfB54DEHk1wM4GjCtYqeoezCwVf0znz3eqYNRDckwknwvgNEYzGbkVNBwnDqsezCX7rBsasT9S70G+zPOMjloxQqjSobxLn8PYfkJsbq5A/K0S9GzAAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Conditions": {
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Parameters": {
+  "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DArn": {
+   "Type": "String"
+  },
+  "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FArn": {
+   "Type": "String"
+  },
+  "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DRef": {
+   "Type": "String"
+  },
+  "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FRef": {
+   "Type": "String"
+  },
+  "referencetoamplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Arn": {
+   "Type": "String"
+  },
+  "referencetoamplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Ref": {
+   "Type": "String"
+  }
+ },
+ "Outputs": {
+  "amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Ref": {
+   "Value": {
+    "Ref": "audiofileslambda980FDE60"
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Ref": {
+   "Value": {
+    "Ref": "playlistslambda83C94385"
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "audiofileslambda980FDE60",
+     "Arn"
+    ]
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "playlistslambda83C94385",
+     "Arn"
+    ]
+   }
+  }
+ }
+}

@@ -15,3 +15,4 @@ A designer authors the default playlist so that when a new customer enters the e
 ## Stories
 
 - [story-01-designer-creates-a-playlist](stories/story-01-designer-creates-a-playlist.md)
+- [story-02-add-audio-files](stories/story-02-add-audio-files.md)
