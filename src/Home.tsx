@@ -1,6 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Rain from "../components/Rain";
+import { isOnboardingComplete } from "./lib/onboarding";
 
 
 // ─── App ───────────────────────────────────────────────────────────────────────
@@ -86,7 +87,7 @@ export default function Home() {
 
         {/* cta */}
         <button
-          onClick={() => navigate("/dash")}
+          onClick={() => navigate(isOnboardingComplete() ? "/dash" : "/onboarding")}
           className="mt-2 flex items-center gap-2.5 px-8 py-3.5 rounded-full text-sm font-medium transition-all duration-200 hover:brightness-110 active:scale-95"
           style={{
             background: "#C8924A",

@@ -5,6 +5,7 @@ import {
   Flame, Target, ChevronRight, Check, ArrowRight,
   Clock, TrendingUp, Plus, Upload, X, ListMusic,
 } from "lucide-react";
+import { getOnboardingState } from "./lib/onboarding";
 
 // ── Types ──────────────────────────────────────────────────────
 type Nav = "home" | "focus" | "music" | "sounds" | "analytics" | "themes";
@@ -301,7 +302,7 @@ const INIT_TASKS: Task[] = [
 const HEATMAP = generateHeatmap();
 
 // ── Sidebar ────────────────────────────────────────────────────
-function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => void; theme: AppTheme }) {
+function Sidebar({ active, onNav, theme, name }: { active: Nav; onNav: (n: Nav) => void; theme: AppTheme; name: string }) {
   const items: { id: Nav; icon: ElementType; label: string }[] = [
     { id: "home", icon: Home, label: "Home" },
     { id: "focus", icon: Timer, label: "Focus" },
@@ -365,10 +366,10 @@ function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => voi
             className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
             style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})` }}
           >
-            A
+            {name[0]?.toUpperCase() ?? "A"}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate" style={{ color: theme.foreground }}>Alex</p>
+            <p className="text-sm font-semibold truncate" style={{ color: theme.foreground }}>{name}</p>
             <p className="text-xs" style={{ color: theme.mutedFg }}>Score: 89 · 🔥 12</p>
           </div>
         </div>
@@ -383,11 +384,13 @@ function HomeView({
   tasks,
   onToggleTask,
   theme,
+  name,
 }: {
   onStartFocus: () => void;
   tasks: Task[];
   onToggleTask: (id: number) => void;
   theme: AppTheme;
+  name: string;
 }) {
   const tod = getTimeOfDay();
   const cfg = TOD[tod];
@@ -408,7 +411,7 @@ function HomeView({
           <div>
             <p className="text-xs uppercase tracking-widest font-data mb-2" style={{ color: `${theme.foreground}40` }}>{day}</p>
             <h1 className="font-display text-3xl font-bold mb-2" style={{ color: theme.foreground }}>
-              {cfg.icon} {cfg.label} vibes, Alex.
+              {cfg.icon} {cfg.label} vibes, {name}.
             </h1>
             <p className="text-sm italic max-w-sm" style={{ color: `${theme.foreground}50` }}>"{cfg.quote}"</p>
           </div>
@@ -585,11 +588,18 @@ function HomeView({
 }
 
 // ── Focus Setup ────────────────────────────────────────────────
-function FocusSetupView({ onBegin, theme }: { onBegin: (cfg: FocusConfig) => void; theme: AppTheme }) {
-  const [duration, setDuration] = useState(45);
+function FocusSetupView({
+  onBegin, theme, defaultDuration = 45, defaultObjective = "Coding",
+}: {
+  onBegin: (cfg: FocusConfig) => void;
+  theme: AppTheme;
+  defaultDuration?: number;
+  defaultObjective?: string;
+}) {
+  const [duration, setDuration] = useState(defaultDuration);
   const [music, setMusic] = useState("Coding");
   const [ambience, setAmbience] = useState("Rain");
-  const [objective, setObjective] = useState("Coding");
+  const [objective, setObjective] = useState(defaultObjective);
 
   const durations = [25, 45, 60, 90];
   const musicOpts = ["Coding", "Writing", "Math", "Reading", "Creative", "Exam Prep"];
@@ -1469,13 +1479,21 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
 
 // ── App ────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const [onboarding] = useState(() => getOnboardingState());
   const [nav, setNav] = useState<Nav>("home");
   const [phase, setPhase] = useState<FocusPhase>("idle");
   const [focusConfig, setFocusConfig] = useState<FocusConfig | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [totalSeconds, setTotalSeconds] = useState(0);
-  const [tasks, setTasks] = useState(INIT_TASKS);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    if (!onboarding.task?.title) return INIT_TASKS;
+    const text = onboarding.project?.name
+      ? `${onboarding.task.title} — ${onboarding.project.name}`
+      : onboarding.task.title;
+    return [{ id: 0, text, done: false }, ...INIT_TASKS];
+  });
   const [activeThemeId, setActiveThemeId] = useState("focusflow");
+  const displayName = onboarding.account?.name || "Alex";
 
   // ── Playlist & audio ──
   const [playlist, setPlaylist] = useState<Track[]>([]);
@@ -1662,16 +1680,16 @@ export default function Dashboard() {
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ ...themeVars, background: theme.background, color: theme.foreground, fontFamily: "'Outfit', system-ui, sans-serif" }}>
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar active={nav} onNav={handleNav} theme={theme} />
+        <Sidebar active={nav} onNav={handleNav} theme={theme} name={displayName} />
         <main className="flex-1 overflow-y-auto scrollbar-hide" style={{ background: theme.background }}>
           {nav === "home" && (
-            <HomeView onStartFocus={() => { setNav("focus"); setPhase("setup"); }} tasks={tasks} onToggleTask={toggleTask} theme={theme} />
+            <HomeView onStartFocus={() => { setNav("focus"); setPhase("setup"); }} tasks={tasks} onToggleTask={toggleTask} theme={theme} name={displayName} />
           )}
           {nav === "focus" && phase === "setup" && (
-            <FocusSetupView onBegin={handleBegin} theme={theme} />
+            <FocusSetupView onBegin={handleBegin} theme={theme} defaultDuration={onboarding.session?.duration} defaultObjective={onboarding.session?.type} />
           )}
           {nav === "focus" && phase === "idle" && (
-            <FocusSetupView onBegin={handleBegin} theme={theme} />
+            <FocusSetupView onBegin={handleBegin} theme={theme} defaultDuration={onboarding.session?.duration} defaultObjective={onboarding.session?.type} />
           )}
           {nav === "focus" && phase === "active" && focusConfig && (
             <ActiveSessionView config={focusConfig} secondsLeft={secondsLeft} totalSeconds={totalSeconds} onEnd={handleEnd} theme={theme} />
