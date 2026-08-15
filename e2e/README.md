@@ -63,12 +63,13 @@ console window on Windows and swallows it. Unit tests (`jest`) run the same way.
 If no sandbox has been deployed, every browser spec **skips** with a reason instead of failing.
 
 Overrides: `E2E_BASE_URL` (defaults to `http://localhost:5173`), `E2E_EMAIL` / `E2E_PASSWORD`,
-`E2E_AUDIO_FILE_TABLE` (see below).
+`E2E_AUDIO_FILE_TABLE` and `E2E_PLAYLIST_TABLE` (see below).
 
 ## What is covered
 
 | Spec | Story |
 |---|---|
+| `specs/playlists/designer-creates-a-playlist.e2e.spec.ts` | S-1.3.1 — [Designer Creates a Playlist](../docs/requirements/capabilities/cap-01-platform-foundation/functions/fn-01-platform-deployment/epics/ep-3-default-playlist/stories/story-01-designer-creates-a-playlist.md) |
 | `specs/playlists/add-audio-files.e2e.spec.ts` | S-1.3.2 — [Add Audio Files](../docs/requirements/capabilities/cap-01-platform-foundation/functions/fn-01-platform-deployment/epics/ep-3-default-playlist/stories/story-02-add-audio-files.md) |
 
 Each `test(...)` title is one acceptance criterion, and its body is that criterion's
@@ -78,15 +79,19 @@ Given/When/Then, in order.
 
 - **Accounts** created by a test are made confirmed through Cognito and **disabled** (never
   deleted) afterwards. An account supplied through `E2E_EMAIL` is left alone entirely.
-- **Audio files have no delete endpoint**, so teardown cannot remove what a run adds through the
-  product. Added audio stays in the sandbox; specs stay reliable because temporal isolation gives
-  every run its own names, and assertions only ever look at the run's own rows.
-- To get complete teardown in the meantime, set `E2E_AUDIO_FILE_TABLE` to the sandbox's audio
-  file table name. Teardown then deletes the rows it created and their stored files directly.
-  It is opt-in on purpose: naming the table is the developer's confirmation of which environment
-  may be written to.
-- A `DELETE /audio-files/{audioFileId}` endpoint would remove the need for that variable
-  altogether, and would let cleanup go through the product like every other step.
+- **Audio files and playlists have no delete endpoint**, so teardown cannot remove what a run adds
+  through the product. What is added stays in the sandbox; specs stay reliable because temporal
+  isolation gives every run its own names, and assertions only ever look at the run's own rows.
+- To get complete teardown in the meantime, set `E2E_AUDIO_FILE_TABLE` and `E2E_PLAYLIST_TABLE` to
+  the sandbox's table names. Teardown then deletes the rows it created and their stored files
+  directly. It is opt-in on purpose: naming a table is the developer's confirmation of which
+  environment may be written to.
+- One playlist is the default that greets every arrival, and a run that marks its own playlist as
+  the default leaves it that way. The next run simply marks its own, so this only affects who is
+  greeted by what in the sandbox.
+- `DELETE /audio-files/{audioFileId}` and `DELETE /playlists/{playlistId}` endpoints would remove
+  the need for those variables altogether, and would let cleanup go through the product like every
+  other step.
 
 ## Notes
 

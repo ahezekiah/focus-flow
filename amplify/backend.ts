@@ -10,8 +10,9 @@ import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
 import { auth } from "./auth/resource";
 import { storage } from "./storage/resource";
 import { audioFiles } from "./functions/audio-files/resource";
+import { playlists } from "./functions/playlists/resource";
 
-const backend = defineBackend({ auth, storage, audioFiles });
+const backend = defineBackend({ auth, storage, audioFiles, playlists });
 
 const apiStack = backend.createStack("FocusFlowApi");
 
@@ -21,14 +22,29 @@ const audioFileTable = new Table(backend.stack, "AudioFileTable", {
   billingMode: BillingMode.PAY_PER_REQUEST,
 });
 
+const playlistTable = new Table(backend.stack, "PlaylistTable", {
+  partitionKey: { name: "id", type: AttributeType.STRING },
+  billingMode: BillingMode.PAY_PER_REQUEST,
+});
+
 const bucket = backend.storage.resources.bucket;
 const audioFilesLambda = backend.audioFiles.resources.lambda;
+const playlistsLambda = backend.playlists.resources.lambda;
 
 backend.audioFiles.addEnvironment("AUDIO_FILE_TABLE", audioFileTable.tableName);
 backend.audioFiles.addEnvironment("AUDIO_BUCKET", bucket.bucketName);
 
 audioFileTable.grantReadWriteData(audioFilesLambda);
 bucket.grantReadWrite(audioFilesLambda);
+
+// A playlist names audio files it does not own, so it only ever reads them.
+backend.playlists.addEnvironment("PLAYLIST_TABLE", playlistTable.tableName);
+backend.playlists.addEnvironment("AUDIO_FILE_TABLE", audioFileTable.tableName);
+backend.playlists.addEnvironment("AUDIO_BUCKET", bucket.bucketName);
+
+playlistTable.grantReadWriteData(playlistsLambda);
+audioFileTable.grantReadData(playlistsLambda);
+bucket.grantRead(playlistsLambda);
 
 // ── REST API ───────────────────────────────────────────────────
 const api = new RestApi(apiStack, "FocusFlowRestApi", {
@@ -45,7 +61,7 @@ const cognitoAuthorizer = new CognitoUserPoolsAuthorizer(apiStack, "FocusFlowAut
   cognitoUserPools: [backend.auth.resources.userPool],
 });
 
-/** Adding or changing an audio file requires a signed-in user. */
+/** Adding or changing an audio file or a playlist requires a signed-in user. */
 const signedIn = {
   authorizationType: AuthorizationType.COGNITO,
   authorizer: cognitoAuthorizer,
@@ -62,6 +78,21 @@ audioFilesResource.addMethod("POST", integration, signedIn);
 const audioFileResource = audioFilesResource.addResource("{audioFileId}");
 audioFileResource.addMethod("GET", integration);
 audioFileResource.addMethod("PATCH", integration, signedIn);
+
+const playlistIntegration = new LambdaIntegration(playlistsLambda);
+
+// /playlists — playlists are public reference data, so a visitor hears one straight away
+const playlistsResource = api.root.addResource("playlists");
+playlistsResource.addMethod("GET", playlistIntegration);
+playlistsResource.addMethod("POST", playlistIntegration, signedIn);
+
+// /playlists/default — the one playlist a new customer hears on arrival
+playlistsResource.addResource("default").addMethod("GET", playlistIntegration);
+
+// /playlists/{playlistId} — PATCH marks a playlist as the default
+const playlistResource = playlistsResource.addResource("{playlistId}");
+playlistResource.addMethod("GET", playlistIntegration);
+playlistResource.addMethod("PATCH", playlistIntegration, signedIn);
 
 // Surfaced to the frontend through amplify_outputs.json
 backend.addOutput({
