@@ -179,3 +179,20 @@
     line-height: 1.5;
   }
 }
+
+@layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  /* Falls back to the app typeface until a theme supplies its own. */
+  .font-display {
+    font-family: var(--font-display, 'Bricolage Grotesque', system-ui, sans-serif);
+  }
+  .font-data {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}

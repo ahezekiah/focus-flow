@@ -1,10 +1,13 @@
 import { ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Rain from "../components/Rain";
 
 
 // ─── App ───────────────────────────────────────────────────────────────────────
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <div
       className="min-h-screen flex items-center justify-center relative overflow-hidden"
@@ -83,6 +86,7 @@ export default function Home() {
 
         {/* cta */}
         <button
+          onClick={() => navigate("/dash")}
           className="mt-2 flex items-center gap-2.5 px-8 py-3.5 rounded-full text-sm font-medium transition-all duration-200 hover:brightness-110 active:scale-95"
           style={{
             background: "#C8924A",
