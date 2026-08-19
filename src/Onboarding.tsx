@@ -14,11 +14,13 @@ import {
   type OnboardingProject,
   type OnboardingTask,
   type OnboardingMusic,
+  type OnboardingTheme,
   type OnboardingStreak,
 } from "./lib/accounts";
+import { THEMES, THEME_ORDER } from "./lib/themes";
 
 // ── Shared step data ─────────────────────────────────────────────
-const STEP_ORDER: OnboardingStep[] = ["sessions", "projects", "tasks", "music", "streaks", "done"];
+const STEP_ORDER: OnboardingStep[] = ["sessions", "projects", "tasks", "music", "theme", "streaks", "done"];
 
 const SESSION_DURATIONS = [25, 45, 60, 90];
 const SESSION_TYPES = ["Homework", "Coding", "Essay", "Design", "Reading", "Research"];
@@ -324,6 +326,58 @@ function MusicStep({ initial, onBack, onContinue }: {
   );
 }
 
+// ── Step: Theme ───────────────────────────────────────────────────
+function ThemeStep({ initial, onBack, onContinue }: {
+  initial?: OnboardingTheme;
+  onBack: () => void;
+  onContinue: (theme: OnboardingTheme) => void;
+}) {
+  const [themeId, setThemeId] = useState<string | null>(initial?.id ?? "focusflow");
+  const [prompt, setPrompt] = useState<string | null>(null);
+
+  function handleContinue() {
+    if (!themeId) {
+      setPrompt("Pick a theme to continue.");
+      return;
+    }
+    onContinue({ id: themeId });
+  }
+
+  return (
+    <StepShell
+      title="Theme"
+      explanation="Choose the look and feel of your workspace. You can always change it later from Themes."
+      prompt={prompt}
+      onBack={onBack}
+      onContinue={handleContinue}
+    >
+      <div className="grid grid-cols-2 gap-3">
+        {THEME_ORDER.map(tid => {
+          const t = THEMES[tid];
+          const active = themeId === tid;
+          return (
+            <button
+              key={tid}
+              type="button"
+              onClick={() => setThemeId(tid)}
+              className="rounded-xl overflow-hidden text-left transition-all"
+              style={{
+                boxShadow: active ? `0 0 0 2px ${t.primary}` : `0 0 0 1px var(--border)`,
+              }}
+            >
+              <div className="h-14" style={{ background: t.greetingBg }} />
+              <div className="p-2 flex items-center gap-1.5" style={{ background: t.card }}>
+                <span className="text-sm">{t.emoji}</span>
+                <span className="text-xs font-medium truncate" style={{ color: t.foreground }}>{t.name}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </StepShell>
+  );
+}
+
 // ── Step: Streaks ─────────────────────────────────────────────────
 function StreaksStep({ initial, onBack, onContinue }: {
   initial?: OnboardingStreak;
@@ -368,6 +422,7 @@ function DoneStep({ account, onFinish }: { account: AccountRecord; onFinish: () 
         {account.project && <p><span className="text-muted-foreground">Project:</span> {account.project.name}</p>}
         {account.task && <p><span className="text-muted-foreground">Task:</span> {account.task.title}</p>}
         {account.music && <p><span className="text-muted-foreground">Music:</span> {account.music.option}</p>}
+        {account.theme && <p><span className="text-muted-foreground">Theme:</span> {THEMES[account.theme.id]?.emoji} {THEMES[account.theme.id]?.name}</p>}
         {account.streak && <p><span className="text-muted-foreground">Daily goal:</span> {account.streak.goal}</p>}
       </CardContent>
       <CardFooter>
@@ -417,10 +472,13 @@ export default function Onboarding({ account, onAccountChange }: {
         <TasksStep project={account.project} initial={account.task} onBack={() => goTo("projects")} onContinue={task => advance({ task }, "music")} />
       )}
       {account && step === "music" && (
-        <MusicStep initial={account.music} onBack={() => goTo("tasks")} onContinue={music => advance({ music }, "streaks")} />
+        <MusicStep initial={account.music} onBack={() => goTo("tasks")} onContinue={music => advance({ music }, "theme")} />
+      )}
+      {account && step === "theme" && (
+        <ThemeStep initial={account.theme} onBack={() => goTo("music")} onContinue={theme => advance({ theme }, "streaks")} />
       )}
       {account && step === "streaks" && (
-        <StreaksStep initial={account.streak} onBack={() => goTo("music")} onContinue={streak => advance({ streak }, "done")} />
+        <StreaksStep initial={account.streak} onBack={() => goTo("theme")} onContinue={streak => advance({ streak }, "done")} />
       )}
       {account && step === "done" && <DoneStep account={account} onFinish={handleFinish} />}
     </div>

@@ -37,7 +37,7 @@ function App() {
       <Route
         path="/dash"
         element={
-          completed ? <Dashboard account={account!} onSignOut={handleSignOut} />
+          completed ? <Dashboard account={account!} onSignOut={handleSignOut} onAccountChange={setAccount} />
           : signedIn ? <Navigate to="/onboarding" replace />
           : <Navigate to="/" replace />
         }
