@@ -19,11 +19,16 @@ export interface OnboardingStreak {
   goal: string;
 }
 
+export interface OnboardingTheme {
+  id: string;
+}
+
 export type OnboardingStep =
   | "sessions"
   | "projects"
   | "tasks"
   | "music"
+  | "theme"
   | "streaks"
   | "done";
 
@@ -37,6 +42,7 @@ export interface AccountRecord {
   project?: OnboardingProject;
   task?: OnboardingTask;
   music?: OnboardingMusic;
+  theme?: OnboardingTheme;
   streak?: OnboardingStreak;
 }
 
