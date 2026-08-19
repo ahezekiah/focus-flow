@@ -8,11 +8,10 @@ import {
 import { ThemeSelectionView } from "./dash/ThemeSelectionView";
 import { AudioFilesView } from "./dash/AudioFilesView";
 import { PlaylistsView } from "./dash/PlaylistsView";
-import { themeCssVars, useThemeSelection, type DashTheme } from "./dash/themes";
+import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from "./dash/themes";
 import { getDefaultPlaylist, type AudioFile, type Playlist } from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
-import { THEMES, THEME_ORDER, type AppTheme } from "./lib/themes";
 
 // ── Types ──────────────────────────────────────────────────────
 type Nav = "home" | "focus" | "music" | "audio" | "playlists" | "sounds" | "analytics" | "themes";
@@ -195,7 +194,7 @@ function Sidebar({
 }: {
   active: Nav;
   onNav: (n: Nav) => void;
-  theme: AppTheme;
+  theme: DashTheme;
   name: string;
   goalLabel: string;
   progressPct: number;
@@ -371,7 +370,6 @@ function HomeView({
   playlist: Track[];
   currentTrackIdx: number | null;
   isPlaying: boolean;
-  theme: AppTheme;
   name: string;
   goalLabel: string;
   progressPct: number;
@@ -588,7 +586,7 @@ function FocusSetupView({
   onBegin, theme, defaultDuration = 45, defaultObjective = "Coding", defaultAmbience = "Rain",
 }: {
   onBegin: (cfg: FocusConfig) => void;
-  theme: AppTheme;
+  theme: DashTheme;
   defaultDuration?: number;
   defaultObjective?: string;
   defaultAmbience?: string;
@@ -1426,11 +1424,11 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
       : account.task.title;
     return [{ id: 0, text, done: false }, ...INIT_TASKS];
   });
-  const [activeThemeId, setActiveThemeId] = useState(account.theme?.id ?? "focusflow");
+  const { themeId, theme, setThemeId } = useThemeSelection();
 
-  function handleThemeSelect(themeId: string) {
-    setActiveThemeId(themeId);
-    onAccountChange(updateAccount(account.email, { theme: { id: themeId } }));
+  function handleThemeSelect(id: ThemeId) {
+    setThemeId(id);
+    onAccountChange(updateAccount(account.email, { theme: { id } }));
   }
   const displayName = account.name;
 
@@ -1725,7 +1723,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
           {nav === "playlists" && <PlaylistsView theme={theme} onPlay={startPlaylist} />}
           {nav === "sounds" && <SoundsView theme={theme} />}
           {nav === "analytics" && <AnalyticsView theme={theme} />}
-          {nav === "themes" && <ThemesView activeThemeId={activeThemeId} onSelect={handleThemeSelect} theme={theme} />}
+          {nav === "themes" && <ThemeSelectionView activeThemeId={themeId} onSelect={handleThemeSelect} theme={theme} />}
         </main>
       </div>
       <BottomPlayer
