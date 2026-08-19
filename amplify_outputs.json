@@ -1,0 +1,43 @@
+{
+  "auth": {
+    "user_pool_id": "us-east-2_P0lCS7RhG",
+    "aws_region": "us-east-2",
+    "user_pool_client_id": "967qer3ovh82862dl0usaeoie",
+    "identity_pool_id": "us-east-2:5cceef46-7969-4b7e-af0b-227cd5e95fb2",
+    "mfa_methods": [],
+    "standard_required_attributes": [
+      "email"
+    ],
+    "username_attributes": [
+      "email"
+    ],
+    "user_verification_types": [
+      "email"
+    ],
+    "groups": [],
+    "mfa_configuration": "NONE",
+    "password_policy": {
+      "min_length": 8,
+      "require_lowercase": true,
+      "require_numbers": true,
+      "require_symbols": true,
+      "require_uppercase": true
+    },
+    "unauthenticated_identities_enabled": true
+  },
+  "storage": {
+    "aws_region": "us-east-2",
+    "bucket_name": "amplify-myapp-adjunct-san-focusflowaudiobucketaf62-ef86zlelotpj",
+    "buckets": [
+      {
+        "name": "focusFlowAudio",
+        "bucket_name": "amplify-myapp-adjunct-san-focusflowaudiobucketaf62-ef86zlelotpj",
+        "aws_region": "us-east-2"
+      }
+    ]
+  },
+  "version": "1.5",
+  "custom": {
+    "apiUrl": "https://sxp3uakms6.execute-api.us-east-2.amazonaws.com/api/"
+  }
+}

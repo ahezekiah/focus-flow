@@ -1,5 +1,10 @@
 # Focus Flow: REST API vs. GraphQL
 
+> **Outcome:** REST was chosen. This document is kept as the analysis behind that call — see
+> [Decision_Record.md](../decisions/Decision_Record.md) and [AWS_Architecture.md](AWS_Architecture.md)
+> for what is actually being built. Where this document says "Next.js API routes," the
+> implementation is API Gateway + Lambda on AWS Amplify.
+
 ## Project Overview
 
 **Focus Flow** is a productivity web application designed to help students and professionals complete meaningful work without switching between multiple tools. The application combines focus sessions, task management, projects, themed environments, music, ambient sounds, streaks, analytics, and an accountability network in one workspace.
@@ -451,11 +456,18 @@ Examples include:
 
 ---
 
-## Recommended Approach for Focus Flow
+## Decision for Focus Flow
 
-For the first Focus Flow MVP, **REST is likely the most practical choice**. The planned Next.js API routes already support it naturally, and many early features—such as task management, session creation, themes, playlists, and settings—are standard CRUD operations.
+**REST was chosen** and is what the team is building. Many early features — task management,
+session creation, themes, playlists, and settings — are standard CRUD operations that map
+cleanly to resource endpoints, and REST is faster for the team to build and debug in the
+time available. The endpoints run on API Gateway with Lambda handlers, deployed through
+AWS Amplify.
 
-As the application grows, **GraphQL may become more valuable** for the dashboard, analytics, and accountability network because these screens combine several connected types of data. A future version could migrate fully to GraphQL or use a hybrid approach in which REST handles simple operations while GraphQL handles complex, data-heavy screens.
+GraphQL is not part of the stack in any form. AppSync was considered and rejected for the same
+reason — it is GraphQL-only. The dashboard, analytics, and accountability feed will combine
+their connected data server-side in Lambda handlers and return it from purpose-built REST
+endpoints. Revisiting this would require a new decision record entry.
 
 ---
 

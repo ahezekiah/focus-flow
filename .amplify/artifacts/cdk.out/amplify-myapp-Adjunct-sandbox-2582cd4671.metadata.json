@@ -1,0 +1,1887 @@
+{
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    },
+    {
+      "type": "aws:cdk:stack-tags",
+      "data": [
+        {
+          "key": "amplify:deployment-type",
+          "value": "sandbox"
+        },
+        {
+          "key": "created-by",
+          "value": "amplify"
+        }
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/deploymentType": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "deploymentType"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/region": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "region"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/userPoolId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "userPoolId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/webClientId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "webClientId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/identityPoolId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "identityPoolId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/authRegion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "authRegion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/allowUnauthenticatedIdentities": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "allowUnauthenticatedIdentities"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/signupAttributes": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "signupAttributes"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/usernameAttributes": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "usernameAttributes"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/verificationMechanisms": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "verificationMechanisms"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/passwordPolicyMinLength": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "passwordPolicyMinLength"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/passwordPolicyRequirements": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "passwordPolicyRequirements"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/mfaConfiguration": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "mfaConfiguration"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/mfaTypes": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "mfaTypes"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/passwordlessOptions": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "passwordlessOptions"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/socialProviders": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "socialProviders"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/oauthCognitoDomain": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthCognitoDomain"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/oauthScope": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthScope"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/oauthRedirectSignIn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthRedirectSignIn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/oauthRedirectSignOut": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthRedirectSignOut"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/oauthResponseType": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthResponseType"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/oauthClientId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthClientId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/groups": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "groups"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/definedFunctions": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "definedFunctions"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\backend-function, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...Object.createStack in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:17:26)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/customOutputs": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "customOutputs"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, Object.addOutput in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:98:9)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storageRegion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "storageRegion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\backend-storage, aws-cdk-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/bucketName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "bucketName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\backend-storage, aws-cdk-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/buckets": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "buckets"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\backend-storage, aws-cdk-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPoolAppClientFBCECFF4Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPoolAppClientFBCECFF4Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifymyappAdjunctsandbox2582cd4671authamplifyAuthIdentityPool22B2065CRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671authamplifyAuthIdentityPool22B2065CRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth.NestedStack/auth.NestedStackResource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "auth179371D7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/amplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/amplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage.NestedStack/storage.NestedStackResource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "storage0EC3F24A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/reference-to-amplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/reference-to-amplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865Outputs.amplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/reference-to-amplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/reference-to-amplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865Outputs.amplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifymyappAdjunctsandbox2582cd4671storageNestedStackstorageNestedStackResourceDC4CB865OutputsamplifymyappAdjunctsandbox2582cd4671storagefocusFlowAudioBucket7BB19E3FRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/reference-to-amplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Arn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Arn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/reference-to-amplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function.NestedStack/function.NestedStackResource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "function1351588B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/reference-to-amplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8Outputs.amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/reference-to-amplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8Outputs.amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/reference-to-amplifymyappAdjunctsandbox2582cd4671authNestedStackauthNestedStackResource72674CCCOutputs.amplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifymyappAdjunctsandbox2582cd4671authNestedStackauthNestedStackResource72674CCCOutputsamplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi88AFA0A8Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi88AFA0A8Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApiDeploymentStageapiA6E14F74Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApiDeploymentStageapiA6E14F74Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi.NestedStack/FocusFlowApi.NestedStackResource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowApi19E59BCB"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, Object.createStack in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:17:26)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/AudioFileTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AudioFileTable0B3AF3A1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Table2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:20:24)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/PlaylistTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PlaylistTable8EB88AED"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Table2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:25:23)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifyAuth/IdentityPool": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthIdentityPool3FDE84CC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...@aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifyAuth/IdentityPoolRoleAttachment": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthIdentityPoolRoleAttachment045F17C8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...@aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify\\backend...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:15:17)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/audio-files-lambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "audiofileslambda980FDE60"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend-function, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/playlists-lambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "playlistslambda83C94385"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend-function, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiFCD56347"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:50:13)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Account": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiAccount1D28D34F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:50:13)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Endpoint": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiEndpoint2E4CCBEC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:50:13)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowAuthorizer/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowAuthorizer0EA7C201"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new CognitoUserPoolsAuthorizer2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:60:27)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifyAuth/UserPool/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthUserPool4BA7F805"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifyAuth/UserPoolAppClient/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthUserPoolAppClient2626C6F8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifyAuth/authenticatedUserRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthauthenticatedUserRoleD8DA3689"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifyAuth/unauthenticatedUserRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthunauthenticatedUserRole2B524D9E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/focusFlowAudio/Bucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "focusFlowAudioBucketAF62A820"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend-storage, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend..."
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketAutoDeleteObjects"
+      }
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/audio-files-lambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "audiofileslambdaServiceRole4E9B6309"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend-function, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/playlists-lambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "playlistslambdaServiceRoleD9EB3CAB"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend-function, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/CloudWatchRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiCloudWatchRoleA6628433"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:50:13)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Deployment/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiDeployment27C50ED9af2c5da4b3919a0e976da63873c679e1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:50:13)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/DeploymentStage.api/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiDeploymentStageapi35F23768"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:50:13)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/focusFlowAudio/Bucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "focusFlowAudioBucketPolicy51258DB3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend-storage...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketPolicyStatements"
+      }
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/storage/focusFlowAudio/Bucket/AutoDeleteObjectsCustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "focusFlowAudioBucketAutoDeleteObjectsCustomResourceD47AE231"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/audio-files-lambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "audiofileslambdaServiceRoleDefaultPolicyE685917E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/function/playlists-lambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "playlistslambdaServiceRoleDefaultPolicyD3BB523D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiOPTIONS8C532DE3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:50:13)"
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesEA4653EC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:73:37)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsBF3E9429"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:85:36)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesOPTIONSFC1E8FF0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:73:37)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..audio-files": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETaudiofiles104D0994"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:74:20)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..audio-files": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETaudiofiles36C1A9AA"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:74:20)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/GET/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesGET38F87FB8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:74:20)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/POST/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..audio-files": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesPOSTApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTaudiofilesF5705EF6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:75:20)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/POST/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..audio-files": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesPOSTApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTaudiofiles7C888C30"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:75:20)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/POST/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesPOSTA4F62B6D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:75:20)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesaudioFileId3185E0B6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:78:46)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsOPTIONS3F1FDCB6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:85:36)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylists7F298B62"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:86:19)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylists54260C74"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:86:19)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/GET/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsGET4B162494"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:86:19)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/POST/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..playlists": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsPOSTApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTplaylists1A69E996"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:87:19)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/POST/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..playlists": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsPOSTApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTplaylists44BC5955"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:87:19)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/POST/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsPOST3155E341"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:87:19)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsdefault8FA9C5F7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:90:19)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsplaylistId2C778709"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:93:44)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesaudioFileIdOPTIONSFEFE1D4A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:78:46)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..audio-files.{audioFileId}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesaudioFileIdGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETaudiofilesaudioFileIdF95853BE"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:79:19)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..audio-files.{audioFileId}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesaudioFileIdGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETaudiofilesaudioFileId8114A24D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:79:19)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/GET/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesaudioFileIdGETA992E2A6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:79:19)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/PATCH/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..audio-files.{audioFileId}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesaudioFileIdPATCHApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHaudiofilesaudioFileIdCAE1F11F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:80:19)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/PATCH/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..audio-files.{audioFileId}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesaudioFileIdPATCHApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHaudiofilesaudioFileIdC4ACBE2B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:80:19)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/audio-files/{audioFileId}/PATCH/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiaudiofilesaudioFileIdPATCH48908DCE"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:80:19)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsdefaultOPTIONSC9D69415"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:90:19)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists.default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsdefaultGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylistsdefaultB9A99C9E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:90:42)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists.default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsdefaultGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylistsdefault187280A3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:90:42)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/default/GET/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsdefaultGET1848193D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:90:42)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsplaylistIdOPTIONS6E54757E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addResource in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:93:44)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists.{playlistId}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsplaylistIdGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylistsplaylistId081DD7DA"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:94:18)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..playlists.{playlistId}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsplaylistIdGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETplaylistsplaylistId60BE5861"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:94:18)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/GET/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsplaylistIdGET44478EF0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:94:18)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/PATCH/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..playlists.{playlistId}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsplaylistIdPATCHApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHplaylistsplaylistIdB2D335F4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:95:18)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/PATCH/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..playlists.{playlistId}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsplaylistIdPATCHApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHplaylistsplaylistId2A685950"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:95:18)",
+        "...node internals, @aws-amplify/backend-deployer..."
+      ]
+    }
+  ],
+  "/amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/PATCH/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FocusFlowRestApiplaylistsplaylistIdPATCHA4850538"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "<anonymous> (C:\\Users\\Adjunct.JIMMYG2\\Desktop\\projects\\focus-flow\\amplify\\backend.ts:95:18)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk\\toolkit-lib..."
+      ]
+    }
+  ]
+}

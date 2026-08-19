@@ -188,8 +188,9 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  /* Falls back to the app typeface until a theme supplies its own. */
   .font-display {
-    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    font-family: var(--font-display, 'Bricolage Grotesque', system-ui, sans-serif);
   }
   .font-data {
     font-family: 'JetBrains Mono', monospace;

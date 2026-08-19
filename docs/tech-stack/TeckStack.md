@@ -1,12 +1,15 @@
-# Tech Stack (Up For Debate *Sorta*)
+# Tech Stack
+
+Deployment target is **AWS Amplify**. See [AWS_Architecture.md](AWS_Architecture.md) for how the
+services fit together.
 
 ## Frontend
 
-- **Next.js**
 - **React**
 - **TypeScript**
+- **Vite**
 
-**Reason:** Best fit for a full-stack web application with dashboards, authentication, API routes, dynamic pages, and straightforward deployment.
+**Reason:** Matches what is already built in this repository, and Amplify Hosting builds and serves a Vite single-page app directly from the connected branch.
 
 ---
 
@@ -29,33 +32,34 @@
 
 ## Backend
 
-- **Next.js API Routes**
+- **AWS Amplify Gen 2**
+- **API Gateway (REST) + AWS Lambda**
 
-**Reason:** Keeps the project simple by allowing the frontend and backend to live within the same application.
-
----
-
-## Database
-
-- **PostgreSQL**
-
-**Reason:** Ideal for structured data such as users, projects, tasks, focus sessions, streaks, and analytics.
+**Reason:** The backend is defined in TypeScript alongside the app and deployed per branch. API Gateway with Lambda gives us the REST endpoints the team already chose, without a separate hosting setup.
 
 ---
 
-## ORM (Object-Relational Mapping)
+## API Style
 
-- **Prisma**
+- **REST**
 
-**Reason:** Simplifies database management while providing excellent TypeScript support.
+**Reason:** Decided in the [Decision Record](../decisions/Decision_Record.md) — resource endpoints and standard HTTP verbs are faster for the team to build and debug in the time available.
+
+---
+
+## Data
+
+- **Amazon DynamoDB**
+
+**Reason:** Amplify Gen 2 provisions the tables alongside the rest of the backend, and Lambda handlers read and write them with the AWS SDK. No GraphQL layer is involved.
 
 ---
 
 ## Authentication
 
-- **Clerk**
+- **Amazon Cognito**
 
-**Reason:** Fast, secure, and one of the easiest authentication solutions to integrate for an 8-week team project.
+**Reason:** Built into Amplify and integrates directly with API Gateway authorization, so protecting an endpoint does not require a third-party service.
 
 ---
 
@@ -77,32 +81,32 @@
 
 ## Hosting
 
-- **AWS**
+- **AWS Amplify Hosting**
 
-**Reason:** A scalable hosting platform suitable for deploying a production-ready web application.
+**Reason:** Builds and deploys straight from the connected Git branch, with a full isolated environment per branch and CloudFront delivery in front of the app.
 
 ---
 
 ## Storage
 
-- **Public Folder (`/public/audio`)**
+- **Amazon S3**
 
-**Reason:** Keeps the MVP simple by storing sample music and ambient sound files locally before introducing cloud storage.
+**Reason:** Uploaded audio files, theme images, and playlist artwork live in S3 rather than in the repository. The `/public/audio` folder remains a local-development convenience only.
 
 ---
 
 # Final Stack Summary
 
-- Next.js
 - React
 - TypeScript
+- Vite
 - Tailwind CSS
 - shadcn/ui
 - Framer Motion
-- Next.js API Routes
-- PostgreSQL
-- Prisma
-- Clerk
 - Recharts
 - HTML5 Audio API
-- AWS
+- AWS Amplify (Hosting + Gen 2 backend)
+- API Gateway (REST) + Lambda
+- Amazon DynamoDB
+- Amazon Cognito
+- Amazon S3

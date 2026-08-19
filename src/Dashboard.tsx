@@ -3,13 +3,19 @@ import {
   Home, Music2, Waves, BarChart2, Timer, Palette,
   Play, Pause, SkipForward, SkipBack, Volume2,
   Flame, Target, ChevronRight, Check, ArrowRight,
-  Clock, TrendingUp, Plus, Upload, X, ListMusic,
+  Clock, TrendingUp, Plus, Upload, X, ListMusic, Library,
 } from "lucide-react";
+import { ThemeSelectionView } from "./dash/ThemeSelectionView";
+import { AudioFilesView } from "./dash/AudioFilesView";
+import { PlaylistsView } from "./dash/PlaylistsView";
+import { themeCssVars, useThemeSelection, type DashTheme } from "./dash/themes";
+import { getDefaultPlaylist, type AudioFile, type Playlist } from "./lib/api";
+import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
 import { THEMES, THEME_ORDER, type AppTheme } from "./lib/themes";
 
 // ── Types ──────────────────────────────────────────────────────
-type Nav = "home" | "focus" | "music" | "sounds" | "analytics" | "themes";
+type Nav = "home" | "focus" | "music" | "audio" | "playlists" | "sounds" | "analytics" | "themes";
 type FocusPhase = "idle" | "setup" | "active" | "complete";
 type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 
@@ -168,6 +174,21 @@ const INIT_TASKS: Task[] = [
 
 const HEATMAP = generateHeatmap();
 
+/** An audio file from the Audio Files page, as a playable track. */
+const cloudTrack = (file: AudioFile): Track => ({
+  id: `cloud:${file.id}`,
+  name: file.name,
+  url: file.playUrl ?? "",
+  duration: 0,
+  size: fmtBytes(file.sizeBytes),
+});
+
+/** The tracks of a saved playlist, in the order the designer chose them. */
+const playlistTracks = (playlist: Playlist): Track[] =>
+  playlist.tracks
+    .filter(track => track.playUrl)
+    .map(track => ({ id: `cloud:${track.id}`, name: track.name, url: track.playUrl, duration: 0, size: "" }));
+
 // ── Sidebar ────────────────────────────────────────────────────
 function Sidebar({
   active, onNav, theme, name, goalLabel, progressPct, onSignOut,
@@ -184,6 +205,8 @@ function Sidebar({
     { id: "home", icon: Home, label: "Home" },
     { id: "focus", icon: Timer, label: "Focus" },
     { id: "music", icon: Music2, label: "Music" },
+    { id: "audio", icon: Library, label: "Audio Files" },
+    { id: "playlists", icon: ListMusic, label: "Playlists" },
     { id: "sounds", icon: Waves, label: "Sounds" },
     { id: "analytics", icon: BarChart2, label: "Analytics" },
     { id: "themes", icon: Palette, label: "Themes" },
@@ -197,7 +220,7 @@ function Sidebar({
       <div className="px-5 mb-7">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: theme.primary }}>
-            <Timer className="w-4 h-4 text-white" />
+            <Timer className="w-4 h-4" style={{ color: theme.primaryFg }} />
           </div>
           <span className="font-display font-bold text-sm tracking-tight" style={{ color: theme.foreground }}>FocusFlow</span>
         </div>
@@ -215,7 +238,7 @@ function Sidebar({
                 background: isActive ? `${theme.primary}20` : undefined,
                 color: isActive ? theme.primary : theme.mutedFg,
               }}
-              onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = theme.foreground; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; } }}
+              onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = theme.foreground; (e.currentTarget as HTMLElement).style.background = theme.overlay(0.05); } }}
               onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = theme.mutedFg; (e.currentTarget as HTMLElement).style.background = ""; } }}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -226,7 +249,7 @@ function Sidebar({
       </nav>
 
       <div className="mx-3 mb-3 mt-4">
-        <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${theme.border}` }}>
+        <div className="rounded-xl p-3" style={{ background: theme.overlay(0.03), border: `1px solid ${theme.border}` }}>
           <p className="text-xs mb-1" style={{ color: theme.mutedFg }}>Daily Goal</p>
           <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
             <div className="h-full rounded-full" style={{ width: `${progressPct}%`, background: `linear-gradient(to right, ${theme.primary}, ${theme.accent})` }} />
@@ -240,8 +263,8 @@ function Sidebar({
       <div className="px-4 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
-            style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})` }}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+            style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, color: theme.primaryFg }}
           >
             {name[0]?.toUpperCase() ?? "A"}
           </div>
@@ -264,12 +287,77 @@ function Sidebar({
   );
 }
 
+// ── Now Playing ────────────────────────────────────────────────
+/**
+ * What the customer is hearing right now. It is the first thing on the home page so a
+ * new arrival can see the ambience that greeted them and what is coming next.
+ */
+function NowPlayingCard({
+  theme,
+  queueName,
+  playlist,
+  currentTrackIdx,
+  isPlaying,
+}: {
+  theme: DashTheme;
+  queueName: string | null;
+  playlist: Track[];
+  currentTrackIdx: number | null;
+  isPlaying: boolean;
+}) {
+  return (
+    <section
+      aria-label="Now playing"
+      className="rounded-2xl p-5"
+      style={{ background: theme.card, border: `1px solid ${theme.border}` }}
+    >
+      <div className="flex items-center justify-between mb-3 gap-4">
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wider mb-1" style={{ color: theme.mutedFg }}>
+            Now Playing
+          </p>
+          <h3 className="text-lg font-semibold font-display truncate" style={{ color: theme.foreground }}>
+            {queueName ?? "Your library"}
+          </h3>
+          <p className="text-xs mt-0.5" style={{ color: theme.mutedFg }}>
+            <span>{isPlaying ? "Playing" : "Paused"}</span> ·{" "}
+            {playlist.length} {playlist.length === 1 ? "track" : "tracks"}
+          </p>
+        </div>
+        {isPlaying && <NowPlayingBars color={theme.primary} />}
+      </div>
+
+      <ul className="space-y-1" aria-label="Now playing tracks">
+        {playlist.map((track, idx) => {
+          const isActive = currentTrackIdx === idx;
+          return (
+            <li
+              key={track.id}
+              className="flex items-center gap-2.5 text-sm truncate"
+              style={{ color: isActive ? theme.primary : theme.mutedFg }}
+            >
+              <span className="text-xs font-data w-5 shrink-0" style={{ color: theme.mutedFg }}>
+                {String(idx + 1).padStart(2, "0")}
+              </span>
+              <span className="truncate">{track.name}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 // ── Home View ──────────────────────────────────────────────────
 function HomeView({
   onStartFocus,
   tasks,
   onToggleTask,
   theme,
+  queueName,
+  playlist,
+  currentTrackIdx,
+  isPlaying,
   name,
   goalLabel,
   progressPct,
@@ -278,6 +366,11 @@ function HomeView({
   onStartFocus: () => void;
   tasks: Task[];
   onToggleTask: (id: number) => void;
+  theme: DashTheme;
+  queueName: string | null;
+  playlist: Track[];
+  currentTrackIdx: number | null;
+  isPlaying: boolean;
   theme: AppTheme;
   name: string;
   goalLabel: string;
@@ -309,8 +402,8 @@ function HomeView({
           </div>
           <button
             onClick={onStartFocus}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-colors duration-150 shrink-0 mt-1 text-white"
-            style={{ background: theme.accent }}
+            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-colors duration-150 shrink-0 mt-1"
+            style={{ background: theme.accent, color: theme.accentFg }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
           >
@@ -318,6 +411,17 @@ function HomeView({
           </button>
         </div>
       </div>
+
+      {/* Now Playing — the ambience a new arrival is already hearing */}
+      {playlist.length > 0 && (
+        <NowPlayingCard
+          theme={theme}
+          queueName={queueName}
+          playlist={playlist}
+          currentTrackIdx={currentTrackIdx}
+          isPlaying={isPlaying}
+        />
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-4">
@@ -362,7 +466,7 @@ function HomeView({
           </div>
           <div className="flex gap-1 mt-4">
             {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className="flex-1 h-1 rounded-full" style={{ background: i < 5 ? theme.accent : "rgba(255,255,255,0.08)" }} />
+              <div key={i} className="flex-1 h-1 rounded-full" style={{ background: i < 5 ? theme.accent : theme.overlay(0.08) }} />
             ))}
           </div>
         </div>
@@ -381,10 +485,10 @@ function HomeView({
                 key={i}
                 className="w-full flex items-center gap-3 p-2.5 rounded-xl text-left group transition-colors duration-150"
                 style={{} }
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = theme.overlay(0.04); }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ""; }}
               >
-                <span className="text-xl w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <span className="text-xl w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: theme.overlay(0.05) }}>
                   {p.emoji}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -393,7 +497,7 @@ function HomeView({
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs font-data" style={{ color: theme.mutedFg }}>{p.plays}</span>
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: "rgba(255,255,255,0.05)" }}>
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: theme.overlay(0.05) }}>
                     <Play className="w-3 h-3 fill-current" style={{ color: theme.mutedFg }} />
                   </div>
                 </div>
@@ -415,17 +519,17 @@ function HomeView({
                 key={task.id}
                 onClick={() => onToggleTask(task.id)}
                 className="w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors"
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = theme.overlay(0.04); }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ""; }}
               >
                 <div
                   className="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all duration-150"
                   style={{
                     background: task.done ? theme.primary : "transparent",
-                    borderColor: task.done ? theme.primary : "rgba(255,255,255,0.18)",
+                    borderColor: task.done ? theme.primary : theme.overlay(0.18),
                   }}
                 >
-                  {task.done && <Check className="w-3 h-3 text-white" />}
+                  {task.done && <Check className="w-3 h-3" style={{ color: theme.primaryFg }} />}
                 </div>
                 <span
                   className="text-sm transition-colors"
@@ -464,7 +568,7 @@ function HomeView({
                     className="w-full rounded-t-lg transition-all"
                     style={{
                       height: h > 0 ? `${(h / maxH) * 100}%` : "8%",
-                      background: i === 3 ? theme.primary : h > 0 ? `${theme.primary}35` : "rgba(255,255,255,0.05)",
+                      background: i === 3 ? theme.primary : h > 0 ? `${theme.primary}35` : theme.overlay(0.05),
                     }}
                   />
                 </div>
@@ -567,8 +671,8 @@ function FocusSetupView({
 
         <button
           onClick={() => onBegin({ duration, music, ambience, objective })}
-          className="w-full py-4 font-bold text-base rounded-xl transition-opacity duration-150 text-white"
-          style={{ background: theme.accent }}
+          className="w-full py-4 font-bold text-base rounded-xl transition-opacity duration-150"
+          style={{ background: theme.accent, color: theme.accentFg }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
         >
@@ -587,7 +691,7 @@ function ActiveSessionView({
   secondsLeft: number;
   totalSeconds: number;
   onEnd: () => void;
-  theme: AppTheme;
+  theme: DashTheme;
 }) {
   const r = 90;
   const circ = 2 * Math.PI * r;
@@ -601,7 +705,7 @@ function ActiveSessionView({
 
       <div className="relative mb-10">
         <svg width="224" height="224" className="-rotate-90">
-          <circle cx="112" cy="112" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="6" />
+          <circle cx="112" cy="112" r={r} fill="none" stroke={theme.overlay(0.04)} strokeWidth="6" />
           <circle
             cx="112" cy="112" r={r} fill="none"
             stroke={theme.primary} strokeWidth="6"
@@ -625,7 +729,7 @@ function ActiveSessionView({
           <span
             key={label}
             className="px-3.5 py-1.5 rounded-full text-xs"
-            style={{ background: "rgba(255,255,255,0.04)", border: `1px solid rgba(255,255,255,0.07)`, color }}
+            style={{ background: theme.overlay(0.04), border: `1px solid ${theme.overlay(0.07)}`, color }}
           >
             {label}
           </span>
@@ -646,7 +750,7 @@ function ActiveSessionView({
 }
 
 // ── Session Complete ───────────────────────────────────────────
-function SessionCompleteView({ config, onDone, theme }: { config: FocusConfig; onDone: () => void; theme: AppTheme }) {
+function SessionCompleteView({ config, onDone, theme }: { config: FocusConfig; onDone: () => void; theme: DashTheme }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] px-8 py-12 text-center">
       <div className="text-6xl mb-6">🎉</div>
@@ -670,8 +774,8 @@ function SessionCompleteView({ config, onDone, theme }: { config: FocusConfig; o
       </div>
       <button
         onClick={onDone}
-        className="px-8 py-3 font-semibold rounded-xl transition-opacity text-white"
-        style={{ background: theme.primary }}
+        className="px-8 py-3 font-semibold rounded-xl transition-opacity"
+        style={{ background: theme.primary, color: theme.primaryFg }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
       >
@@ -706,7 +810,7 @@ function NowPlayingBars({ color }: { color: string }) {
 
 // ── Library View ────────────────────────────────────────────────
 interface LibraryViewProps {
-  theme: AppTheme;
+  theme: DashTheme;
   playlist: Track[];
   currentTrackIdx: number | null;
   isPlaying: boolean;
@@ -807,7 +911,7 @@ function LibraryView({
                     borderBottom: `1px solid ${theme.border}`,
                   }}
                   onClick={() => onSelectTrack(idx)}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)"; }}
+                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = theme.overlay(0.03); }}
                   onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                 >
                   {/* Track number / playing indicator */}
@@ -833,7 +937,7 @@ function LibraryView({
                   {/* Waveform icon */}
                   <div
                     className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base"
-                    style={{ background: isActive ? `${theme.primary}20` : "rgba(255,255,255,0.05)" }}
+                    style={{ background: isActive ? `${theme.primary}20` : theme.overlay(0.05) }}
                   >
                     🎵
                   </div>
@@ -846,7 +950,9 @@ function LibraryView({
                     >
                       {track.name}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: theme.mutedFg }}>{track.size}</p>
+                    {track.size && (
+                      <p className="text-xs mt-0.5" style={{ color: theme.mutedFg }}>{track.size}</p>
+                    )}
                   </div>
 
                   {/* Duration */}
@@ -857,7 +963,7 @@ function LibraryView({
                   {/* Remove button */}
                   <button
                     className="opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-                    style={{ background: "rgba(255,255,255,0.06)" }}
+                    style={{ background: theme.overlay(0.06) }}
                     onClick={e => { e.stopPropagation(); onRemoveTrack(track.id); }}
                   >
                     <X className="w-3 h-3" style={{ color: theme.mutedFg }} />
@@ -874,7 +980,7 @@ function LibraryView({
 
 // ── Music View ─────────────────────────────────────────────────
 interface MusicViewProps {
-  theme: AppTheme;
+  theme: DashTheme;
   playlist: Track[];
   currentTrackIdx: number | null;
   isPlaying: boolean;
@@ -894,7 +1000,7 @@ function MusicView({ theme, playlist, currentTrackIdx, isPlaying, onSelectTrack,
         <p className="text-sm mt-0.5" style={{ color: theme.mutedFg }}>Organized for focused work</p>
       </div>
 
-      <div className="flex gap-1 rounded-xl p-1 mb-6 w-fit overflow-x-auto scrollbar-hide" style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${theme.border}` }}>
+      <div className="flex gap-1 rounded-xl p-1 mb-6 w-fit overflow-x-auto scrollbar-hide" style={{ background: theme.overlay(0.04), border: `1px solid ${theme.border}` }}>
         {tabs.map(t => (
           <button
             key={t}
@@ -942,7 +1048,7 @@ function MusicView({ theme, playlist, currentTrackIdx, isPlaying, onSelectTrack,
             >
               <div className="flex items-start justify-between mb-4">
                 <span className="text-3xl">{p.emoji}</span>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: theme.overlay(0.05) }}>
                   <Play className="w-3.5 h-3.5 fill-current" style={{ color: theme.mutedFg }} />
                 </div>
               </div>
@@ -958,7 +1064,7 @@ function MusicView({ theme, playlist, currentTrackIdx, isPlaying, onSelectTrack,
 }
 
 // ── Sounds View ────────────────────────────────────────────────
-function SoundsView({ theme }: { theme: AppTheme }) {
+function SoundsView({ theme }: { theme: DashTheme }) {
   const defaultLevels = Object.fromEntries(SOUNDS_DATA.map(s => [s.id, s.default]));
   const [levels, setLevels] = useState<Record<string, number>>(defaultLevels);
   const active = SOUNDS_DATA.filter(s => levels[s.id] > 0);
@@ -1006,7 +1112,7 @@ function SoundsView({ theme }: { theme: AppTheme }) {
               <div
                 key={s.id}
                 className="flex items-center gap-1.5 rounded-lg px-3 py-1.5"
-                style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${theme.border}` }}
+                style={{ background: theme.overlay(0.05), border: `1px solid ${theme.border}` }}
               >
                 <span className="text-sm">{s.emoji}</span>
                 <span className="text-xs" style={{ color: theme.foreground }}>{s.name}</span>
@@ -1043,7 +1149,7 @@ function SoundsView({ theme }: { theme: AppTheme }) {
 }
 
 // ── Analytics View ─────────────────────────────────────────────
-function AnalyticsView({ theme }: { theme: AppTheme }) {
+function AnalyticsView({ theme }: { theme: DashTheme }) {
   const intensityAlphas = [0.04, 0.25, 0.45, 0.70, 1];
 
   return (
@@ -1119,7 +1225,7 @@ function AnalyticsView({ theme }: { theme: AppTheme }) {
               key={i}
               className="rounded-xl p-4 transition-all"
               style={{
-                background: a.earned ? `${theme.primary}10` : "rgba(255,255,255,0.02)",
+                background: a.earned ? `${theme.primary}10` : theme.overlay(0.02),
                 border: `1px solid ${a.earned ? `${theme.primary}30` : theme.border}`,
                 opacity: a.earned ? 1 : 0.45,
               }}
@@ -1140,94 +1246,12 @@ function AnalyticsView({ theme }: { theme: AppTheme }) {
   );
 }
 
-// ── Themes View ────────────────────────────────────────────────
-function ThemesView({ activeThemeId, onSelect, theme }: { activeThemeId: string; onSelect: (id: string) => void; theme: AppTheme }) {
-  return (
-    <div className="p-6 max-w-5xl">
-      <div className="mb-6">
-        <h2 className="font-display text-xl font-bold" style={{ color: theme.foreground }}>Themes</h2>
-        <p className="text-sm mt-0.5" style={{ color: theme.mutedFg }}>Choose your workspace environment</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-        {THEME_ORDER.map(tid => {
-          const t = THEMES[tid];
-          const isActive = tid === activeThemeId;
-          return (
-            <button
-              key={tid}
-              onClick={() => onSelect(tid)}
-              className="rounded-2xl overflow-hidden text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.99]"
-              style={{
-                boxShadow: isActive ? `0 0 0 2px ${t.primary}, 0 0 24px ${t.primary}30` : "none",
-              }}
-            >
-              {/* Visual preview */}
-              <div className="h-32 relative overflow-hidden" style={{ background: t.greetingBg }}>
-                <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 70% 30%, ${t.greetingOverlay}, transparent 60%)` }} />
-
-                {/* Mini UI mockup inside preview */}
-                <div
-                  className="absolute inset-3 rounded-xl overflow-hidden"
-                  style={{ background: `${t.card}cc`, border: `1px solid ${t.border}` }}
-                >
-                  <div className="p-3 space-y-2">
-                    {/* fake header bar */}
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 rounded-md" style={{ background: t.primary }} />
-                      <div className="h-1.5 rounded-full w-14" style={{ background: `${t.foreground}30` }} />
-                    </div>
-                    {/* fake progress bar */}
-                    <div className="h-1 rounded-full overflow-hidden" style={{ background: `${t.foreground}10` }}>
-                      <div className="h-full rounded-full w-2/5" style={{ background: `linear-gradient(to right, ${t.primary}, ${t.accent})` }} />
-                    </div>
-                    {/* fake cards row */}
-                    <div className="flex gap-1.5 mt-1">
-                      <div className="h-8 flex-1 rounded-lg" style={{ background: `${t.primary}20`, border: `1px solid ${t.primary}30` }} />
-                      <div className="h-8 flex-1 rounded-lg" style={{ background: `${t.foreground}06` }} />
-                      <div className="h-8 flex-1 rounded-lg" style={{ background: `${t.foreground}06` }} />
-                    </div>
-                  </div>
-                </div>
-
-                {isActive && (
-                  <div
-                    className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
-                    style={{ background: t.primary }}
-                  >
-                    <Check className="w-3.5 h-3.5 text-white" />
-                  </div>
-                )}
-              </div>
-
-              {/* Theme info */}
-              <div className="p-3.5" style={{ background: t.card, borderTop: `1px solid ${t.border}` }}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-base">{t.emoji}</span>
-                  <span className="text-sm font-semibold font-display" style={{ color: t.foreground }}>{t.name}</span>
-                  {isActive && (
-                    <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${t.primary}25`, color: t.primary }}>Active</span>
-                  )}
-                </div>
-                <p className="text-xs leading-relaxed" style={{ color: t.mutedFg }}>{t.desc}</p>
-                <div className="flex gap-1.5 mt-3">
-                  {[t.background, t.card, t.primary, t.accent, t.foreground].map((c, ci) => (
-                    <div key={ci} className="w-4 h-4 rounded-full border" style={{ background: c, borderColor: `${t.foreground}15` }} />
-                  ))}
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // ── Bottom Player ──────────────────────────────────────────────
 interface BottomPlayerProps {
-  theme: AppTheme;
+  theme: DashTheme;
   playlist: Track[];
+  /** Where the queue came from — a playlist name, or null for the library. */
+  queueName: string | null;
   currentTrackIdx: number | null;
   isPlaying: boolean;
   onPlayPause: () => void;
@@ -1236,7 +1260,7 @@ interface BottomPlayerProps {
   audioRef: React.MutableRefObject<HTMLAudioElement>;
 }
 
-function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause, onNext, onPrev, audioRef }: BottomPlayerProps) {
+function BottomPlayer({ theme, playlist, queueName, currentTrackIdx, isPlaying, onPlayPause, onNext, onPrev, audioRef }: BottomPlayerProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
@@ -1276,7 +1300,8 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
   };
 
   return (
-    <div
+    <section
+      aria-label="Player"
       className="h-20 flex items-center px-6 gap-6 shrink-0"
       style={{ background: theme.sidebar, borderTop: `1px solid ${theme.border}` }}
     >
@@ -1298,7 +1323,15 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
             {track ? track.name : "No track selected"}
           </p>
           <p className="text-xs truncate" style={{ color: theme.mutedFg }}>
-            {track ? `${playlist.length} tracks in library` : "Add files in Music → My Library"}
+            {!track ? (
+              "Add files in Music → My Library"
+            ) : queueName ? (
+              <>
+                <span>{queueName}</span> · {playlist.length} tracks
+              </>
+            ) : (
+              `${playlist.length} tracks in library`
+            )}
           </p>
         </div>
       </div>
@@ -1308,6 +1341,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
         <div className="flex items-center gap-5">
           <button
             onClick={onPrev}
+            aria-label="Previous track"
             className="transition-opacity hover:opacity-70 disabled:opacity-30"
             style={{ color: theme.mutedFg }}
             disabled={playlist.length === 0}
@@ -1316,6 +1350,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
           </button>
           <button
             onClick={onPlayPause}
+            aria-label={isPlaying ? "Pause" : "Play"}
             className="w-9 h-9 rounded-full flex items-center justify-center hover:scale-105 transition-transform active:scale-95 disabled:opacity-30"
             style={{ background: theme.foreground }}
             disabled={playlist.length === 0}
@@ -1326,6 +1361,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
           </button>
           <button
             onClick={onNext}
+            aria-label="Next track"
             className="transition-opacity hover:opacity-70 disabled:opacity-30"
             style={{ color: theme.mutedFg }}
             disabled={playlist.length === 0}
@@ -1335,12 +1371,17 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
         </div>
 
         <div className="flex items-center gap-3 w-full max-w-sm">
-          <span className="text-xs font-data w-8 text-right" style={{ color: theme.mutedFg }}>
+          <span
+            role="timer"
+            aria-label="Elapsed time"
+            className="text-xs font-data w-8 text-right"
+            style={{ color: theme.mutedFg }}
+          >
             {fmtDuration(currentTime)}
           </span>
           <div
             className="flex-1 h-1 rounded-full overflow-hidden cursor-pointer group relative"
-            style={{ background: "rgba(255,255,255,0.08)" }}
+            style={{ background: theme.overlay(0.08) }}
             onClick={handleSeek}
           >
             <div
@@ -1359,6 +1400,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
         <Volume2 className="w-4 h-4 shrink-0" style={{ color: theme.mutedFg }} />
         <input
           type="range"
+          aria-label="Volume"
           min={0} max={1} step={0.01}
           value={volume}
           onChange={e => setVolume(Number(e.target.value))}
@@ -1366,7 +1408,7 @@ function BottomPlayer({ theme, playlist, currentTrackIdx, isPlaying, onPlayPause
           style={{ accentColor: theme.primary }}
         />
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -1401,6 +1443,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
 
   // ── Playlist & audio ──
   const [playlist, setPlaylist] = useState<Track[]>([]);
+  const [queueName, setQueueName] = useState<string | null>(null);
   const [currentTrackIdx, setCurrentTrackIdx] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(new Audio());
@@ -1408,32 +1451,8 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const theme = THEMES[activeThemeId];
-
   // Build CSS variable overrides for the active theme
-  const themeVars = {
-    "--background": theme.background,
-    "--foreground": theme.foreground,
-    "--card": theme.card,
-    "--card-foreground": theme.foreground,
-    "--popover": theme.card,
-    "--popover-foreground": theme.foreground,
-    "--primary": theme.primary,
-    "--primary-foreground": "#ffffff",
-    "--secondary": theme.muted,
-    "--secondary-foreground": theme.foreground,
-    "--muted": theme.muted,
-    "--muted-foreground": theme.mutedFg,
-    "--accent": theme.accent,
-    "--accent-foreground": "#ffffff",
-    "--border": theme.border,
-    "--input": theme.border,
-    "--ring": theme.ring,
-    "--sidebar": theme.sidebar,
-    "--sidebar-foreground": theme.foreground,
-    "--sidebar-primary": theme.primary,
-    "--sidebar-border": theme.border,
-  } as React.CSSProperties;
+  const themeVars = themeCssVars(theme);
 
   const handleNav = (n: Nav) => {
     setNav(n);
@@ -1503,6 +1522,35 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
     return () => audio.removeEventListener("ended", handleEnded);
   }, [playlist.length]);
 
+  // ── Playlists ──
+  /** Puts a saved playlist on and starts it from the top. */
+  const startPlaylist = useCallback((chosen: Playlist) => {
+    const tracks = playlistTracks(chosen);
+    if (tracks.length === 0) return;
+
+    loadedIdRef.current = null;
+    setPlaylist(tracks);
+    setQueueName(chosen.name);
+    setCurrentTrackIdx(0);
+    setIsPlaying(true);
+  }, []);
+
+  /** Whoever arrives hears the default playlist without having chosen anything yet. */
+  useEffect(() => {
+    if (!isBackendConfigured) return;
+    let cancelled = false;
+
+    getDefaultPlaylist()
+      .then(defaultPlaylist => {
+        if (!cancelled && defaultPlaylist) startPlaylist(defaultPlaylist);
+      })
+      .catch((err: unknown) => console.warn("The default playlist could not be loaded", err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [startPlaylist]);
+
   // ── Track management ──
   const handleAddTracks = useCallback((files: FileList) => {
     const incoming = Array.from(files).filter(f => f.type.startsWith("audio/"));
@@ -1515,6 +1563,9 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
       duration: 0,
       size: fmtBytes(f.size),
     }));
+
+    // The queue is no longer just the playlist it started as.
+    setQueueName(null);
 
     setPlaylist(prev => {
       const updated = [...prev, ...newTracks];
@@ -1532,6 +1583,36 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
       tmp.addEventListener("loadedmetadata", () => {
         setPlaylist(prev => prev.map(t => t.id === track.id ? { ...t, duration: tmp.duration } : t));
       }, { once: true });
+    });
+  }, []);
+
+  // Audio files added through the Audio Files page — playable alongside local tracks
+  const handleLibraryChange = useCallback((files: AudioFile[]) => {
+    setPlaylist(prev => {
+      const known = new Set(prev.map(t => t.id));
+      const additions = files
+        .filter(f => f.playUrl && !known.has(`cloud:${f.id}`))
+        .map(cloudTrack);
+      if (!additions.length) return prev;
+
+      setQueueName(null);
+      return [...prev, ...additions];
+    });
+  }, []);
+
+  const handlePlayAudioFile = useCallback((file: AudioFile) => {
+    if (!file.playUrl) return;
+    setQueueName(null);
+    setPlaylist(prev => {
+      const existingIdx = prev.findIndex(t => t.id === `cloud:${file.id}`);
+      if (existingIdx >= 0) {
+        setCurrentTrackIdx(existingIdx);
+        setIsPlaying(true);
+        return prev;
+      }
+      setCurrentTrackIdx(prev.length);
+      setIsPlaying(true);
+      return [...prev, cloudTrack(file)];
     });
   }, []);
 
@@ -1582,7 +1663,16 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ ...themeVars, background: theme.background, color: theme.foreground, fontFamily: "'Outfit', system-ui, sans-serif" }}>
+    <div
+      className="h-screen flex flex-col overflow-hidden"
+      style={{
+        ...themeVars,
+        background: theme.background,
+        color: theme.foreground,
+        fontFamily: theme.fontFamily,
+        transition: theme.transition("background-color", "color"),
+      }}
+    >
       <div className="flex flex-1 overflow-hidden">
         <Sidebar active={nav} onNav={handleNav} theme={theme} name={displayName} goalLabel={fmtGoalShort(goalMinutes)} progressPct={progressPct} onSignOut={onSignOut} />
         <main className="flex-1 overflow-y-auto scrollbar-hide" style={{ background: theme.background }}>
@@ -1592,6 +1682,10 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
               tasks={tasks}
               onToggleTask={toggleTask}
               theme={theme}
+              queueName={queueName}
+              playlist={playlist}
+              currentTrackIdx={currentTrackIdx}
+              isPlaying={isPlaying}
               name={displayName}
               goalLabel={goalLabel}
               progressPct={progressPct}
@@ -1621,6 +1715,14 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
               onRemoveTrack={handleRemoveTrack}
             />
           )}
+          {nav === "audio" && (
+            <AudioFilesView
+              theme={theme}
+              onPlay={handlePlayAudioFile}
+              onLibraryChange={handleLibraryChange}
+            />
+          )}
+          {nav === "playlists" && <PlaylistsView theme={theme} onPlay={startPlaylist} />}
           {nav === "sounds" && <SoundsView theme={theme} />}
           {nav === "analytics" && <AnalyticsView theme={theme} />}
           {nav === "themes" && <ThemesView activeThemeId={activeThemeId} onSelect={handleThemeSelect} theme={theme} />}
@@ -1629,6 +1731,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
       <BottomPlayer
         theme={theme}
         playlist={playlist}
+        queueName={queueName}
         currentTrackIdx={currentTrackIdx}
         isPlaying={isPlaying}
         onPlayPause={handlePlayPause}
