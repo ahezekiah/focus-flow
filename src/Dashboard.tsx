@@ -11,6 +11,8 @@ import { PlaylistsView } from "./dash/PlaylistsView";
 import { themeCssVars, useThemeSelection, type DashTheme } from "./dash/themes";
 import { getDefaultPlaylist, type AudioFile, type Playlist } from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
+import { updateAccount, type AccountRecord } from "./lib/accounts";
+import { THEMES, THEME_ORDER, type AppTheme } from "./lib/themes";
 
 // ── Types ──────────────────────────────────────────────────────
 type Nav = "home" | "focus" | "music" | "audio" | "playlists" | "sounds" | "analytics" | "themes";
@@ -64,6 +66,23 @@ function fmtBytes(b: number): string {
 
 function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function parseStreakGoalMinutes(goal?: string): number {
+  switch (goal) {
+    case "15 minutes a day": return 15;
+    case "30 minutes a day": return 30;
+    case "1 hour a day": return 60;
+    case "2 hours a day": return 120;
+    default: return 240;
+  }
+}
+
+function fmtGoalShort(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
 }
 
 function generateHeatmap(): number[][] {
@@ -171,7 +190,17 @@ const playlistTracks = (playlist: Playlist): Track[] =>
     .map(track => ({ id: `cloud:${track.id}`, name: track.name, url: track.playUrl, duration: 0, size: "" }));
 
 // ── Sidebar ────────────────────────────────────────────────────
-function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => void; theme: DashTheme }) {
+function Sidebar({
+  active, onNav, theme, name, goalLabel, progressPct, onSignOut,
+}: {
+  active: Nav;
+  onNav: (n: Nav) => void;
+  theme: AppTheme;
+  name: string;
+  goalLabel: string;
+  progressPct: number;
+  onSignOut: () => void;
+}) {
   const items: { id: Nav; icon: ElementType; label: string }[] = [
     { id: "home", icon: Home, label: "Home" },
     { id: "focus", icon: Timer, label: "Focus" },
@@ -222,11 +251,11 @@ function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => voi
       <div className="mx-3 mb-3 mt-4">
         <div className="rounded-xl p-3" style={{ background: theme.overlay(0.03), border: `1px solid ${theme.border}` }}>
           <p className="text-xs mb-1" style={{ color: theme.mutedFg }}>Daily Goal</p>
-          <div className="h-1 rounded-full overflow-hidden" style={{ background: theme.overlay(0.08) }}>
-            <div className="h-full rounded-full" style={{ width: "31%", background: `linear-gradient(to right, ${theme.primary}, ${theme.accent})` }} />
+          <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div className="h-full rounded-full" style={{ width: `${progressPct}%`, background: `linear-gradient(to right, ${theme.primary}, ${theme.accent})` }} />
           </div>
           <p className="text-xs mt-1.5" style={{ color: theme.mutedFg }}>
-            1h 15m <span style={{ color: `${theme.foreground}60` }}>/ 4h</span>
+            1h 15m <span style={{ color: `${theme.foreground}60` }}>/ {goalLabel}</span>
           </p>
         </div>
       </div>
@@ -237,13 +266,22 @@ function Sidebar({ active, onNav, theme }: { active: Nav; onNav: (n: Nav) => voi
             className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
             style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, color: theme.primaryFg }}
           >
-            A
+            {name[0]?.toUpperCase() ?? "A"}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate" style={{ color: theme.foreground }}>Alex</p>
+            <p className="text-sm font-semibold truncate" style={{ color: theme.foreground }}>{name}</p>
             <p className="text-xs" style={{ color: theme.mutedFg }}>Score: 89 · 🔥 12</p>
           </div>
         </div>
+        <button
+          onClick={onSignOut}
+          className="mt-3 w-full text-xs text-left transition-colors"
+          style={{ color: theme.mutedFg }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = theme.foreground; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = theme.mutedFg; }}
+        >
+          Sign out
+        </button>
       </div>
     </aside>
   );
@@ -320,6 +358,10 @@ function HomeView({
   playlist,
   currentTrackIdx,
   isPlaying,
+  name,
+  goalLabel,
+  progressPct,
+  remainingLabel,
 }: {
   onStartFocus: () => void;
   tasks: Task[];
@@ -329,6 +371,11 @@ function HomeView({
   playlist: Track[];
   currentTrackIdx: number | null;
   isPlaying: boolean;
+  theme: AppTheme;
+  name: string;
+  goalLabel: string;
+  progressPct: number;
+  remainingLabel: string;
 }) {
   const tod = getTimeOfDay();
   const cfg = TOD[tod];
@@ -349,7 +396,7 @@ function HomeView({
           <div>
             <p className="text-xs uppercase tracking-widest font-data mb-2" style={{ color: `${theme.foreground}40` }}>{day}</p>
             <h1 className="font-display text-3xl font-bold mb-2" style={{ color: theme.foreground }}>
-              {cfg.icon} {cfg.label} vibes, Alex.
+              {cfg.icon} {cfg.label} vibes, {name}.
             </h1>
             <p className="text-sm italic max-w-sm" style={{ color: `${theme.foreground}50` }}>"{cfg.quote}"</p>
           </div>
@@ -385,20 +432,20 @@ function HomeView({
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-xs uppercase tracking-wider mb-1" style={{ color: theme.mutedFg }}>Today's Goal</p>
-              <h3 className="text-lg font-semibold font-display" style={{ color: theme.foreground }}>Study: 4 hours</h3>
+              <h3 className="text-lg font-semibold font-display" style={{ color: theme.foreground }}>Focus: {goalLabel}</h3>
             </div>
             <Target className="w-5 h-5 opacity-40" style={{ color: theme.primary }} />
           </div>
           <div className="mb-4">
             <div className="flex justify-between text-xs mb-1.5" style={{ color: theme.mutedFg }}>
-              <span>Completed: 1h 15m</span><span>31%</span>
+              <span>Completed: 1h 15m</span><span>{progressPct}%</span>
             </div>
-            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: theme.overlay(0.05) }}>
-              <div className="h-full rounded-full" style={{ width: "31%", background: `linear-gradient(to right, ${theme.primary}, ${theme.accent})` }} />
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+              <div className="h-full rounded-full" style={{ width: `${progressPct}%`, background: `linear-gradient(to right, ${theme.primary}, ${theme.accent})` }} />
             </div>
           </div>
           <div className="flex gap-8 text-sm">
-            {[["Remaining", "2h 45m"], ["Sessions Today", "3 / 8"], ["Best Time", "9 AM"]].map(([label, val]) => (
+            {[["Remaining", remainingLabel], ["Sessions Today", "3 / 8"], ["Best Time", "9 AM"]].map(([label, val]) => (
               <div key={label}>
                 <p className="text-xs mb-0.5" style={{ color: theme.mutedFg }}>{label}</p>
                 <p className="font-semibold font-data" style={{ color: theme.foreground }}>{val}</p>
@@ -537,11 +584,19 @@ function HomeView({
 }
 
 // ── Focus Setup ────────────────────────────────────────────────
-function FocusSetupView({ onBegin, theme }: { onBegin: (cfg: FocusConfig) => void; theme: DashTheme }) {
-  const [duration, setDuration] = useState(45);
+function FocusSetupView({
+  onBegin, theme, defaultDuration = 45, defaultObjective = "Coding", defaultAmbience = "Rain",
+}: {
+  onBegin: (cfg: FocusConfig) => void;
+  theme: AppTheme;
+  defaultDuration?: number;
+  defaultObjective?: string;
+  defaultAmbience?: string;
+}) {
+  const [duration, setDuration] = useState(defaultDuration);
   const [music, setMusic] = useState("Coding");
-  const [ambience, setAmbience] = useState("Rain");
-  const [objective, setObjective] = useState("Coding");
+  const [ambience, setAmbience] = useState(defaultAmbience);
+  const [objective, setObjective] = useState(defaultObjective);
 
   const durations = [25, 45, 60, 90];
   const musicOpts = ["Coding", "Writing", "Math", "Reading", "Creative", "Exam Prep"];
@@ -1358,14 +1413,33 @@ function BottomPlayer({ theme, playlist, queueName, currentTrackIdx, isPlaying, 
 }
 
 // ── App ────────────────────────────────────────────────────────
-export default function Dashboard() {
+export default function Dashboard({ account, onSignOut, onAccountChange }: { account: AccountRecord; onSignOut: () => void; onAccountChange: (account: AccountRecord) => void }) {
   const [nav, setNav] = useState<Nav>("home");
   const [phase, setPhase] = useState<FocusPhase>("idle");
   const [focusConfig, setFocusConfig] = useState<FocusConfig | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [totalSeconds, setTotalSeconds] = useState(0);
-  const [tasks, setTasks] = useState(INIT_TASKS);
-  const { themeId, theme, setThemeId } = useThemeSelection();
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    if (!account.task?.title) return INIT_TASKS;
+    const text = account.project?.name
+      ? `${account.task.title} — ${account.project.name}`
+      : account.task.title;
+    return [{ id: 0, text, done: false }, ...INIT_TASKS];
+  });
+  const [activeThemeId, setActiveThemeId] = useState(account.theme?.id ?? "focusflow");
+
+  function handleThemeSelect(themeId: string) {
+    setActiveThemeId(themeId);
+    onAccountChange(updateAccount(account.email, { theme: { id: themeId } }));
+  }
+  const displayName = account.name;
+
+  const goalMinutes = parseStreakGoalMinutes(account.streak?.goal);
+  const completedMinutes = 75;
+  const progressPct = Math.min(100, Math.round((completedMinutes / goalMinutes) * 100));
+  const remainingMinutes = Math.max(0, goalMinutes - completedMinutes);
+  const goalLabel = account.streak?.goal ?? "4 hours a day";
+  const defaultAmbience = account.music?.option && account.music.option !== "No Music" ? account.music.option : undefined;
 
   // ── Playlist & audio ──
   const [playlist, setPlaylist] = useState<Track[]>([]);
@@ -1600,11 +1674,8 @@ export default function Dashboard() {
       }}
     >
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar active={nav} onNav={handleNav} theme={theme} />
-        <main
-          className="flex-1 overflow-y-auto scrollbar-hide"
-          style={{ background: theme.background, transition: theme.transition("background-color") }}
-        >
+        <Sidebar active={nav} onNav={handleNav} theme={theme} name={displayName} goalLabel={fmtGoalShort(goalMinutes)} progressPct={progressPct} onSignOut={onSignOut} />
+        <main className="flex-1 overflow-y-auto scrollbar-hide" style={{ background: theme.background }}>
           {nav === "home" && (
             <HomeView
               onStartFocus={() => { setNav("focus"); setPhase("setup"); }}
@@ -1615,13 +1686,17 @@ export default function Dashboard() {
               playlist={playlist}
               currentTrackIdx={currentTrackIdx}
               isPlaying={isPlaying}
+              name={displayName}
+              goalLabel={goalLabel}
+              progressPct={progressPct}
+              remainingLabel={fmtGoalShort(remainingMinutes)}
             />
           )}
           {nav === "focus" && phase === "setup" && (
-            <FocusSetupView onBegin={handleBegin} theme={theme} />
+            <FocusSetupView onBegin={handleBegin} theme={theme} defaultDuration={account.session?.duration} defaultObjective={account.session?.type} defaultAmbience={defaultAmbience} />
           )}
           {nav === "focus" && phase === "idle" && (
-            <FocusSetupView onBegin={handleBegin} theme={theme} />
+            <FocusSetupView onBegin={handleBegin} theme={theme} defaultDuration={account.session?.duration} defaultObjective={account.session?.type} defaultAmbience={defaultAmbience} />
           )}
           {nav === "focus" && phase === "active" && focusConfig && (
             <ActiveSessionView config={focusConfig} secondsLeft={secondsLeft} totalSeconds={totalSeconds} onEnd={handleEnd} theme={theme} />
@@ -1650,7 +1725,7 @@ export default function Dashboard() {
           {nav === "playlists" && <PlaylistsView theme={theme} onPlay={startPlaylist} />}
           {nav === "sounds" && <SoundsView theme={theme} />}
           {nav === "analytics" && <AnalyticsView theme={theme} />}
-          {nav === "themes" && <ThemeSelectionView activeThemeId={themeId} onSelect={setThemeId} theme={theme} />}
+          {nav === "themes" && <ThemesView activeThemeId={activeThemeId} onSelect={handleThemeSelect} theme={theme} />}
         </main>
       </div>
       <BottomPlayer
