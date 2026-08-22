@@ -21,6 +21,7 @@ There is no GraphQL in the stack.
 The backend lives in [amplify/](amplify/). To get your own isolated copy while developing:
 
 ```bash
+npm install    
 npx ampx sandbox      # deploys your sandbox and writes amplify_outputs.json
 npm run dev           # in a second terminal
 ```
@@ -120,3 +121,7 @@ Choose **GitHub.com** → **HTTPS** → **Login with a web browser** when prompt
 - **The wrong account is cached.** Clear the old credentials and repeat the sign-in: on Windows, remove the `git:https://github.com` entry from Credential Manager (Control Panel → Credential Manager → Windows Credentials) and delete `~/.git-credentials` if it exists; elsewhere, run `git credential-osxkeychain erase` or delete the matching keyring entry.
 - **A token that used to work now fails.** Personal access tokens expire. Generate a new one and repeat Option 2.
 - **Check which remote you are pointed at.** Run `git remote -v` — a fork and the upstream repository have separate access lists, so access to one does not grant access to the other.
+
+### Sign In to AWS
+An AWS account: if you don't already have one follow the Setup Your Environment tutorial. `https://docs.aws.amazon.com/hands-on/latest/setup-environment/setup-environment.html`
+Configure your AWS profile for local development.
