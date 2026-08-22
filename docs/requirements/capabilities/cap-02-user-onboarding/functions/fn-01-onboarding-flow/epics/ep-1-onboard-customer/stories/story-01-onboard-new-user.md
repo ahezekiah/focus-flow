@@ -8,7 +8,10 @@
 ## Acceptance Criteria
 - Returning users who already finished registration are taken straight to their dashboard; new or unfinished users are guided through registration.
 - New users can create an account by providing their details, with a clear, field-specific message shown if anything needs correcting.
-- Registration introduces each key feature — Sessions, Projects, Tasks, Music, and Streaks — one step at a time, and asks the user to make a choice before moving to the next step.
+- Registration introduces each key feature — Sessions, Tasks, Playlist, and Theme — one step at a time, and asks the user to make a choice before moving to the next step.
+- The Sessions step offers suggested session lengths and focus types, and lets the user enter their own instead.
+- The Playlist step offers the playlists on hand along with a "No Playlist" choice.
+- The Theme step offers the full set of looks, including Cafe, and the look the user picks is the one waiting for them once registration is finished.
 - Users who finish registration are taken to their personalized dashboard; users who leave early pick up where they left off the next time they log in.
 
 ## Given / When / Then
@@ -55,47 +58,37 @@
 
 * **Given** a new user reaches the Sessions step of registration
 * **When** the step appears
-* **Then** the system shall explain what a session is and ask the user to choose their first session length or type.
+* **Then** the system shall explain what a session is and ask the user for their first session length and focus type.
 
 ---
 
-#### Scenario 6: Sessions step holds the user until a choice is made
+#### Scenario 6: User sets a session length and focus type of their own
 
-* **Given** a new user has not chosen a session length or type
+* **Given** none of the suggested session lengths or focus types suit the user
+* **When** they enter a session length and a focus type of their own
+* **Then** the system shall accept what they entered and let them continue.
+
+---
+
+#### Scenario 7: Sessions step holds the user until a choice is made
+
+* **Given** a new user has not chosen or entered a session length and focus type
 * **When** they try to continue
 * **Then** the system shall keep them on the Sessions step and prompt them to make a choice.
 
 ---
 
-### AC3b: Projects
+### AC3b: Tasks
 
-#### Scenario 7: Projects step explains the feature and asks for a choice
-
-* **Given** a new user reaches the Projects step of registration
-* **When** the step appears
-* **Then** the system shall explain what a project is and ask the user to name their first project or pick a suggested template.
-
----
-
-#### Scenario 8: Projects step holds the user until a choice is made
-
-* **Given** a new user has not created or selected a project
-* **When** they try to continue
-* **Then** the system shall keep them on the Projects step and prompt them to make a choice.
-
----
-
-### AC3c: Tasks
-
-#### Scenario 9: Tasks step explains the feature and asks for an entry
+#### Scenario 8: Tasks step explains the feature and asks for an entry
 
 * **Given** a new user reaches the Tasks step of registration
 * **When** the step appears
-* **Then** the system shall explain what a task is and ask the user to add their first task under the project they just created.
+* **Then** the system shall explain what a task is and ask the user to add their first task.
 
 ---
 
-#### Scenario 10: Tasks step holds the user until an entry is made
+#### Scenario 9: Tasks step holds the user until an entry is made
 
 * **Given** a new user has not entered a task
 * **When** they try to continue
@@ -103,39 +96,47 @@
 
 ---
 
-### AC3d: Music
+### AC3c: Playlist
 
-#### Scenario 11: Music step explains the feature and asks for a choice
+#### Scenario 10: Playlist step explains the feature and offers the playlists on hand
 
-* **Given** a new user reaches the Music step of registration
+* **Given** a new user reaches the Playlist step of registration
 * **When** the step appears
-* **Then** the system shall explain the music feature (focus sounds and playlists) and ask the user to pick one option, including a "no music" choice.
+* **Then** the system shall explain what a playlist does for a session and display the playlists on hand together with a "No Playlist" choice.
 
 ---
 
-#### Scenario 12: Music step holds the user until a choice is made
+#### Scenario 11: Playlist step holds the user until a choice is made
 
-* **Given** a new user has not picked a music option
+* **Given** a new user has not chosen a playlist
 * **When** they try to continue
-* **Then** the system shall keep them on the Music step and prompt them to make a choice.
+* **Then** the system shall keep them on the Playlist step and prompt them to make a choice.
 
 ---
 
-### AC3e: Streaks
+#### Scenario 12: Choosing a playlist or none lets the user carry on
 
-#### Scenario 13: Streaks step explains the feature and asks for a choice
+* **Given** the playlists on offer are displayed
+* **When** the user picks one of them, or picks "No Playlist"
+* **Then** the system shall let them continue to the next step.
 
-* **Given** a new user reaches the Streaks step of registration
+---
+
+### AC3d: Theme
+
+#### Scenario 13: Theme step explains the feature and offers every look
+
+* **Given** a new user reaches the Theme step of registration
 * **When** the step appears
-* **Then** the system shall explain how streaks work and ask the user to set a daily goal or reminder time.
+* **Then** the system shall explain what a theme changes and display every look on offer, Cafe among them.
 
 ---
 
-#### Scenario 14: Streaks step holds the user until a choice is made
+#### Scenario 14: The look a user picks stays with them
 
-* **Given** a new user has not set a streak preference
-* **When** they try to continue
-* **Then** the system shall keep them on the Streaks step and prompt them to make a choice.
+* **Given** a new user has picked a look during registration
+* **When** they finish registration and arrive at their dashboard
+* **Then** the system shall dress the dashboard in the look they picked, and keep it on the next time they log in.
 
 ---
 
@@ -144,7 +145,7 @@
 #### Scenario 15: User completes registration
 
 * **Given** a new user has completed every step of registration
-* **When** they select "Done" or "Get Started" on the final step
+* **When** they select "Get Started" on the final step
 * **Then** the system shall take them to their personalized dashboard.
 
 ---

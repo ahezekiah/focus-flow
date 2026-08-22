@@ -3,34 +3,19 @@ export interface OnboardingSession {
   type: string;
 }
 
-export interface OnboardingProject {
-  name: string;
-}
-
 export interface OnboardingTask {
   title: string;
 }
 
-export interface OnboardingMusic {
+export interface OnboardingPlaylist {
   option: string;
-}
-
-export interface OnboardingStreak {
-  goal: string;
 }
 
 export interface OnboardingTheme {
   id: string;
 }
 
-export type OnboardingStep =
-  | "sessions"
-  | "projects"
-  | "tasks"
-  | "music"
-  | "theme"
-  | "streaks"
-  | "done";
+export type OnboardingStep = "sessions" | "tasks" | "playlist" | "theme" | "done";
 
 export interface AccountRecord {
   name: string;
@@ -39,11 +24,33 @@ export interface AccountRecord {
   onboardingCompleted: boolean;
   onboardingStep: OnboardingStep;
   session?: OnboardingSession;
-  project?: OnboardingProject;
   task?: OnboardingTask;
-  music?: OnboardingMusic;
+  playlist?: OnboardingPlaylist;
   theme?: OnboardingTheme;
-  streak?: OnboardingStreak;
+}
+
+/** Where someone part way through setup lands, now Projects and Streaks are not steps. */
+const RETIRED_STEPS: Record<string, OnboardingStep> = {
+  projects: "tasks",
+  music: "playlist",
+  streaks: "done",
+};
+
+/** An account as it may have been saved while those steps were still in the flow. */
+type StoredAccount = Omit<AccountRecord, "onboardingStep"> & {
+  onboardingStep: string;
+  music?: OnboardingPlaylist;
+};
+
+/** Brings a saved account up to the setup steps as they stand today. */
+function asCurrentAccount(stored: StoredAccount): AccountRecord {
+  const { music, onboardingStep, ...rest } = stored;
+
+  return {
+    ...rest,
+    onboardingStep: RETIRED_STEPS[onboardingStep] ?? (onboardingStep as OnboardingStep),
+    playlist: stored.playlist ?? music,
+  };
 }
 
 const ACCOUNTS_KEY = "focusflow.accounts";
@@ -56,7 +63,10 @@ function normalizeEmail(email: string): string {
 function getAccounts(): Record<string, AccountRecord> {
   try {
     const raw = localStorage.getItem(ACCOUNTS_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const saved = raw ? (JSON.parse(raw) as Record<string, StoredAccount>) : {};
+    return Object.fromEntries(
+      Object.entries(saved).map(([email, account]) => [email, asCurrentAccount(account)]),
+    );
   } catch {
     return {};
   }

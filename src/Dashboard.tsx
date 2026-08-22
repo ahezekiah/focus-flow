@@ -3,18 +3,17 @@ import {
   Home, Music2, Waves, BarChart2, Timer, Palette,
   Play, Pause, SkipForward, SkipBack, Volume2,
   Flame, Target, ChevronRight, Check, ArrowRight,
-  Clock, TrendingUp, Plus, Upload, X, ListMusic, Library,
+  Clock, TrendingUp, Plus, Upload, X, ListMusic,
 } from "lucide-react";
 import { ThemeSelectionView } from "./dash/ThemeSelectionView";
-import { AudioFilesView } from "./dash/AudioFilesView";
 import { PlaylistsView } from "./dash/PlaylistsView";
 import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from "./dash/themes";
-import { getDefaultPlaylist, type AudioFile, type Playlist } from "./lib/api";
+import { getDefaultPlaylist, type Playlist } from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
 
 // ── Types ──────────────────────────────────────────────────────
-type Nav = "home" | "focus" | "music" | "audio" | "playlists" | "sounds" | "analytics" | "themes";
+type Nav = "home" | "focus" | "music" | "playlists" | "sounds" | "analytics" | "themes";
 type FocusPhase = "idle" | "setup" | "active" | "complete";
 type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 
@@ -67,15 +66,9 @@ function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-function parseStreakGoalMinutes(goal?: string): number {
-  switch (goal) {
-    case "15 minutes a day": return 15;
-    case "30 minutes a day": return 30;
-    case "1 hour a day": return 60;
-    case "2 hours a day": return 120;
-    default: return 240;
-  }
-}
+/** What the dashboard tracks the day against until daily goals are settable. */
+const DAILY_GOAL_LABEL = "4 hours a day";
+const DAILY_GOAL_MINUTES = 240;
 
 function fmtGoalShort(minutes: number): string {
   if (minutes < 60) return `${minutes}m`;
@@ -173,14 +166,6 @@ const INIT_TASKS: Task[] = [
 
 const HEATMAP = generateHeatmap();
 
-/** An audio file from the Audio Files page, as a playable track. */
-const cloudTrack = (file: AudioFile): Track => ({
-  id: `cloud:${file.id}`,
-  name: file.name,
-  url: file.playUrl ?? "",
-  duration: 0,
-  size: fmtBytes(file.sizeBytes),
-});
 
 /** The tracks of a saved playlist, in the order the designer chose them. */
 const playlistTracks = (playlist: Playlist): Track[] =>
@@ -204,7 +189,6 @@ function Sidebar({
     { id: "home", icon: Home, label: "Home" },
     { id: "focus", icon: Timer, label: "Focus" },
     { id: "music", icon: Music2, label: "Music" },
-    { id: "audio", icon: Library, label: "Audio Files" },
     { id: "playlists", icon: ListMusic, label: "Playlists" },
     { id: "sounds", icon: Waves, label: "Sounds" },
     { id: "analytics", icon: BarChart2, label: "Analytics" },
@@ -1419,12 +1403,9 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [tasks, setTasks] = useState<Task[]>(() => {
     if (!account.task?.title) return INIT_TASKS;
-    const text = account.project?.name
-      ? `${account.task.title} — ${account.project.name}`
-      : account.task.title;
-    return [{ id: 0, text, done: false }, ...INIT_TASKS];
+    return [{ id: 0, text: account.task.title, done: false }, ...INIT_TASKS];
   });
-  const { themeId, theme, setThemeId } = useThemeSelection();
+  const { themeId, theme, setThemeId } = useThemeSelection(account.theme?.id);
 
   function handleThemeSelect(id: ThemeId) {
     setThemeId(id);
@@ -1432,12 +1413,15 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   }
   const displayName = account.name;
 
-  const goalMinutes = parseStreakGoalMinutes(account.streak?.goal);
+  const goalMinutes = DAILY_GOAL_MINUTES;
   const completedMinutes = 75;
   const progressPct = Math.min(100, Math.round((completedMinutes / goalMinutes) * 100));
   const remainingMinutes = Math.max(0, goalMinutes - completedMinutes);
-  const goalLabel = account.streak?.goal ?? "4 hours a day";
-  const defaultAmbience = account.music?.option && account.music.option !== "No Music" ? account.music.option : undefined;
+  const goalLabel = DAILY_GOAL_LABEL;
+  const defaultAmbience =
+    account.playlist?.option && account.playlist.option !== "No Playlist"
+      ? account.playlist.option
+      : undefined;
 
   // ── Playlist & audio ──
   const [playlist, setPlaylist] = useState<Track[]>([]);
@@ -1584,36 +1568,6 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
     });
   }, []);
 
-  // Audio files added through the Audio Files page — playable alongside local tracks
-  const handleLibraryChange = useCallback((files: AudioFile[]) => {
-    setPlaylist(prev => {
-      const known = new Set(prev.map(t => t.id));
-      const additions = files
-        .filter(f => f.playUrl && !known.has(`cloud:${f.id}`))
-        .map(cloudTrack);
-      if (!additions.length) return prev;
-
-      setQueueName(null);
-      return [...prev, ...additions];
-    });
-  }, []);
-
-  const handlePlayAudioFile = useCallback((file: AudioFile) => {
-    if (!file.playUrl) return;
-    setQueueName(null);
-    setPlaylist(prev => {
-      const existingIdx = prev.findIndex(t => t.id === `cloud:${file.id}`);
-      if (existingIdx >= 0) {
-        setCurrentTrackIdx(existingIdx);
-        setIsPlaying(true);
-        return prev;
-      }
-      setCurrentTrackIdx(prev.length);
-      setIsPlaying(true);
-      return [...prev, cloudTrack(file)];
-    });
-  }, []);
-
   const handleRemoveTrack = useCallback((id: string) => {
     setPlaylist(prev => {
       const idx = prev.findIndex(t => t.id === id);
@@ -1711,13 +1665,6 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
               onSelectTrack={handleSelectTrack}
               onAddTracks={handleAddTracks}
               onRemoveTrack={handleRemoveTrack}
-            />
-          )}
-          {nav === "audio" && (
-            <AudioFilesView
-              theme={theme}
-              onPlay={handlePlayAudioFile}
-              onLibraryChange={handleLibraryChange}
             />
           )}
           {nav === "playlists" && <PlaylistsView theme={theme} onPlay={startPlaylist} />}

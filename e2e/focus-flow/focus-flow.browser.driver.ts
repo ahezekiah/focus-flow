@@ -126,6 +126,70 @@ export class FocusFlowBrowserDriver {
     await this.page.getByPlaceholder(placeholder, { exact: true }).fill(value);
   }
 
+  async fillFieldByLabel(label: string, value: string): Promise<void> {
+    await this.page.getByLabel(label, { exact: true }).fill(value);
+  }
+
+  /** For steps where the form may have been skipped past by a redirect. */
+  async fillFieldIfPresent(label: string, value: string): Promise<void> {
+    const field = this.page.getByLabel(label, { exact: true });
+    if ((await field.count()) > 0) await field.fill(value);
+  }
+
+  async waitForHeading(name: string): Promise<void> {
+    await expect(this.page.getByRole("heading", { name, exact: true })).toBeVisible();
+  }
+
+  async waitForLabelText(text: string): Promise<void> {
+    await expect(this.page.getByText(text, { exact: true }).first()).toBeVisible();
+  }
+
+  async expectFieldValue(label: string, value: string): Promise<void> {
+    await expect(this.page.getByLabel(label, { exact: true })).toHaveValue(value);
+  }
+
+  /** The field is flagged as needing attention, with its own message beside it. */
+  async expectFieldQueried(label: string): Promise<void> {
+    const field = this.page.getByLabel(label, { exact: true });
+
+    await expect(field).toHaveAttribute("aria-invalid", "true");
+    await expect(field.locator("xpath=..").getByRole("alert")).toBeVisible();
+  }
+
+  /** Something on screen is telling the user what still needs doing. */
+  async expectPromptShowing(): Promise<void> {
+    await expect(this.page.getByRole("alert").first()).toBeVisible();
+  }
+
+  /** The card under this heading carries an explanation of its own. */
+  async expectExplanationUnderHeading(name: string): Promise<void> {
+    const card = this.page
+      .locator('[data-slot="card"]')
+      .filter({ has: this.page.getByRole("heading", { name, exact: true }) });
+
+    await expect(card.locator('[data-slot="card-description"]')).not.toBeEmpty();
+  }
+
+  // ── Choice groups ────────────────────────────────────────────
+  async clickChoiceInGroup(groupName: string, name: string): Promise<void> {
+    await this.choicesIn(groupName).getByRole("button", { name, exact: true }).click();
+  }
+
+  async expectChoiceInGroup(groupName: string, name: string): Promise<void> {
+    await expect(this.choicesIn(groupName).getByRole("button", { name, exact: true })).toBeVisible();
+  }
+
+  async expectGroupOffersAtLeast(groupName: string, count: number): Promise<void> {
+    await expect(this.choicesIn(groupName).getByRole("button").nth(count - 1)).toBeVisible();
+  }
+
+  /** The control carrying this text is the one currently chosen. */
+  async expectControlChosen(text: string): Promise<void> {
+    await expect(
+      this.page.getByRole("button", { pressed: true }).filter({ hasText: text }),
+    ).toHaveCount(1);
+  }
+
   async checkBoxByName(name: string): Promise<void> {
     await this.page.getByRole("checkbox", { name, exact: true }).check();
   }
@@ -342,6 +406,10 @@ export class FocusFlowBrowserDriver {
     return this.page
       .getByRole("listitem")
       .filter({ has: this.page.getByRole("button", { name: PLAY_CONTROL }) });
+  }
+
+  private choicesIn(groupName: string): Locator {
+    return this.page.getByRole("group", { name: groupName, exact: true });
   }
 
   private itemsIn(listName: string): Locator {

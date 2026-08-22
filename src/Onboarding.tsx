@@ -11,22 +11,21 @@ import {
   type AccountRecord,
   type OnboardingStep,
   type OnboardingSession,
-  type OnboardingProject,
   type OnboardingTask,
-  type OnboardingMusic,
+  type OnboardingPlaylist,
   type OnboardingTheme,
-  type OnboardingStreak,
 } from "./lib/accounts";
-import { THEMES, THEME_ORDER } from "./lib/themes";
+import { THEMES, THEME_ORDER } from "./dash/themes";
 
 // ── Shared step data ─────────────────────────────────────────────
-const STEP_ORDER: OnboardingStep[] = ["sessions", "projects", "tasks", "music", "theme", "streaks", "done"];
+const STEP_ORDER: OnboardingStep[] = ["sessions", "tasks", "playlist", "theme", "done"];
+
+/** The choice that hands the wording over to the user. */
+const OWN_CHOICE = "Custom";
 
 const SESSION_DURATIONS = [25, 45, 60, 90];
 const SESSION_TYPES = ["Homework", "Coding", "Essay", "Design", "Reading", "Research"];
-const PROJECT_TEMPLATES = ["Coding Sprint", "Study Plan", "Reading List", "Personal Projects"];
-const MUSIC_OPTIONS = ["Rain", "Café", "Fireplace", "Ocean", "Forest", "Thunder", "No Music"];
-const STREAK_GOALS = ["15 minutes a day", "30 minutes a day", "1 hour a day", "2 hours a day"];
+const PLAYLIST_OPTIONS = ["Rain", "Café", "Fireplace", "Ocean", "Forest", "Thunder", "No Playlist"];
 
 // ── Progress indicator ───────────────────────────────────────────
 function ProgressDots({ activeIndex }: { activeIndex: number }) {
@@ -45,20 +44,22 @@ function ProgressDots({ activeIndex }: { activeIndex: number }) {
 
 // ── Reusable pill choice group ───────────────────────────────────
 function ChoicePills({
-  options, value, onChange,
+  groupLabel, options, value, onChange,
 }: {
+  groupLabel: string;
   options: string[];
   value: string | null;
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div role="group" aria-label={groupLabel} className="flex flex-wrap gap-2">
       {options.map(option => {
         const active = value === option;
         return (
           <button
             key={option}
             type="button"
+            aria-pressed={active}
             onClick={() => onChange(option)}
             className="px-4 py-2 rounded-full text-sm font-medium border transition-colors"
             style={{
@@ -95,7 +96,7 @@ function StepShell({
       </CardHeader>
       <CardContent className="space-y-4">
         {children}
-        {prompt && <p className="text-sm text-destructive">{prompt}</p>}
+        {prompt && <p className="text-sm text-destructive" role="alert">{prompt}</p>}
       </CardContent>
       <CardFooter className="flex justify-between">
         {onBack ? <Button type="button" variant="ghost" onClick={onBack}>Back</Button> : <span />}
@@ -155,17 +156,17 @@ function AccountStep({ onContinue }: { onContinue: (account: AccountRecord) => v
           <div className="space-y-1.5">
             <Label htmlFor="ob-name">Name</Label>
             <Input id="ob-name" value={name} onChange={e => setName(e.target.value)} placeholder="Jordan Smith" aria-invalid={!!errors.name} />
-            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+            {errors.name && <p className="text-sm text-destructive" role="alert">{errors.name}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="ob-email">Email</Label>
             <Input id="ob-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" aria-invalid={!!errors.email} />
-            {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+            {errors.email && <p className="text-sm text-destructive" role="alert">{errors.email}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="ob-password">Password</Label>
             <Input id="ob-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" aria-invalid={!!errors.password} />
-            {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+            {errors.password && <p className="text-sm text-destructive" role="alert">{errors.password}</p>}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
@@ -182,17 +183,50 @@ function AccountStep({ onContinue }: { onContinue: (account: AccountRecord) => v
 }
 
 // ── Step: Sessions ────────────────────────────────────────────────
+/** Which pill a saved value sits behind — one of the suggestions, or the user's own. */
+function pillFor(value: string | null, suggestions: string[]): string | null {
+  if (value === null) return null;
+  return suggestions.includes(value) ? value : OWN_CHOICE;
+}
+
 function SessionsStep({ initial, onContinue }: {
   initial?: OnboardingSession;
   onContinue: (session: OnboardingSession) => void;
 }) {
-  const [duration, setDuration] = useState<number | null>(initial?.duration ?? null);
-  const [type, setType] = useState<string | null>(initial?.type ?? null);
+  const savedLength = initial ? `${initial.duration}m` : null;
+  const suggestedLengths = SESSION_DURATIONS.map(d => `${d}m`);
+  const [lengthChoice, setLengthChoice] = useState<string | null>(pillFor(savedLength, suggestedLengths));
+  const [ownLength, setOwnLength] = useState(
+    savedLength && !suggestedLengths.includes(savedLength) ? String(initial?.duration ?? "") : "",
+  );
+
+  const [typeChoice, setTypeChoice] = useState<string | null>(pillFor(initial?.type ?? null, SESSION_TYPES));
+  const [ownType, setOwnType] = useState(
+    initial?.type && !SESSION_TYPES.includes(initial.type) ? initial.type : "",
+  );
+
   const [prompt, setPrompt] = useState<string | null>(null);
 
+  /** Minutes the user settled on, or nothing if they have not settled on any. */
+  function chosenLength(): number | null {
+    if (lengthChoice === OWN_CHOICE) {
+      const minutes = Number(ownLength.trim());
+      return Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes) : null;
+    }
+    return lengthChoice ? Number(lengthChoice.replace("m", "")) : null;
+  }
+
+  function chosenType(): string | null {
+    if (typeChoice === OWN_CHOICE) return ownType.trim() || null;
+    return typeChoice;
+  }
+
   function handleContinue() {
+    const duration = chosenLength();
+    const type = chosenType();
+
     if (duration === null || !type) {
-      setPrompt("Choose a session length and a focus type to continue.");
+      setPrompt("Choose a session length and a focus type, or enter your own, to continue.");
       return;
     }
     onContinue({ duration, type });
@@ -208,60 +242,50 @@ function SessionsStep({ initial, onContinue }: {
       <div className="space-y-1.5">
         <Label>Session length</Label>
         <ChoicePills
-          options={SESSION_DURATIONS.map(d => `${d}m`)}
-          value={duration !== null ? `${duration}m` : null}
-          onChange={v => setDuration(Number(v.replace("m", "")))}
+          groupLabel="Session length choices"
+          options={[...suggestedLengths, OWN_CHOICE]}
+          value={lengthChoice}
+          onChange={setLengthChoice}
         />
+        {lengthChoice === OWN_CHOICE && (
+          <div className="space-y-1.5 pt-2">
+            <Label htmlFor="ob-own-length">Session length in minutes</Label>
+            <Input
+              id="ob-own-length"
+              inputMode="numeric"
+              value={ownLength}
+              onChange={e => setOwnLength(e.target.value)}
+              placeholder="37"
+            />
+          </div>
+        )}
       </div>
       <div className="space-y-1.5">
         <Label>What will you focus on?</Label>
-        <ChoicePills options={SESSION_TYPES} value={type} onChange={setType} />
-      </div>
-    </StepShell>
-  );
-}
-
-// ── Step: Projects ────────────────────────────────────────────────
-function ProjectsStep({ initial, onBack, onContinue }: {
-  initial?: OnboardingProject;
-  onBack: () => void;
-  onContinue: (project: OnboardingProject) => void;
-}) {
-  const [name, setName] = useState(initial?.name ?? "");
-  const [prompt, setPrompt] = useState<string | null>(null);
-
-  function handleContinue() {
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setPrompt("Name your project or choose a template to continue.");
-      return;
-    }
-    onContinue({ name: trimmed });
-  }
-
-  return (
-    <StepShell
-      title="Projects"
-      explanation="A project groups related tasks together — like 'Thesis' or 'Side Hustle' — so your work stays organized."
-      prompt={prompt}
-      onBack={onBack}
-      onContinue={handleContinue}
-    >
-      <div className="space-y-1.5">
-        <Label htmlFor="ob-project">Project name</Label>
-        <Input id="ob-project" value={name} onChange={e => setName(e.target.value)} placeholder="My First Project" />
-      </div>
-      <div className="space-y-1.5">
-        <Label>Or pick a suggested template</Label>
-        <ChoicePills options={PROJECT_TEMPLATES} value={PROJECT_TEMPLATES.includes(name) ? name : null} onChange={setName} />
+        <ChoicePills
+          groupLabel="Focus type choices"
+          options={[...SESSION_TYPES, OWN_CHOICE]}
+          value={typeChoice}
+          onChange={setTypeChoice}
+        />
+        {typeChoice === OWN_CHOICE && (
+          <div className="space-y-1.5 pt-2">
+            <Label htmlFor="ob-own-type">Your focus type</Label>
+            <Input
+              id="ob-own-type"
+              value={ownType}
+              onChange={e => setOwnType(e.target.value)}
+              placeholder="Thesis edits"
+            />
+          </div>
+        )}
       </div>
     </StepShell>
   );
 }
 
 // ── Step: Tasks ───────────────────────────────────────────────────
-function TasksStep({ project, initial, onBack, onContinue }: {
-  project?: OnboardingProject;
+function TasksStep({ initial, onBack, onContinue }: {
   initial?: OnboardingTask;
   onBack: () => void;
   onContinue: (task: OnboardingTask) => void;
@@ -287,27 +311,25 @@ function TasksStep({ project, initial, onBack, onContinue }: {
       onContinue={handleContinue}
     >
       <div className="space-y-1.5">
-        <Label htmlFor="ob-task">
-          {project?.name ? `First task for ${project.name}` : "Your first task"}
-        </Label>
+        <Label htmlFor="ob-task">Your first task</Label>
         <Input id="ob-task" value={title} onChange={e => setTitle(e.target.value)} placeholder="Read Chapter 4" />
       </div>
     </StepShell>
   );
 }
 
-// ── Step: Music ───────────────────────────────────────────────────
-function MusicStep({ initial, onBack, onContinue }: {
-  initial?: OnboardingMusic;
+// ── Step: Playlist ────────────────────────────────────────────────
+function PlaylistStep({ initial, onBack, onContinue }: {
+  initial?: OnboardingPlaylist;
   onBack: () => void;
-  onContinue: (music: OnboardingMusic) => void;
+  onContinue: (playlist: OnboardingPlaylist) => void;
 }) {
   const [option, setOption] = useState<string | null>(initial?.option ?? null);
   const [prompt, setPrompt] = useState<string | null>(null);
 
   function handleContinue() {
     if (!option) {
-      setPrompt("Pick a music option to continue.");
+      setPrompt("Pick a playlist, or No Playlist, to continue.");
       return;
     }
     onContinue({ option });
@@ -315,13 +337,18 @@ function MusicStep({ initial, onBack, onContinue }: {
 
   return (
     <StepShell
-      title="Music"
-      explanation="Music sets the mood for a session — pick a focus soundscape, or go with no music at all."
+      title="Playlist"
+      explanation="A playlist sets the mood for a session — pick the one your first session will play, or go without."
       prompt={prompt}
       onBack={onBack}
       onContinue={handleContinue}
     >
-      <ChoicePills options={MUSIC_OPTIONS} value={option} onChange={setOption} />
+      <ChoicePills
+        groupLabel="Playlist choices"
+        options={PLAYLIST_OPTIONS}
+        value={option}
+        onChange={setOption}
+      />
     </StepShell>
   );
 }
@@ -332,7 +359,7 @@ function ThemeStep({ initial, onBack, onContinue }: {
   onBack: () => void;
   onContinue: (theme: OnboardingTheme) => void;
 }) {
-  const [themeId, setThemeId] = useState<string | null>(initial?.id ?? "focusflow");
+  const [themeId, setThemeId] = useState<string | null>(initial?.id ?? "focus-flow");
   const [prompt, setPrompt] = useState<string | null>(null);
 
   function handleContinue() {
@@ -346,12 +373,13 @@ function ThemeStep({ initial, onBack, onContinue }: {
   return (
     <StepShell
       title="Theme"
-      explanation="Choose the look and feel of your workspace. You can always change it later from Themes."
+      explanation="Choose the look and feel of your workspace. It comes with you to your dashboard, and you can change it any time from Themes."
       prompt={prompt}
       onBack={onBack}
       onContinue={handleContinue}
+      continueLabel="Finish"
     >
-      <div className="grid grid-cols-2 gap-3">
+      <div role="group" aria-label="Theme choices" className="grid grid-cols-2 gap-3">
         {THEME_ORDER.map(tid => {
           const t = THEMES[tid];
           const active = themeId === tid;
@@ -359,6 +387,8 @@ function ThemeStep({ initial, onBack, onContinue }: {
             <button
               key={tid}
               type="button"
+              aria-label={t.name}
+              aria-pressed={active}
               onClick={() => setThemeId(tid)}
               className="rounded-xl overflow-hidden text-left transition-all"
               style={{
@@ -378,39 +408,10 @@ function ThemeStep({ initial, onBack, onContinue }: {
   );
 }
 
-// ── Step: Streaks ─────────────────────────────────────────────────
-function StreaksStep({ initial, onBack, onContinue }: {
-  initial?: OnboardingStreak;
-  onBack: () => void;
-  onContinue: (streak: OnboardingStreak) => void;
-}) {
-  const [goal, setGoal] = useState<string | null>(initial?.goal ?? null);
-  const [prompt, setPrompt] = useState<string | null>(null);
-
-  function handleContinue() {
-    if (!goal) {
-      setPrompt("Set a daily goal to continue.");
-      return;
-    }
-    onContinue({ goal });
-  }
-
-  return (
-    <StepShell
-      title="Streaks"
-      explanation="A streak counts the consecutive days you complete a focus session, keeping you motivated to keep showing up."
-      prompt={prompt}
-      onBack={onBack}
-      onContinue={handleContinue}
-      continueLabel="Finish"
-    >
-      <ChoicePills options={STREAK_GOALS} value={goal} onChange={setGoal} />
-    </StepShell>
-  );
-}
-
 // ── Step: Done ────────────────────────────────────────────────────
 function DoneStep({ account, onFinish }: { account: AccountRecord; onFinish: () => void }) {
+  const theme = account.theme ? THEMES[account.theme.id as keyof typeof THEMES] : undefined;
+
   return (
     <Card className="w-full max-w-md text-center">
       <CardHeader>
@@ -419,11 +420,9 @@ function DoneStep({ account, onFinish }: { account: AccountRecord; onFinish: () 
       </CardHeader>
       <CardContent className="space-y-2 text-left text-sm">
         {account.session && <p><span className="text-muted-foreground">Session:</span> {account.session.duration}m of {account.session.type}</p>}
-        {account.project && <p><span className="text-muted-foreground">Project:</span> {account.project.name}</p>}
         {account.task && <p><span className="text-muted-foreground">Task:</span> {account.task.title}</p>}
-        {account.music && <p><span className="text-muted-foreground">Music:</span> {account.music.option}</p>}
-        {account.theme && <p><span className="text-muted-foreground">Theme:</span> {THEMES[account.theme.id]?.emoji} {THEMES[account.theme.id]?.name}</p>}
-        {account.streak && <p><span className="text-muted-foreground">Daily goal:</span> {account.streak.goal}</p>}
+        {account.playlist && <p><span className="text-muted-foreground">Playlist:</span> {account.playlist.option}</p>}
+        {theme && <p><span className="text-muted-foreground">Theme:</span> {theme.emoji} {theme.name}</p>}
       </CardContent>
       <CardFooter>
         <Button className="w-full" onClick={onFinish}>Get Started</Button>
@@ -463,22 +462,16 @@ export default function Onboarding({ account, onAccountChange }: {
 
       {step === "account" && <AccountStep onContinue={onAccountChange} />}
       {account && step === "sessions" && (
-        <SessionsStep initial={account.session} onContinue={session => advance({ session }, "projects")} />
-      )}
-      {account && step === "projects" && (
-        <ProjectsStep initial={account.project} onBack={() => goTo("sessions")} onContinue={project => advance({ project }, "tasks")} />
+        <SessionsStep initial={account.session} onContinue={session => advance({ session }, "tasks")} />
       )}
       {account && step === "tasks" && (
-        <TasksStep project={account.project} initial={account.task} onBack={() => goTo("projects")} onContinue={task => advance({ task }, "music")} />
+        <TasksStep initial={account.task} onBack={() => goTo("sessions")} onContinue={task => advance({ task }, "playlist")} />
       )}
-      {account && step === "music" && (
-        <MusicStep initial={account.music} onBack={() => goTo("tasks")} onContinue={music => advance({ music }, "theme")} />
+      {account && step === "playlist" && (
+        <PlaylistStep initial={account.playlist} onBack={() => goTo("tasks")} onContinue={playlist => advance({ playlist }, "theme")} />
       )}
       {account && step === "theme" && (
-        <ThemeStep initial={account.theme} onBack={() => goTo("music")} onContinue={theme => advance({ theme }, "streaks")} />
-      )}
-      {account && step === "streaks" && (
-        <StreaksStep initial={account.streak} onBack={() => goTo("theme")} onContinue={streak => advance({ streak }, "done")} />
+        <ThemeStep initial={account.theme} onBack={() => goTo("playlist")} onContinue={theme => advance({ theme }, "done")} />
       )}
       {account && step === "done" && <DoneStep account={account} onFinish={handleFinish} />}
     </div>
