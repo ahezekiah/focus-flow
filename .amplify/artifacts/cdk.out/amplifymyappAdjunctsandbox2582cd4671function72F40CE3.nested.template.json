@@ -145,7 +145,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "b3ab6e25f8275636b22a2920b23bff1b5d55f91776fed7a4ac2ea0331c546bf9.zip"
+     "S3Key": "d071f9d3c8ceda013aedb00ae248d8b88dfcebac554008f677cfb97aaef3a2fe.zip"
     },
     "Environment": {
      "Variables": {
@@ -194,7 +194,7 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/audio-files-lambda/Resource",
-    "aws:asset:path": "asset.b3ab6e25f8275636b22a2920b23bff1b5d55f91776fed7a4ac2ea0331c546bf9",
+    "aws:asset:path": "asset.d071f9d3c8ceda013aedb00ae248d8b88dfcebac554008f677cfb97aaef3a2fe",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -364,7 +364,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "2330108486725e60baa9e30d60d1c2099d47f7109cebd21f8a5e398bfb4ca834.zip"
+     "S3Key": "1f056a84d8e96701eb689345457c376f7816fa495d48f1135e34268b069a5e8b.zip"
     },
     "Environment": {
      "Variables": {
@@ -416,7 +416,7 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/playlists-lambda/Resource",
-    "aws:asset:path": "asset.2330108486725e60baa9e30d60d1c2099d47f7109cebd21f8a5e398bfb4ca834",
+    "aws:asset:path": "asset.1f056a84d8e96701eb689345457c376f7816fa495d48f1135e34268b069a5e8b",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
