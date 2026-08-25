@@ -12,25 +12,10 @@
 # Error details
 
 ```
-Test timeout of 90000ms exceeded.
-```
-
-```
-Error: locator.click: Test timeout of 90000ms exceeded.
+Error: locator.click: Target page, context or browser has been closed
 Call log:
   - waiting for getByRole('button', { name: 'Audio Files', exact: true })
 
-```
-
-# Page snapshot
-
-```yaml
-- generic [ref=e4]:
-  - generic [ref=e5]: Rainy evening · quiet hours
-  - heading "FocusFlow" [level=1] [ref=e7]
-  - paragraph [ref=e8]: Find your rhythm. Protect your time.Do the work that matters.
-  - button "Start Your First Session" [ref=e9]
-  - button "Already have an account? Sign in" [ref=e12]
 ```
 
 # Test source
@@ -137,7 +122,7 @@ Call log:
   109 | 
   110 |   async clickNavItem(label: string): Promise<void> {
 > 111 |     await this.button(label).click();
-      |                              ^ Error: locator.click: Test timeout of 90000ms exceeded.
+      |                              ^ Error: locator.click: Target page, context or browser has been closed
   112 |   }
   113 | 
   114 |   // ── Forms and controls ───────────────────────────────────────
