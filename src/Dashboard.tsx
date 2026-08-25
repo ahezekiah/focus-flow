@@ -11,7 +11,7 @@ import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from ".
 import { getDefaultPlaylist, type Playlist } from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
-import { DEFAULT_TRACK, useAmbientMusic } from "./lib/ambientMusic";
+import { ambientAudio, DEFAULT_TRACK, releaseAmbientMusic } from "./lib/ambientMusic";
 
 // ── Types ──────────────────────────────────────────────────────
 type Nav = "home" | "focus" | "music" | "playlists" | "sounds" | "analytics" | "themes";
@@ -1425,7 +1425,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
       : undefined;
 
   // ── Playlist & audio ──
-  const { audio: sharedAudio, takeOver } = useAmbientMusic();
+  const sharedAudio = ambientAudio();
   // The queue holds the music that has been playing since the homepage from the very
   // first render, so there is never a moment where the dashboard thinks nothing is on.
   const [playlist, setPlaylist] = useState<Track[]>(() => [{ ...DEFAULT_TRACK, duration: 0, size: "" }]);
@@ -1531,7 +1531,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
    * listener is in charge — play, pause and track changes are all theirs.
    */
   useEffect(() => {
-    takeOver();
+    releaseAmbientMusic();
 
     if (!isBackendConfigured) return;
     let cancelled = false;
@@ -1547,7 +1547,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
     return () => {
       cancelled = true;
     };
-  }, [takeOver]);
+  }, []);
 
   // ── Track management ──
   const handleAddTracks = useCallback((files: FileList) => {

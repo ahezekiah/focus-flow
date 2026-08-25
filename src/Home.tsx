@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { startDefaultMusic } from "./lib/ambientMusic";
 import Rain from "../components/Rain";
 
 
@@ -7,6 +9,12 @@ import Rain from "../components/Rain";
 
 export default function Home({ signedIn, completed }: { signedIn: boolean; completed: boolean }) {
   const navigate = useNavigate();
+
+  // Arriving back at the landing page — including straight after signing out —
+  // starts the welcome music over rather than leaving the visitor in silence.
+  useEffect(() => {
+    startDefaultMusic();
+  }, []);
 
   return (
     <div

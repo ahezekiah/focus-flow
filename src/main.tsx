@@ -3,15 +3,15 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import './lib/amplify'
-import { AmbientMusicProvider } from './lib/AmbientMusicProvider'
+import { startDefaultMusic } from './lib/ambientMusic'
 import App from './App.tsx'
+
+startDefaultMusic()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AmbientMusicProvider>
-        <App />
-      </AmbientMusicProvider>
+      <App />
     </BrowserRouter>
   </StrictMode>,
 )
