@@ -8,20 +8,27 @@ import {
 import { ThemeSelectionView } from "./dash/ThemeSelectionView";
 import { PlaylistsView } from "./dash/PlaylistsView";
 import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from "./dash/themes";
-import { getDefaultPlaylist, type Playlist } from "./lib/api";
+// import { getDefaultPlaylist, type Playlist } from "./lib/api";
+import { getDefaultPlaylist, listPlaylists, listAudioFiles, type Playlist, type AudioFile } from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
 
 // ── Types ──────────────────────────────────────────────────────
 type Nav = "home" | "focus" | "music" | "playlists" | "sounds" | "analytics" | "themes";
-type FocusPhase = "idle" | "setup" | "active" | "complete";
+type FocusPhase = "idle" | "setup" | "review" | "active" | "complete";
 type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 
 interface FocusConfig {
-  duration: number;
-  music: string;
-  ambience: string;
-  objective: string;
+  duration?: number;
+  // music: string;
+  // ambience: string;
+  objective?: string;
+  task?: string;
+  audio?: {
+    id: string;
+    name: string;
+    type: "playlist" | "track";
+  }
 }
 
 interface Task {
@@ -566,104 +573,625 @@ function HomeView({
 }
 
 // ── Focus Setup ────────────────────────────────────────────────
+
+// function FocusSetupView({
+//   onBegin, theme, defaultDuration = 45, defaultObjective = "Coding", defaultAmbience = "Rain",
+// }: {
+//   onBegin: (cfg: FocusConfig) => void;
+//   theme: DashTheme;
+//   defaultDuration?: number;
+//   defaultObjective?: string;
+//   defaultAmbience?: string;
+// }) {
+//   const [duration, setDuration] = useState(defaultDuration);
+//   const [music, setMusic] = useState("Coding");
+//   const [ambience, setAmbience] = useState(defaultAmbience);
+//   const [objective, setObjective] = useState(defaultObjective);
+
+//   const durations = [25, 45, 60, 90];
+//   const musicOpts = ["Coding", "Writing", "Math", "Reading", "Creative", "Exam Prep"];
+//   const ambienceOpts = ["Rain", "Café", "Fireplace", "Ocean", "Forest", "Thunder"];
+//   const objectiveOpts = ["Homework", "Coding", "Essay", "Design", "Reading", "Research"];
+
+//   function OptionPill({ opts, value, onChange, color }: { opts: string[]; value: string; onChange: (v: string) => void; color: string }) {
+//     return (
+//       <div className="grid grid-cols-3 gap-2">
+//         {opts.map(o => (
+//           <button
+//             key={o}
+//             onClick={() => onChange(o)}
+//             className="py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+//             style={{
+//               background: value === o ? `${color}20` : "transparent",
+//               border: `1px solid ${value === o ? color : theme.border}`,
+//               color: value === o ? color : theme.mutedFg,
+//             }}
+//           >
+//             {o}
+//           </button>
+//         ))}
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="p-8 max-w-2xl">
+//       <div className="mb-8">
+//         <h2 className="font-display text-2xl font-bold mb-1" style={{ color: theme.foreground }}>New Focus Session</h2>
+//         <p className="text-sm" style={{ color: theme.mutedFg }}>Set up your environment for deep work.</p>
+//       </div>
+
+//       <div className="space-y-7">
+//         <div>
+//           <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Duration</label>
+//           <div className="flex gap-2">
+//             {durations.map(d => (
+//               <button
+//                 key={d}
+//                 onClick={() => setDuration(d)}
+//                 className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-150"
+//                 style={{
+//                   background: duration === d ? `${theme.primary}20` : "transparent",
+//                   border: `1px solid ${duration === d ? theme.primary : theme.border}`,
+//                   color: duration === d ? theme.primary : theme.mutedFg,
+//                 }}
+//               >{d}m</button>
+//             ))}
+//             <button
+//               className="px-4 py-3 rounded-xl text-sm font-medium transition-all"
+//               style={{ border: `1px dashed ${theme.border}`, color: theme.mutedFg }}
+//             >Custom</button>
+//           </div>
+//         </div>
+
+//         <div>
+//           <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Music Mode</label>
+//           <OptionPill opts={musicOpts} value={music} onChange={setMusic} color={theme.primary} />
+//         </div>
+
+//         <div>
+//           <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Ambience</label>
+//           <OptionPill opts={ambienceOpts} value={ambience} onChange={setAmbience} color={theme.primary} />
+//         </div>
+
+//         <div>
+//           <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Objective</label>
+//           <OptionPill opts={objectiveOpts} value={objective} onChange={setObjective} color={theme.accent} />
+//         </div>
+
+//         <button
+//           onClick={() => onBegin({ duration, music, ambience, objective })}
+//           className="w-full py-4 font-bold text-base rounded-xl transition-opacity duration-150"
+//           style={{ background: theme.accent, color: theme.accentFg }}
+//           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
+//           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+//         >
+//           Begin Session →
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
+
 function FocusSetupView({
-  onBegin, theme, defaultDuration = 45, defaultObjective = "Coding", defaultAmbience = "Rain",
+  onContinue,
+  theme,
 }: {
-  onBegin: (cfg: FocusConfig) => void;
+  onContinue: (config: FocusConfig) => void;
   theme: DashTheme;
-  defaultDuration?: number;
-  defaultObjective?: string;
-  defaultAmbience?: string;
 }) {
-  const [duration, setDuration] = useState(defaultDuration);
-  const [music, setMusic] = useState("Coding");
-  const [ambience, setAmbience] = useState(defaultAmbience);
-  const [objective, setObjective] = useState(defaultObjective);
+  const [duration, setDuration] = useState<number | undefined>();
+  const [customSelected, setCustomSelected] = useState(false);
+  const [customDuration, setCustomDuration] = useState("");
+
+  const [objective, setObjective] = useState("");
+  const [task, setTask] = useState("");
+
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+
+  const [selectedAudio, setSelectedAudio] =
+    useState<FocusConfig["audio"]>();
 
   const durations = [25, 45, 60, 90];
-  const musicOpts = ["Coding", "Writing", "Math", "Reading", "Creative", "Exam Prep"];
-  const ambienceOpts = ["Rain", "Café", "Fireplace", "Ocean", "Forest", "Thunder"];
-  const objectiveOpts = ["Homework", "Coding", "Essay", "Design", "Reading", "Research"];
 
-  function OptionPill({ opts, value, onChange, color }: { opts: string[]; value: string; onChange: (v: string) => void; color: string }) {
-    return (
-      <div className="grid grid-cols-3 gap-2">
-        {opts.map(o => (
-          <button
-            key={o}
-            onClick={() => onChange(o)}
-            className="py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
-            style={{
-              background: value === o ? `${color}20` : "transparent",
-              border: `1px solid ${value === o ? color : theme.border}`,
-              color: value === o ? color : theme.mutedFg,
-            }}
-          >
-            {o}
-          </button>
-        ))}
-      </div>
-    );
+  useEffect(() => {
+    async function loadAudioOptions() {
+      if (!isBackendConfigured) return;
+
+      try {
+        const [playlistResults, audioResults] = await Promise.all([
+          listPlaylists(),
+          listAudioFiles(),
+        ]);
+
+        setPlaylists(playlistResults);
+        setAudioFiles(audioResults);
+      } catch (error) {
+        console.error("Could not load session audio:", error);
+      }
+    }
+
+    void loadAudioOptions();
+  }, []);
+
+  function choosePresetDuration(minutes: number) {
+    setDuration(minutes);
+    setCustomSelected(false);
+    setCustomDuration("");
+  }
+
+  function chooseCustom() {
+    setDuration(undefined);
+    setCustomSelected(true);
+  }
+
+  function handleContinue() {
+    let finalDuration = duration;
+
+    if (customSelected && customDuration.trim()) {
+      const minutes = Number(customDuration);
+
+      if (Number.isFinite(minutes) && minutes > 0) {
+        finalDuration = Math.round(minutes);
+      }
+    }
+
+    const config: FocusConfig = {};
+
+    if (finalDuration) {
+      config.duration = finalDuration;
+    }
+
+    if (objective.trim()) {
+      config.objective = objective.trim();
+    }
+
+    if (task.trim()) {
+      config.task = task.trim();
+    }
+
+    if (selectedAudio) {
+      config.audio = selectedAudio;
+    }
+
+    onContinue(config);
   }
 
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-8">
-        <h2 className="font-display text-2xl font-bold mb-1" style={{ color: theme.foreground }}>New Focus Session</h2>
-        <p className="text-sm" style={{ color: theme.mutedFg }}>Set up your environment for deep work.</p>
+        <h2
+          className="font-display text-2xl font-bold mb-1"
+          style={{ color: theme.foreground }}
+        >
+          New Focus Session
+        </h2>
+
+        <p
+          className="text-sm"
+          style={{ color: theme.mutedFg }}
+        >
+          Add as much or as little as you want.
+        </p>
       </div>
 
       <div className="space-y-7">
+
+        {/* Duration */}
         <div>
-          <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Duration</label>
+          <label
+            className="text-xs uppercase tracking-wider block mb-3"
+            style={{ color: theme.mutedFg }}
+          >
+            Duration
+            <span className="normal-case ml-2">(optional)</span>
+          </label>
+
           <div className="flex gap-2">
-            {durations.map(d => (
+            {durations.map(minutes => (
               <button
-                key={d}
-                onClick={() => setDuration(d)}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-150"
+                key={minutes}
+                type="button"
+                onClick={() => choosePresetDuration(minutes)}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
                 style={{
-                  background: duration === d ? `${theme.primary}20` : "transparent",
-                  border: `1px solid ${duration === d ? theme.primary : theme.border}`,
-                  color: duration === d ? theme.primary : theme.mutedFg,
+                  background:
+                    duration === minutes && !customSelected
+                      ? `${theme.primary}20`
+                      : "transparent",
+                  border: `1px solid ${
+                    duration === minutes && !customSelected
+                      ? theme.primary
+                      : theme.border
+                  }`,
+                  color:
+                    duration === minutes && !customSelected
+                      ? theme.primary
+                      : theme.mutedFg,
                 }}
-              >{d}m</button>
+              >
+                {minutes}m
+              </button>
             ))}
+
             <button
-              className="px-4 py-3 rounded-xl text-sm font-medium transition-all"
-              style={{ border: `1px dashed ${theme.border}`, color: theme.mutedFg }}
-            >Custom</button>
+              type="button"
+              onClick={chooseCustom}
+              className="px-4 py-3 rounded-xl text-sm font-medium"
+              style={{
+                border: `1px solid ${
+                  customSelected ? theme.primary : theme.border
+                }`,
+                color: customSelected
+                  ? theme.primary
+                  : theme.mutedFg,
+              }}
+            >
+              Custom
+            </button>
+          </div>
+
+          {customSelected && (
+            <div className="mt-3">
+              <input
+                type="number"
+                min="1"
+                value={customDuration}
+                onChange={e => setCustomDuration(e.target.value)}
+                placeholder="Enter minutes"
+                className="w-full px-4 py-3 rounded-xl outline-none"
+                style={{
+                  background: theme.card,
+                  border: `1px solid ${theme.border}`,
+                  color: theme.foreground,
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Objective */}
+        <div>
+          <label
+            htmlFor="session-objective"
+            className="text-xs uppercase tracking-wider block mb-3"
+            style={{ color: theme.mutedFg }}
+          >
+            Objective
+            <span className="normal-case ml-2">(optional)</span>
+          </label>
+
+          <textarea
+            id="session-objective"
+            value={objective}
+            onChange={e => setObjective(e.target.value)}
+            placeholder="What do you want to accomplish?"
+            rows={3}
+            className="w-full px-4 py-3 rounded-xl outline-none resize-none"
+            style={{
+              background: theme.card,
+              border: `1px solid ${theme.border}`,
+              color: theme.foreground,
+            }}
+          />
+        </div>
+
+        {/* Task */}
+        <div>
+          <label
+            htmlFor="session-task"
+            className="text-xs uppercase tracking-wider block mb-3"
+            style={{ color: theme.mutedFg }}
+          >
+            Task
+            <span className="normal-case ml-2">(optional)</span>
+          </label>
+
+          <input
+            id="session-task"
+            type="text"
+            value={task}
+            onChange={e => setTask(e.target.value)}
+            placeholder="What are you working on?"
+            className="w-full px-4 py-3 rounded-xl outline-none"
+            style={{
+              background: theme.card,
+              border: `1px solid ${theme.border}`,
+              color: theme.foreground,
+            }}
+          />
+        </div>
+
+        {/* Background Audio */}
+        <div>
+          <label
+            className="text-xs uppercase tracking-wider block mb-3"
+            style={{ color: theme.mutedFg }}
+          >
+            Background Audio
+            <span className="normal-case ml-2">(optional)</span>
+          </label>
+
+          <div className="space-y-3">
+
+            {/* None */}
+            <button
+              type="button"
+              onClick={() => setSelectedAudio(undefined)}
+              className="w-full text-left px-4 py-3 rounded-xl"
+              style={{
+                border: `1px solid ${
+                  !selectedAudio
+                    ? theme.primary
+                    : theme.border
+                }`,
+                color: !selectedAudio
+                  ? theme.primary
+                  : theme.foreground,
+              }}
+            >
+              No background audio
+            </button>
+
+            {/* Playlists */}
+            {playlists.length > 0 && (
+              <div>
+                <p
+                  className="text-xs mb-2"
+                  style={{ color: theme.mutedFg }}
+                >
+                  Playlists
+                </p>
+
+                <div className="space-y-2">
+                  {playlists.map(playlist => {
+                    const selected =
+                      selectedAudio?.type === "playlist" &&
+                      selectedAudio.id === playlist.id;
+
+                    return (
+                      <button
+                        key={playlist.id}
+                        type="button"
+                        onClick={() =>
+                          setSelectedAudio({
+                            id: playlist.id,
+                            name: playlist.name,
+                            type: "playlist",
+                          })
+                        }
+                        className="w-full text-left px-4 py-3 rounded-xl"
+                        style={{
+                          background: selected
+                            ? `${theme.primary}15`
+                            : "transparent",
+                          border: `1px solid ${
+                            selected
+                              ? theme.primary
+                              : theme.border
+                          }`,
+                          color: theme.foreground,
+                        }}
+                      >
+                        🎵 {playlist.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Individual tracks */}
+            {audioFiles.length > 0 && (
+              <div>
+                <p
+                  className="text-xs mb-2"
+                  style={{ color: theme.mutedFg }}
+                >
+                  Individual Tracks
+                </p>
+
+                <div className="space-y-2">
+                  {audioFiles.map(track => {
+                    const selected =
+                      selectedAudio?.type === "track" &&
+                      selectedAudio.id === track.id;
+
+                    return (
+                      <button
+                        key={track.id}
+                        type="button"
+                        onClick={() =>
+                          setSelectedAudio({
+                            id: track.id,
+                            name: track.name,
+                            type: "track",
+                          })
+                        }
+                        className="w-full text-left px-4 py-3 rounded-xl"
+                        style={{
+                          background: selected
+                            ? `${theme.accent}15`
+                            : "transparent",
+                          border: `1px solid ${
+                            selected
+                              ? theme.accent
+                              : theme.border
+                          }`,
+                          color: theme.foreground,
+                        }}
+                      >
+                        🎧 {track.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div>
-          <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Music Mode</label>
-          <OptionPill opts={musicOpts} value={music} onChange={setMusic} color={theme.primary} />
-        </div>
-
-        <div>
-          <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Ambience</label>
-          <OptionPill opts={ambienceOpts} value={ambience} onChange={setAmbience} color={theme.primary} />
-        </div>
-
-        <div>
-          <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Objective</label>
-          <OptionPill opts={objectiveOpts} value={objective} onChange={setObjective} color={theme.accent} />
-        </div>
-
         <button
-          onClick={() => onBegin({ duration, music, ambience, objective })}
-          className="w-full py-4 font-bold text-base rounded-xl transition-opacity duration-150"
-          style={{ background: theme.accent, color: theme.accentFg }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+          type="button"
+          onClick={handleContinue}
+          className="w-full py-4 font-bold text-base rounded-xl"
+          style={{
+            background: theme.accent,
+            color: theme.accentFg,
+          }}
         >
-          Begin Session →
+          Review Session →
         </button>
       </div>
     </div>
   );
 }
+
+// ── Review Session ─────────────────────────────────────────────
+function ReviewItem({
+  label,
+  value,
+  theme,
+}: {
+  label: string;
+  value: string;
+  theme: DashTheme;
+}) {
+  return (
+    <div>
+      <p
+        className="text-xs uppercase tracking-wider mb-1"
+        style={{ color: theme.mutedFg }}
+      >
+        {label}
+      </p>
+
+      <p
+        className="font-medium"
+        style={{ color: theme.foreground }}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function SessionReviewView({
+  config,
+  onStart,
+  onBack,
+  theme,
+}: {
+  config: FocusConfig;
+  onStart: () => void;
+  onBack: () => void;
+  theme: DashTheme;
+}) {
+  const hasDetails =
+    config.duration ||
+    config.objective ||
+    config.task ||
+    config.audio;
+
+  return (
+    <div className="p-8 max-w-2xl">
+      <div className="mb-8">
+        <h2
+          className="font-display text-2xl font-bold mb-1"
+          style={{ color: theme.foreground }}
+        >
+          Review Session
+        </h2>
+
+        <p
+          className="text-sm"
+          style={{ color: theme.mutedFg }}
+        >
+          Make sure everything looks right before you start.
+        </p>
+      </div>
+
+      <div
+        className="rounded-2xl p-6 space-y-5"
+        style={{
+          background: theme.card,
+          border: `1px solid ${theme.border}`,
+        }}
+      >
+        {config.duration && (
+          <ReviewItem
+            label="Duration"
+            value={`${config.duration} minutes`}
+            theme={theme}
+          />
+        )}
+
+        {config.task && (
+          <ReviewItem
+            label="Task"
+            value={config.task}
+            theme={theme}
+          />
+        )}
+
+        {config.objective && (
+          <ReviewItem
+            label="Objective"
+            value={config.objective}
+            theme={theme}
+          />
+        )}
+
+        {config.audio && (
+          <ReviewItem
+            label="Background Audio"
+            value={`${config.audio.name} ${
+              config.audio.type === "playlist"
+                ? "(Playlist)"
+                : "(Track)"
+            }`}
+            theme={theme}
+          />
+        )}
+
+        {!hasDetails && (
+          <p style={{ color: theme.mutedFg }}>
+            No session details selected. You can still start your
+            focus session.
+          </p>
+        )}
+      </div>
+
+      <div className="flex gap-3 mt-6">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex-1 py-3 rounded-xl font-medium"
+          style={{
+            border: `1px solid ${theme.border}`,
+            color: theme.foreground,
+          }}
+        >
+          Back
+        </button>
+
+        <button
+          type="button"
+          onClick={onStart}
+          className="flex-1 py-3 rounded-xl font-semibold"
+          style={{
+            background: theme.primary,
+            color: theme.primaryFg,
+          }}
+        >
+          Start Session
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 // ── Active Session ─────────────────────────────────────────────
 function ActiveSessionView({
@@ -681,8 +1209,18 @@ function ActiveSessionView({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] px-8 py-12">
-      <p className="text-xs uppercase tracking-widest mb-10 font-data" style={{ color: theme.mutedFg }}>
+      {/* <p className="text-xs uppercase tracking-widest mb-10 font-data" style={{ color: theme.mutedFg }}>
         Deep Work · {config.objective}
+      </p> */}
+      <p
+        className="text-xs uppercase tracking-widest mb-10 font-data"
+        style={{ color: theme.mutedFg }}
+      >
+        {config.task
+          ? config.task
+          : config.objective
+            ? config.objective
+            : "Focus Session"}
       </p>
 
       <div className="relative mb-10">
@@ -702,7 +1240,7 @@ function ActiveSessionView({
         </div>
       </div>
 
-      <div className="flex gap-2.5 mb-14">
+      {/* <div className="flex gap-2.5 mb-14">
         {[
           { label: `🎵 ${config.music}`, color: theme.mutedFg },
           { label: `🌧 ${config.ambience}`, color: theme.mutedFg },
@@ -716,7 +1254,46 @@ function ActiveSessionView({
             {label}
           </span>
         ))}
-      </div>
+      </div> */}
+
+      <div className="flex gap-2.5 mb-14 flex-wrap justify-center">
+      {config.audio && (
+        <span
+          className="px-3.5 py-1.5 rounded-full text-xs"
+          style={{
+            background: theme.overlay(0.04),
+            border: `1px solid ${theme.overlay(0.07)}`,
+            color: theme.mutedFg,
+          }}
+        >
+          🎵 {config.audio.name}
+        </span>
+      )}
+
+      {config.objective && (
+        <span
+          className="px-3.5 py-1.5 rounded-full text-xs"
+          style={{
+            background: theme.overlay(0.04),
+            border: `1px solid ${theme.overlay(0.07)}`,
+            color: theme.mutedFg,
+          }}
+        >
+          🎯 {config.objective}
+        </span>
+      )}
+
+      <span
+        className="px-3.5 py-1.5 rounded-full text-xs"
+        style={{
+          background: theme.overlay(0.04),
+          border: `1px solid ${theme.overlay(0.07)}`,
+          color: "#4ade80",
+        }}
+      >
+        🔔 Notifications Off
+      </span>
+    </div>
 
       <button
         onClick={onEnd}
@@ -737,14 +1314,32 @@ function SessionCompleteView({ config, onDone, theme }: { config: FocusConfig; o
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] px-8 py-12 text-center">
       <div className="text-6xl mb-6">🎉</div>
       <h2 className="font-display text-2xl font-bold mb-2" style={{ color: theme.foreground }}>Session Complete!</h2>
-      <p className="mb-8 max-w-xs text-sm" style={{ color: theme.mutedFg }}>
+      {/* <p className="mb-8 max-w-xs text-sm" style={{ color: theme.mutedFg }}>
         You focused for <span className="font-semibold" style={{ color: theme.primary }}>{config.duration} minutes</span> on {config.objective}.
+      </p> */}
+      <p
+        className="mb-8 max-w-xs text-sm"
+        style={{ color: theme.mutedFg }}
+      >
+        Session finished
+        {config.duration && (
+          <>
+            {" "}after{" "}
+            <span
+              className="font-semibold"
+              style={{ color: theme.primary }}
+            >
+              {config.duration} minutes
+            </span>
+          </>
+        )}
+        {config.task && <> working on {config.task}</>}.
       </p>
       <div
         className="flex gap-6 rounded-2xl px-10 py-6 mb-8"
         style={{ background: theme.card, border: `1px solid ${theme.border}` }}
       >
-        {[["Focused", `${config.duration}m`], ["Streak Day", "+1"], ["Total Hours", "413h"]].map(([label, val], i, arr) => (
+        {[/*["Focused", `${config.duration}m`]*/ ["Focused", config.duration ? `${config.duration}m` : "Complete",], ["Streak Day", "+1"], ["Total Hours", "413h"]].map(([label, val], i, arr) => (
           <div key={label} className="flex items-center gap-6">
             <div className="text-center">
               <p className="text-3xl font-bold font-data" style={{ color: theme.foreground }}>{val}</p>
@@ -1441,13 +2036,82 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
     if (n === "focus" && phase === "idle") setPhase("setup");
   };
 
-  const handleBegin = (cfg: FocusConfig) => {
-    setFocusConfig(cfg);
-    const s = cfg.duration * 60;
-    setSecondsLeft(s);
-    setTotalSeconds(s);
-    setPhase("active");
+  // const handleBegin = (cfg: FocusConfig) => {
+  //   setFocusConfig(cfg);
+  //   const s = cfg.duration * 60;
+  //   setSecondsLeft(s);
+  //   setTotalSeconds(s);
+  //   setPhase("active");
+  // };
+
+  const handleReviewSession = (config: FocusConfig) => {
+    setFocusConfig(config);
+    setPhase("review");
   };
+
+  const handleStartSession = () => {
+    if (!focusConfig) return;
+    // Since duration is optional, use 25 minutes internally
+    // when no duration was supplied.
+    const sessionMinutes = focusConfig.duration ?? 25;
+    const seconds = sessionMinutes * 60;
+    setSecondsLeft(seconds);
+    setTotalSeconds(seconds);
+    setPhase("active");
+    startSessionAudio(focusConfig);
+  };
+
+  async function startSessionAudio(config: FocusConfig) {
+    if (!config.audio) return;
+
+    try {
+      if (config.audio.type === "playlist") {
+        const availablePlaylists = await listPlaylists();
+
+        const selectedPlaylist = availablePlaylists.find(
+          playlist => playlist.id === config.audio?.id
+        );
+
+        if (!selectedPlaylist) return;
+
+        const tracks = playlistTracks(selectedPlaylist);
+
+        if (tracks.length === 0) return;
+
+        setPlaylist(tracks);
+        setQueueName(selectedPlaylist.name);
+        setCurrentTrackIdx(0);
+        setIsPlaying(true);
+      }
+
+      if (config.audio.type === "track") {
+        const files = await listAudioFiles();
+
+        const selectedTrack = files.find(
+          track => track.id === config.audio?.id
+        );
+
+        if (!selectedTrack?.playUrl) return;
+
+        setPlaylist([
+          {
+            id: `cloud:${selectedTrack.id}`,
+            name: selectedTrack.name,
+            url: selectedTrack.playUrl,
+            duration: 0,
+            size: "",
+          },
+        ]);
+
+        setQueueName(null);
+        setCurrentTrackIdx(0);
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error("Could not start session audio:", error);
+    }
+  }
+
 
   const handleEnd = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -1644,7 +2308,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
               remainingLabel={fmtGoalShort(remainingMinutes)}
             />
           )}
-          {nav === "focus" && phase === "setup" && (
+          {/* {nav === "focus" && phase === "setup" && (
             <FocusSetupView onBegin={handleBegin} theme={theme} defaultDuration={account.session?.duration} defaultObjective={account.session?.type} defaultAmbience={defaultAmbience} />
           )}
           {nav === "focus" && phase === "idle" && (
@@ -1652,6 +2316,31 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
           )}
           {nav === "focus" && phase === "active" && focusConfig && (
             <ActiveSessionView config={focusConfig} secondsLeft={secondsLeft} totalSeconds={totalSeconds} onEnd={handleEnd} theme={theme} />
+          )} */}
+          {nav === "focus" && phase === "setup" && (
+            <FocusSetupView
+              onContinue={handleReviewSession}
+              theme={theme}
+            />
+          )}
+
+          {nav === "focus" && phase === "review" && focusConfig && (
+            <SessionReviewView
+              config={focusConfig}
+              onBack={() => setPhase("setup")}
+              onStart={handleStartSession}
+              theme={theme}
+            />
+          )}
+
+          {nav === "focus" && phase === "active" && focusConfig && (
+            <ActiveSessionView
+              config={focusConfig}
+              secondsLeft={secondsLeft}
+              totalSeconds={totalSeconds}
+              onEnd={handleEnd}
+              theme={theme}
+            />
           )}
           {nav === "focus" && phase === "complete" && focusConfig && (
             <SessionCompleteView config={focusConfig} onDone={handleDone} theme={theme} />
