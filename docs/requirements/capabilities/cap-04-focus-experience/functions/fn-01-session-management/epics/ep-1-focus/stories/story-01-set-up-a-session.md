@@ -4,7 +4,7 @@
 
 **As a** User,
 **I want** to set up a session
-**so that** I can choose my duration, objective, and task before I start focusing.
+**so that** I can choose the duration, objective, task, and background audio I want before I start focusing.
 
 ## Acceptance Criteria
 
@@ -17,21 +17,23 @@
   **Given** a user is setting up a new session
   **When** they choose a custom length and enter their own number of minutes
   **Then** the session is set to run for the length they entered.
-
 - An objective can be recorded for the session
 
   **Given** a user is setting up a new session
   **When** they enter what they want to accomplish during the session
   **Then** that objective is saved with the session and shown back to them before they start.
-
 - A task can be named for the session
 
   **Given** a user is setting up a new session
   **When** they name the task they will be working on
   **Then** that task is saved with the session and shown back to them before they start.
+- Background audio can be selected for the session
 
-- A session cannot be created until a length, an objective, and a task have been provided
+  **Given** a user is setting up a new session
+  **When** they select a playlist or an individual audio track
+  **Then** that selection is saved with the session and shown back to them before they start.
+- The session length, objective, task, and background audio are each optional
 
-  **Given** a user has not yet provided a session length, an objective, and a task
-  **When** they attempt to create the session
-  **Then** the session is not created and they are told what is still missing.
+  **Given** a user is setting up a new session with any combination of the session length, objective, task, and background audio provided or left empty
+  **When** they choose to start the session
+  **Then** the session starts using only the details they provided and they are never asked to fill in the ones they left empty.
