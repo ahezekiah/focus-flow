@@ -20,18 +20,32 @@ import {
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const PLAYLIST_TABLE = process.env.PLAYLIST_TABLE!;
-const AUDIO_FILE_TABLE = process.env.AUDIO_FILE_TABLE!;
-const BUCKET = process.env.AUDIO_BUCKET!;
+/* ============================================================
+ * CONFIG
+ * ========================================================== */
 
-const docs = DynamoDBDocumentClient.from(
-  new DynamoDBClient({}),
-);
+const PLAYLIST_TABLE =
+  process.env.PLAYLIST_TABLE!;
+
+const AUDIO_FILE_TABLE =
+  process.env.AUDIO_FILE_TABLE!;
+
+const BUCKET =
+  process.env.AUDIO_BUCKET!;
+
+const docs =
+  DynamoDBDocumentClient.from(
+    new DynamoDBClient({}),
+  );
 
 const s3 = new S3Client({});
 
 const PLAY_URL_TTL_SECONDS = 60 * 60;
 const MAX_TRACKS = 100;
+
+/* ============================================================
+ * TYPES
+ * ========================================================== */
 
 interface PlaylistRecord {
   id: string;
@@ -55,7 +69,10 @@ interface PlaylistTrack {
 }
 
 interface PlaylistView
-  extends Omit<PlaylistRecord, "audioFileIds"> {
+  extends Omit<
+    PlaylistRecord,
+    "audioFileIds"
+  > {
   tracks: PlaylistTrack[];
 }
 
@@ -63,6 +80,10 @@ type AudioLookup = Map<
   string,
   AudioFileRecord | null
 >;
+
+/* ============================================================
+ * CORS
+ * ========================================================== */
 
 const CORS_HEADERS = {
   "Content-Type": "application/json",
@@ -72,6 +93,10 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Methods":
     "GET,POST,PATCH,OPTIONS",
 };
+
+/* ============================================================
+ * RESPONSES
+ * ========================================================== */
 
 function respond(
   statusCode: number,
@@ -88,16 +113,22 @@ function fail(
   statusCode: number,
   message: string,
 ): APIGatewayProxyResult {
-  return respond(statusCode, { message });
+  return respond(statusCode, {
+    message,
+  });
 }
 
-function corsPreflight(): APIGatewayProxyResult {
+function optionsResponse(): APIGatewayProxyResult {
   return {
     statusCode: 204,
     headers: CORS_HEADERS,
     body: "",
   };
 }
+
+/* ============================================================
+ * HELPERS
+ * ========================================================== */
 
 function parseBody(
   event: APIGatewayProxyEvent,
@@ -153,7 +184,7 @@ async function tracksOf(
   lookup: AudioLookup,
 ): Promise<PlaylistTrack[]> {
   const found = await Promise.all(
-    record.audioFileIds.map((id) =>
+    record.audioFileIds.map(id =>
       audioFile(id, lookup),
     ),
   );
@@ -166,7 +197,7 @@ async function tracksOf(
         ): file is AudioFileRecord =>
           file !== null,
       )
-      .map(async (file) => ({
+      .map(async file => ({
         id: file.id,
         name: file.name,
         playUrl: await getSignedUrl(
@@ -193,7 +224,10 @@ async function asView(
     name: record.name,
     isDefault: record.isDefault,
     createdAt: record.createdAt,
-    tracks: await tracksOf(record, lookup),
+    tracks: await tracksOf(
+      record,
+      lookup,
+    ),
   };
 }
 
@@ -209,14 +243,21 @@ async function allPlaylists(): Promise<
   return (
     (result.Items ?? []) as PlaylistRecord[]
   ).sort((a, b) =>
-    a.createdAt.localeCompare(b.createdAt),
+    a.createdAt.localeCompare(
+      b.createdAt,
+    ),
   );
 }
+
+/* ============================================================
+ * GET /playlists
+ * ========================================================== */
 
 async function listPlaylists(): Promise<APIGatewayProxyResult> {
   const lookup: AudioLookup = new Map();
 
-  const records = await allPlaylists();
+  const records =
+    await allPlaylists();
 
   const playlists: PlaylistView[] = [];
 
@@ -226,15 +267,27 @@ async function listPlaylists(): Promise<APIGatewayProxyResult> {
     );
   }
 
-  return respond(200, { playlists });
+  return respond(200, {
+    playlists,
+  });
 }
 
-async function getDefaultPlaylist(): Promise<APIGatewayProxyResult> {
-  const records = await allPlaylists();
+/* ============================================================
+ * GET /playlists/default
+ * ========================================================== */
 
+async function getDefaultPlaylist(): Promise<APIGatewayProxyResult> {
+  const records =
+    await allPlaylists();
+
+  /*
+   * Explicit default first.
+   * If none exists, use the first playlist.
+   */
   const record =
     records.find(
-      (playlist) => playlist.isDefault,
+      playlist =>
+        playlist.isDefault === true,
     ) ?? records[0];
 
   if (!record) {
@@ -252,6 +305,10 @@ async function getDefaultPlaylist(): Promise<APIGatewayProxyResult> {
   });
 }
 
+/* ============================================================
+ * GET /playlists/{playlistId}
+ * ========================================================== */
+
 async function getPlaylist(
   id: string,
 ): Promise<APIGatewayProxyResult> {
@@ -263,7 +320,10 @@ async function getPlaylist(
   );
 
   if (!result.Item) {
-    return fail(404, "Playlist not found");
+    return fail(
+      404,
+      "Playlist not found",
+    );
   }
 
   return respond(200, {
@@ -273,6 +333,10 @@ async function getPlaylist(
     ),
   });
 }
+
+/* ============================================================
+ * POST /playlists
+ * ========================================================== */
 
 async function createPlaylist(
   event: APIGatewayProxyEvent,
@@ -284,11 +348,10 @@ async function createPlaylist(
       ? body.name.trim()
       : "";
 
-  const chosen = Array.isArray(
-    body.audioFileIds,
-  )
-    ? body.audioFileIds
-    : [];
+  const chosen =
+    Array.isArray(body.audioFileIds)
+      ? body.audioFileIds
+      : [];
 
   const audioFileIds = [
     ...new Set(
@@ -303,7 +366,10 @@ async function createPlaylist(
   ];
 
   if (!name) {
-    return fail(400, "A name is required");
+    return fail(
+      400,
+      "A name is required",
+    );
   }
 
   if (audioFileIds.length === 0) {
@@ -313,17 +379,23 @@ async function createPlaylist(
     );
   }
 
-  if (audioFileIds.length > MAX_TRACKS) {
+  if (
+    audioFileIds.length > MAX_TRACKS
+  ) {
     return fail(
       400,
       `A playlist can hold up to ${MAX_TRACKS} audio files`,
     );
   }
 
-  const lookup: AudioLookup = new Map();
+  const lookup: AudioLookup =
+    new Map();
 
   for (const id of audioFileIds) {
-    if (!(await audioFile(id, lookup))) {
+    const file =
+      await audioFile(id, lookup);
+
+    if (!file) {
       return fail(
         400,
         "One of the chosen audio files is no longer available to play",
@@ -331,16 +403,25 @@ async function createPlaylist(
     }
   }
 
-  const existing = await allPlaylists();
+  const existing =
+    await allPlaylists();
 
   const record: PlaylistRecord = {
     id: crypto.randomUUID(),
     name,
     audioFileIds,
+
+    /*
+     * First playlist automatically becomes
+     * the default playlist.
+     */
     isDefault: !existing.some(
-      (playlist) => playlist.isDefault,
+      playlist =>
+        playlist.isDefault === true,
     ),
-    createdAt: new Date().toISOString(),
+
+    createdAt:
+      new Date().toISOString(),
   };
 
   await docs.send(
@@ -358,6 +439,10 @@ async function createPlaylist(
   });
 }
 
+/* ============================================================
+ * PATCH /playlists/{playlistId}
+ * ========================================================== */
+
 async function makeDefault(
   id: string,
   event: APIGatewayProxyEvent,
@@ -371,12 +456,13 @@ async function makeDefault(
     );
   }
 
-  const existing = await docs.send(
-    new GetCommand({
-      TableName: PLAYLIST_TABLE,
-      Key: { id },
-    }),
-  );
+  const existing =
+    await docs.send(
+      new GetCommand({
+        TableName: PLAYLIST_TABLE,
+        Key: { id },
+      }),
+    );
 
   if (!existing.Item) {
     return fail(
@@ -388,13 +474,13 @@ async function makeDefault(
   const others = (
     await allPlaylists()
   ).filter(
-    (playlist) =>
-      playlist.isDefault &&
+    playlist =>
+      playlist.isDefault === true &&
       playlist.id !== id,
   );
 
   await Promise.all(
-    others.map((playlist) =>
+    others.map(playlist =>
       setDefaultFlag(
         playlist.id,
         false,
@@ -402,10 +488,8 @@ async function makeDefault(
     ),
   );
 
-  const updated = await setDefaultFlag(
-    id,
-    true,
-  );
+  const updated =
+    await setDefaultFlag(id, true);
 
   return respond(200, {
     playlist: await asView(
@@ -414,6 +498,10 @@ async function makeDefault(
     ),
   });
 }
+
+/* ============================================================
+ * UPDATE DEFAULT FLAG
+ * ========================================================== */
 
 async function setDefaultFlag(
   id: string,
@@ -435,48 +523,156 @@ async function setDefaultFlag(
   return updated.Attributes as PlaylistRecord;
 }
 
+/* ============================================================
+ * ROUTER
+ * ========================================================== */
+
 export const handler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const id = event.pathParameters?.playlistId;
+  console.log(
+    "playlists event:",
+    JSON.stringify(event),
+  );
+
+  /*
+   * IMPORTANT:
+   * Always answer OPTIONS with CORS headers.
+   */
+  if (
+    event.httpMethod?.toUpperCase() ===
+    "OPTIONS"
+  ) {
+    return optionsResponse();
+  }
+
+  const method =
+    event.httpMethod?.toUpperCase() ?? "";
+
+  const resource =
+    event.resource ?? "";
+
+  const path =
+    event.path ?? "";
+
+  const id =
+    event.pathParameters?.playlistId;
 
   try {
-    if (event.httpMethod === "OPTIONS") {
-      return corsPreflight();
+    /* --------------------------------------------------------
+     * /playlists
+     * ------------------------------------------------------ */
+
+    if (
+      method === "GET" &&
+      resource === "/playlists"
+    ) {
+      return await listPlaylists();
     }
 
-    switch (`${event.httpMethod} ${event.resource}`) {
-      case "GET /playlists":
-        return await listPlaylists();
-
-      case "POST /playlists":
-        return await createPlaylist(event);
-
-      case "GET /playlists/default":
-        return await getDefaultPlaylist();
-
-      case "GET /playlists/{playlistId}":
-        return id
-          ? await getPlaylist(id)
-          : fail(
-              400,
-              "A playlist id is required",
-            );
-
-      case "PATCH /playlists/{playlistId}":
-        return id
-          ? await makeDefault(id, event)
-          : fail(
-              400,
-              "A playlist id is required",
-            );
-
-      default:
-        return fail(404, "Unknown route");
+    if (
+      method === "POST" &&
+      resource === "/playlists"
+    ) {
+      return await createPlaylist(event);
     }
+
+    /* --------------------------------------------------------
+     * /playlists/default
+     * ------------------------------------------------------ */
+
+    if (
+      method === "GET" &&
+      resource ===
+        "/playlists/default"
+    ) {
+      return await getDefaultPlaylist();
+    }
+
+    /* --------------------------------------------------------
+     * /playlists/{playlistId}
+     * ------------------------------------------------------ */
+
+    if (
+      method === "GET" &&
+      resource ===
+        "/playlists/{playlistId}"
+    ) {
+      return id
+        ? await getPlaylist(id)
+        : fail(
+            400,
+            "A playlist id is required",
+          );
+    }
+
+    if (
+      method === "PATCH" &&
+      resource ===
+        "/playlists/{playlistId}"
+    ) {
+      return id
+        ? await makeDefault(
+            id,
+            event,
+          )
+        : fail(
+            400,
+            "A playlist id is required",
+          );
+    }
+
+    /* --------------------------------------------------------
+     * FALLBACK ROUTING
+     * ------------------------------------------------------ */
+
+    if (
+      method === "GET" &&
+      path === "/playlists"
+    ) {
+      return await listPlaylists();
+    }
+
+    if (
+      method === "POST" &&
+      path === "/playlists"
+    ) {
+      return await createPlaylist(event);
+    }
+
+    if (
+      method === "GET" &&
+      path === "/playlists/default"
+    ) {
+      return await getDefaultPlaylist();
+    }
+
+    if (
+      method === "GET" &&
+      id
+    ) {
+      return await getPlaylist(id);
+    }
+
+    if (
+      method === "PATCH" &&
+      id
+    ) {
+      return await makeDefault(
+        id,
+        event,
+      );
+    }
+
+    return fail(
+      404,
+      `Unknown route: ${method} ${
+        resource || path
+      }`,
+    );
   } catch (error) {
     console.error(
-      "playlists request failed",
+      "playlists request failed:",
       error,
     );
 

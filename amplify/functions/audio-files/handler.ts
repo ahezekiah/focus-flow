@@ -20,10 +20,17 @@ import {
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+/* ============================================================
+ * CONFIG
+ * ========================================================== */
+
 const TABLE = process.env.AUDIO_FILE_TABLE!;
 const BUCKET = process.env.AUDIO_BUCKET!;
 
-const docs = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const docs = DynamoDBDocumentClient.from(
+  new DynamoDBClient({}),
+);
+
 const s3 = new S3Client({});
 
 const UPLOAD_URL_TTL_SECONDS = 15 * 60;
@@ -40,6 +47,10 @@ const ALLOWED_CONTENT_TYPES = [
 
 const MAX_SIZE_BYTES = 50 * 1024 * 1024;
 
+/* ============================================================
+ * TYPES
+ * ========================================================== */
+
 interface AudioFileRecord {
   id: string;
   name: string;
@@ -51,12 +62,22 @@ interface AudioFileRecord {
   addedAt: string;
 }
 
+/* ============================================================
+ * CORS
+ * ========================================================== */
+
 const CORS_HEADERS = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type,Authorization",
-  "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type,Authorization",
+  "Access-Control-Allow-Methods":
+    "GET,POST,PATCH,OPTIONS",
 };
+
+/* ============================================================
+ * RESPONSES
+ * ========================================================== */
 
 function respond(
   statusCode: number,
@@ -76,7 +97,11 @@ function fail(
   return respond(statusCode, { message });
 }
 
-function corsPreflight(): APIGatewayProxyResult {
+/* ============================================================
+ * OPTIONS / CORS
+ * ========================================================== */
+
+function optionsResponse(): APIGatewayProxyResult {
   return {
     statusCode: 204,
     headers: CORS_HEADERS,
@@ -84,7 +109,13 @@ function corsPreflight(): APIGatewayProxyResult {
   };
 }
 
-async function withPlayUrl(record: AudioFileRecord) {
+/* ============================================================
+ * HELPERS
+ * ========================================================== */
+
+async function withPlayUrl(
+  record: AudioFileRecord,
+) {
   const playUrl = await getSignedUrl(
     s3,
     new GetObjectCommand({
@@ -102,6 +133,7 @@ async function withPlayUrl(record: AudioFileRecord) {
     fileName: record.fileName,
     contentType: record.contentType,
     sizeBytes: record.sizeBytes,
+    storageKey: record.storageKey,
     status: record.status,
     addedAt: record.addedAt,
     playUrl,
@@ -116,11 +148,20 @@ function parseBody(
   }
 
   try {
-    return JSON.parse(event.body) as Record<string, unknown>;
+    return JSON.parse(event.body) as Record<
+      string,
+      unknown
+    >;
   } catch {
-    throw new Error("Request body is not valid JSON");
+    throw new Error(
+      "Request body is not valid JSON",
+    );
   }
 }
+
+/* ============================================================
+ * GET /audio-files
+ * ========================================================== */
 
 async function listAudioFiles(): Promise<APIGatewayProxyResult> {
   const result = await docs.send(
@@ -129,16 +170,29 @@ async function listAudioFiles(): Promise<APIGatewayProxyResult> {
     }),
   );
 
-  const records = ((result.Items ?? []) as AudioFileRecord[])
-    .filter((record) => record.status === "ready")
-    .sort((a, b) => a.addedAt.localeCompare(b.addedAt));
+  const records = (
+    (result.Items ?? []) as AudioFileRecord[]
+  )
+    .filter(
+      record => record.status === "ready",
+    )
+    .sort(
+      (a, b) =>
+        a.addedAt.localeCompare(b.addedAt),
+    );
 
   const audioFiles = await Promise.all(
     records.map(withPlayUrl),
   );
 
-  return respond(200, { audioFiles });
+  return respond(200, {
+    audioFiles,
+  });
 }
+
+/* ============================================================
+ * GET /audio-files/{audioFileId}
+ * ========================================================== */
 
 async function getAudioFile(
   id: string,
@@ -151,17 +205,28 @@ async function getAudioFile(
   );
 
   if (!result.Item) {
-    return fail(404, "Audio file not found");
+    return fail(
+      404,
+      "Audio file not found",
+    );
   }
 
-  const record = result.Item as AudioFileRecord;
+  const record =
+    result.Item as AudioFileRecord;
 
   if (record.status !== "ready") {
     return respond(200, record);
   }
 
-  return respond(200, await withPlayUrl(record));
+  return respond(
+    200,
+    await withPlayUrl(record),
+  );
 }
+
+/* ============================================================
+ * POST /audio-files
+ * ========================================================== */
 
 async function createAudioFile(
   event: APIGatewayProxyEvent,
@@ -189,14 +254,24 @@ async function createAudioFile(
       : 0;
 
   if (!name) {
-    return fail(400, "A name is required");
+    return fail(
+      400,
+      "A name is required",
+    );
   }
 
   if (!fileName) {
-    return fail(400, "A file is required");
+    return fail(
+      400,
+      "A file is required",
+    );
   }
 
-  if (!ALLOWED_CONTENT_TYPES.includes(contentType)) {
+  if (
+    !ALLOWED_CONTENT_TYPES.includes(
+      contentType,
+    )
+  ) {
     return fail(
       415,
       "That file type is not supported. Choose an mp3, wav, ogg or m4a file.",
@@ -235,23 +310,29 @@ async function createAudioFile(
     }),
   );
 
-  const uploadUrl = await getSignedUrl(
-    s3,
-    new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: record.storageKey,
-      ContentType: contentType,
-    }),
-    {
-      expiresIn: UPLOAD_URL_TTL_SECONDS,
-    },
-  );
+  const uploadUrl =
+    await getSignedUrl(
+      s3,
+      new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: record.storageKey,
+        ContentType: contentType,
+      }),
+      {
+        expiresIn:
+          UPLOAD_URL_TTL_SECONDS,
+      },
+    );
 
   return respond(201, {
     audioFile: record,
     uploadUrl,
   });
 }
+
+/* ============================================================
+ * PATCH /audio-files/{audioFileId}
+ * ========================================================== */
 
 async function markAudioFileReady(
   id: string,
@@ -260,7 +341,10 @@ async function markAudioFileReady(
   const body = parseBody(event);
 
   if (body.status !== "ready") {
-    return fail(400, 'status must be "ready"');
+    return fail(
+      400,
+      'status must be "ready"',
+    );
   }
 
   const existing = await docs.send(
@@ -271,14 +355,18 @@ async function markAudioFileReady(
   );
 
   if (!existing.Item) {
-    return fail(404, "Audio file not found");
+    return fail(
+      404,
+      "Audio file not found",
+    );
   }
 
   const updated = await docs.send(
     new UpdateCommand({
       TableName: TABLE,
       Key: { id },
-      UpdateExpression: "SET #status = :ready",
+      UpdateExpression:
+        "SET #status = :ready",
       ExpressionAttributeNames: {
         "#status": "status",
       },
@@ -297,45 +385,132 @@ async function markAudioFileReady(
   );
 }
 
+/* ============================================================
+ * ROUTER
+ * ========================================================== */
+
 export const handler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const id = event.pathParameters?.audioFileId;
+  console.log(
+    "audio-files event:",
+    JSON.stringify(event),
+  );
+
+  /*
+   * IMPORTANT:
+   * API Gateway handles the CORS preflight too,
+   * but keeping this here guarantees that a Lambda
+   * invocation of OPTIONS also gets the proper headers.
+   */
+  if (
+    event.httpMethod?.toUpperCase() ===
+    "OPTIONS"
+  ) {
+    return optionsResponse();
+  }
+
+  const method =
+    event.httpMethod?.toUpperCase() ?? "";
+
+  const resource =
+    event.resource ?? "";
+
+  const path =
+    event.path ?? "";
+
+  const id =
+    event.pathParameters?.audioFileId;
 
   try {
-    if (event.httpMethod === "OPTIONS") {
-      return corsPreflight();
+    /*
+     * Prefer API Gateway resource templates.
+     */
+    if (
+      method === "GET" &&
+      resource === "/audio-files"
+    ) {
+      return await listAudioFiles();
     }
 
-    switch (`${event.httpMethod} ${event.resource}`) {
-      case "GET /audio-files":
-        return await listAudioFiles();
-
-      case "POST /audio-files":
-        return await createAudioFile(event);
-
-      case "GET /audio-files/{audioFileId}":
-        return id
-          ? await getAudioFile(id)
-          : fail(
-              400,
-              "An audio file id is required",
-            );
-
-      case "PATCH /audio-files/{audioFileId}":
-        return id
-          ? await markAudioFileReady(id, event)
-          : fail(
-              400,
-              "An audio file id is required",
-            );
-
-      default:
-        return fail(404, "Unknown route");
+    if (
+      method === "POST" &&
+      resource === "/audio-files"
+    ) {
+      return await createAudioFile(event);
     }
+
+    if (
+      method === "GET" &&
+      resource ===
+        "/audio-files/{audioFileId}"
+    ) {
+      return id
+        ? await getAudioFile(id)
+        : fail(
+            400,
+            "An audio file id is required",
+          );
+    }
+
+    if (
+      method === "PATCH" &&
+      resource ===
+        "/audio-files/{audioFileId}"
+    ) {
+      return id
+        ? await markAudioFileReady(
+            id,
+            event,
+          )
+        : fail(
+            400,
+            "An audio file id is required",
+          );
+    }
+
+    /*
+     * Fallback for API Gateway events where
+     * resource is not populated as expected.
+     */
+    if (
+      method === "GET" &&
+      path === "/audio-files"
+    ) {
+      return await listAudioFiles();
+    }
+
+    if (
+      method === "POST" &&
+      path === "/audio-files"
+    ) {
+      return await createAudioFile(event);
+    }
+
+    if (
+      method === "GET" &&
+      id
+    ) {
+      return await getAudioFile(id);
+    }
+
+    if (
+      method === "PATCH" &&
+      id
+    ) {
+      return await markAudioFileReady(
+        id,
+        event,
+      );
+    }
+
+    return fail(
+      404,
+      `Unknown route: ${method} ${resource || path}`,
+    );
   } catch (error) {
     console.error(
-      "audio-files request failed",
+      "audio-files request failed:",
       error,
     );
 
