@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "us-east-2_2j4SKE5p5",
+    "user_pool_id": "us-east-2_otGhWryGd",
     "aws_region": "us-east-2",
-    "user_pool_client_id": "50tl2ad9qjlkl2e34bv6f961lk",
-    "identity_pool_id": "us-east-2:70a32498-e0dc-4b7e-b255-a48d85f78d4b",
+    "user_pool_client_id": "1fvmcbli041aih72i6h1ek3e2o",
+    "identity_pool_id": "us-east-2:9f052d9f-368a-415e-b7a8-07125e250e0c",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -27,17 +27,17 @@
   },
   "storage": {
     "aws_region": "us-east-2",
-    "bucket_name": "amplify-myapp-mandabratma-focusflowaudiobucketaf62-ddlbusdh91m9",
+    "bucket_name": "amplify-myapp-mandabratma-focusflowaudiobucketaf62-bpt4ly6irczi",
     "buckets": [
       {
         "name": "focusFlowAudio",
-        "bucket_name": "amplify-myapp-mandabratma-focusflowaudiobucketaf62-ddlbusdh91m9",
+        "bucket_name": "amplify-myapp-mandabratma-focusflowaudiobucketaf62-bpt4ly6irczi",
         "aws_region": "us-east-2"
       }
     ]
   },
   "version": "1.5",
   "custom": {
-    "apiUrl": "https://hh2pqymhm8.execute-api.us-east-2.amazonaws.com/api/"
+    "apiUrl": "https://pu4hdxay4b.execute-api.us-east-2.amazonaws.com/api/"
   }
 }
