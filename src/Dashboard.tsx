@@ -591,7 +591,7 @@ function FocusSetupView({
   onContinue,
   theme,
 }: {
-  onContinue: (config: FocusConfig) => void | Promise<void>;
+  onContinue: (config: FocusConfig) => void;
   theme: DashTheme;
 }) {
   const [duration, setDuration] = useState<number | undefined>();
@@ -1109,13 +1109,13 @@ function ReviewItem({
 
 function SessionReviewView({
   config,
-  onStart,
   onBack,
+  onStart,
   theme,
 }: {
   config: FocusConfig;
-  onStart: () => void;
   onBack: () => void;
+  onStart: () => void;
   theme: DashTheme;
 }) {
 
@@ -1196,7 +1196,7 @@ function SessionReviewView({
         <button
           type="button"
           onClick={onStart}
-          className="flex-1 py-3 rounded-xl font-semibold"
+          className="px-6 py-3 rounded-xl font-semibold"
           style={{
             background: theme.primary,
             color: theme.primaryFg,
@@ -2078,141 +2078,157 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   };
 
 
-  const handleReviewSession = async (
+
+  const handleReviewSession = (
     config: FocusConfig
   ) => {
-    try {
-      const created =
-        await createSession({
-          durationMinutes:
-            config.duration,
-
-          objective:
-            config.objective,
-
-          task:
-            config.task,
-
-          audioId:
-            config.audio?.id,
-
-          audioName:
-            config.audio?.name,
-
-          audioType:
-            config.audio?.type,
-        });
-
-      setPersistedSession(created);
-      setFocusConfig(config);
-      setPhase("review");
-    } catch (error) {
-      console.error(
-        "Could not create session:",
-        error
-      );
-    }
+    setFocusConfig(config);
+    setPhase("review");
   };
 
+  // const handleStartSession = async () => {
+  //   if (!focusConfig) return;
 
-  const handleStartSession = async () => {
-    if (
-      !focusConfig ||
-      !persistedSession
-    ) {
-      return;
-    }
+  //   try {
+  //     const created = await createSession({
+  //       durationMinutes: focusConfig.duration,
+  //       objective: focusConfig.objective,
+  //       task: focusConfig.task,
+  //       audioId: focusConfig.audio?.id,
+  //       audioName: focusConfig.audio?.name,
+  //       audioType: focusConfig.audio?.type,
+  //     });
 
-    try {
-      const updated =
-        await updateSessionStatus(
-          persistedSession.id,
-          "in_progress"
-        );
+  //     const started = await updateSessionStatus(
+  //       created.id,
+  //       "in_progress"
+  //     );
 
-      setPersistedSession(updated);
+  //     setPersistedSession(started);
 
-      const seconds =
-        focusConfig.duration * 60;
+  //     const seconds =
+  //       focusConfig.duration * 60;
 
-      setSecondsLeft(seconds);
-      setTotalSeconds(seconds);
-      setIsSessionPaused(false);
+  //     setSecondsLeft(seconds);
+  //     setTotalSeconds(seconds);
+  //     setIsSessionPaused(false);
 
-      setPhase("active");
+  //     setPhase("active");
 
-      void startSessionAudio(
-        focusConfig
-      );
-    } catch (error) {
-      console.error(
-        "Could not start session:",
-        error
-      );
-    }
-  };
+  //     void startSessionAudio(
+  //       focusConfig
+  //     );
+  //   } catch (error) {
+  //     console.error(
+  //       "Could not start session:",
+  //       error
+  //     );
+  //   }
+  // };
 
-  const handlePauseSession =
-    async () => {
-      if (!persistedSession) return;
+  const handleStartSession = () => {
+  if (!focusConfig) return;
 
-      try {
-        const updated =
-          await updateSessionStatus(
-            persistedSession.id,
-            "paused"
-          );
+  // Start the UI/session immediately.
+  const seconds = focusConfig.duration * 60;
 
+  setSecondsLeft(seconds);
+  setTotalSeconds(seconds);
+  setIsSessionPaused(false);
+  setPhase("active");
+
+  void startSessionAudio(focusConfig);
+
+  // Persist the session separately so an AWS/API problem
+  // does not prevent the user from starting the timer.
+  void persistStartedSession(focusConfig);
+};
+
+const persistStartedSession = async (
+  config: FocusConfig
+) => {
+  try {
+    const created = await createSession({
+      durationMinutes: config.duration,
+      objective: config.objective,
+      task: config.task,
+      audioId: config.audio?.id,
+      audioName: config.audio?.name,
+      audioType: config.audio?.type,
+    });
+
+    const started = await updateSessionStatus(
+      created.id,
+      "in_progress"
+    );
+
+    setPersistedSession(started);
+  } catch (error) {
+    console.error(
+      "Could not persist started session:",
+      error
+    );
+  }
+};
+
+const handlePauseSession = () => {
+  // Pause locally first
+  setIsSessionPaused(true);
+
+  if (timerRef.current) {
+    clearInterval(timerRef.current);
+    timerRef.current = null;
+  }
+
+  setIsPlaying(false);
+  audioRef.current.pause();
+
+  // Then try to persist the pause state
+  if (persistedSession) {
+    void updateSessionStatus(
+      persistedSession.id,
+      "paused"
+    )
+      .then(updated => {
         setPersistedSession(updated);
-
-        setIsSessionPaused(true);
-
-        if (timerRef.current) {
-          clearInterval(
-            timerRef.current
-          );
-
-          timerRef.current = null;
-        }
-
-        setIsPlaying(false);
-        audioRef.current.pause();
-      } catch (error) {
+      })
+      .catch(error => {
         console.error(
-          "Could not pause session:",
+          "Could not persist paused session:",
           error
         );
-      }
-    };
+      });
+  }
+};
 
-  const handleResumeSession =
-    async () => {
-      if (!persistedSession) return;
+const handleResumeSession = () => {
+  // Resume locally first
+  setIsSessionPaused(false);
 
-      try {
-        const updated =
-          await updateSessionStatus(
-            persistedSession.id,
-            "in_progress"
-          );
+  if (
+    focusConfig?.audio &&
+    playlist.length > 0
+  ) {
+    setIsPlaying(true);
+  }
 
+  // Persist separately
+  if (persistedSession) {
+    void updateSessionStatus(
+      persistedSession.id,
+      "in_progress"
+    )
+      .then(updated => {
         setPersistedSession(updated);
-
-        setIsSessionPaused(false);
-
-        if (
-          focusConfig?.audio &&
-          playlist.length > 0
-        ) {
-          setIsPlaying(true);
-        }
-      } catch (error) {
+      })
+      .catch(error => {
         console.error(
-          "Could not resume session:",
+          "Could not persist resumed session:",
           error
         );
-      }
-    };
+      });
+  }
+};
 
   async function startSessionAudio(config: FocusConfig) {
     if (!config.audio) return;
@@ -2266,12 +2282,9 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   }
 
 
-const handleEnd = async () => {
+const handleEnd = () => {
   if (timerRef.current) {
-    clearInterval(
-      timerRef.current
-    );
-
+    clearInterval(timerRef.current);
     timerRef.current = null;
   }
 
@@ -2279,64 +2292,73 @@ const handleEnd = async () => {
   setIsPlaying(false);
   audioRef.current.pause();
 
-  try {
-    if (persistedSession) {
-      const updated =
-        await updateSessionStatus(
-          persistedSession.id,
-          "completed"
+  // Move to complete screen immediately
+  setPhase("complete");
+
+  // Persist separately if a backend session exists
+  if (persistedSession) {
+    void updateSessionStatus(
+      persistedSession.id,
+      "completed"
+    )
+      .then(updated => {
+        setPersistedSession(updated);
+      })
+      .catch(error => {
+        console.error(
+          "Could not persist completed session:",
+          error
         );
-
-      setPersistedSession(updated);
-    }
-
-    setPhase("complete");
-  } catch (error) {
-    console.error(
-      "Could not complete session:",
-      error
-    );
+      });
   }
 };
 
-  const completeSession =
-    useCallback(async () => {
-      setIsSessionPaused(false);
+const completeSession = useCallback(() => {
+  setIsSessionPaused(false);
+  setIsPlaying(false);
+  audioRef.current.pause();
 
-      setIsPlaying(false);
-      audioRef.current.pause();
+  // Complete the UI immediately
+  setPhase("complete");
 
-      try {
-        if (persistedSession) {
-          const updated =
-            await updateSessionStatus(
-              persistedSession.id,
-              "completed"
-            );
-
-          setPersistedSession(
-            updated
-          );
-        }
-      } catch (error) {
+  // Persist in the background
+  if (persistedSession) {
+    void updateSessionStatus(
+      persistedSession.id,
+      "completed"
+    )
+      .then(updated => {
+        setPersistedSession(updated);
+      })
+      .catch(error => {
         console.error(
-          "Could not complete session:",
+          "Could not persist completed session:",
           error
         );
-      }
+      });
+  }
+}, [persistedSession]);
 
-      setPhase("complete");
-    }, [persistedSession]);
+  const handleDone = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
 
-    const handleDone = () => {
-      setPhase("idle");
-      setNav("home");
-      setFocusConfig(null);
-      setPersistedSession(null);
-      setSecondsLeft(0);
-      setTotalSeconds(0);
-      setIsSessionPaused(false);
-    };
+    setPhase("idle");
+    setNav("home");
+
+    setFocusConfig(null);
+    setPersistedSession(null);
+
+    setSecondsLeft(0);
+    setTotalSeconds(0);
+
+    setIsSessionPaused(false);
+    setIsPlaying(false);
+
+    audioRef.current.pause();
+  };
 
   useEffect(() => {
     if (phase !== "active" || isSessionPaused) {
@@ -2351,11 +2373,7 @@ const handleEnd = async () => {
             timerRef.current = null;
           }
 
-          setIsPlaying(false);
-          audioRef.current.pause();
-
           void completeSession();
-          setIsSessionPaused(false);
 
           return 0;
         }
