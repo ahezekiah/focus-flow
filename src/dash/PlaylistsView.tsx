@@ -11,18 +11,16 @@ import {
   type Playlist,
 } from "../lib/api";
 import { isBackendConfigured } from "../lib/amplify";
-import { AudioAccountPanel } from "./AudioAccountPanel";
 import { useSignedIn } from "../lib/useSignedIn";
 
 type Screen = "list" | "create" | "confirm";
 
 function trackSummary(playlist: Playlist) {
   const count = playlist.tracks.length;
-
   return `${count} ${count === 1 ? "track" : "tracks"}`;
 }
 
-// ── Saved playlists ──────────────────────────────────────────────
+// ── Playlist list ────────────────────────────────────────────────
 function PlaylistList({
   playlists,
   theme,
@@ -72,6 +70,7 @@ function PlaylistList({
         >
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={() => onPlay?.(playlist)}
               disabled={
                 !onPlay ||
@@ -90,14 +89,18 @@ function PlaylistList({
             <div className="min-w-0 flex-1">
               <p
                 className="text-sm font-medium truncate"
-                style={{ color: theme.foreground }}
+                style={{
+                  color: theme.foreground,
+                }}
               >
                 {playlist.name}
               </p>
 
               <p
                 className="text-xs"
-                style={{ color: theme.mutedFg }}
+                style={{
+                  color: theme.mutedFg,
+                }}
               >
                 {trackSummary(playlist)}
               </p>
@@ -117,6 +120,7 @@ function PlaylistList({
             ) : (
               onMakeDefault && (
                 <button
+                  type="button"
                   onClick={() =>
                     onMakeDefault(playlist)
                   }
@@ -139,15 +143,19 @@ function PlaylistList({
               className="mt-2.5 pl-11 space-y-1"
               aria-label={`Tracks in ${playlist.name}`}
             >
-              {playlist.tracks.map((track, index) => (
-                <li
-                  key={track.id}
-                  className="text-xs truncate"
-                  style={{ color: theme.mutedFg }}
-                >
-                  {index + 1}. {track.name}
-                </li>
-              ))}
+              {playlist.tracks.map(
+                (track, index) => (
+                  <li
+                    key={track.id}
+                    className="text-xs truncate"
+                    style={{
+                      color: theme.mutedFg,
+                    }}
+                  >
+                    {index + 1}. {track.name}
+                  </li>
+                ),
+              )}
             </ul>
           )}
         </li>
@@ -169,11 +177,11 @@ function CreatePlaylistScreen({
   onCreated: (playlist: Playlist) => void;
 }) {
   const [name, setName] = useState("");
-  const [chosen, setChosen] = useState<string[]>([]);
+  const [chosen, setChosen] =
+    useState<string[]>([]);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(
-    null,
-  );
+  const [error, setError] =
+    useState<string | null>(null);
 
   const canCreate =
     name.trim().length > 0 &&
@@ -183,7 +191,9 @@ function CreatePlaylistScreen({
   function toggle(id: string) {
     setChosen(prev =>
       prev.includes(id)
-        ? prev.filter(chosenId => chosenId !== id)
+        ? prev.filter(
+            chosenId => chosenId !== id,
+          )
         : [...prev, id],
     );
   }
@@ -206,8 +216,13 @@ function CreatePlaylistScreen({
         err instanceof ApiError &&
         err.status === 401
       ) {
+        /*
+         * A 401 here means the Amplify session has
+         * actually expired. This is different from
+         * simply waiting for the session to load.
+         */
         setError(
-          "Your session has expired — sign in again to create playlists.",
+          "Your session has expired. Please sign in again.",
         );
       } else {
         setError(
@@ -231,14 +246,18 @@ function CreatePlaylistScreen({
     >
       <label
         className="block text-sm font-medium mb-1.5"
-        style={{ color: theme.foreground }}
+        style={{
+          color: theme.foreground,
+        }}
       >
         Name
       </label>
 
       <input
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={e =>
+          setName(e.target.value)
+        }
         placeholder="Deep work ambience"
         className="w-full rounded-xl px-3 py-2 text-sm mb-5 outline-none"
         style={{
@@ -250,25 +269,32 @@ function CreatePlaylistScreen({
 
       <p
         className="text-sm font-medium mb-1.5"
-        style={{ color: theme.foreground }}
+        style={{
+          color: theme.foreground,
+        }}
       >
         Audio Files
       </p>
 
       <p
         className="text-xs mb-2.5"
-        style={{ color: theme.mutedFg }}
+        style={{
+          color: theme.mutedFg,
+        }}
       >
-        Only what you choose here goes into the playlist.
+        Only what you choose here goes into the
+        playlist.
       </p>
 
       {audioFiles.length === 0 ? (
         <p
           className="text-sm mb-5"
-          style={{ color: theme.mutedFg }}
+          style={{
+            color: theme.mutedFg,
+          }}
         >
-          No audio files yet — add audio files first, then
-          build a playlist from them.
+          No audio files yet — add audio files
+          first, then build a playlist from them.
         </p>
       ) : (
         <div
@@ -287,8 +313,12 @@ function CreatePlaylistScreen({
             >
               <input
                 type="checkbox"
-                checked={chosen.includes(file.id)}
-                onChange={() => toggle(file.id)}
+                checked={chosen.includes(
+                  file.id,
+                )}
+                onChange={() =>
+                  toggle(file.id)
+                }
                 className="w-4 h-4 shrink-0"
                 style={{
                   accentColor: theme.primary,
@@ -372,17 +402,26 @@ export function PlaylistsView({
   const [loadError, setLoadError] =
     useState<string | null>(null);
 
-  /*
-   * Authentication comes from AWS Amplify.
-   *
-   * This is now populated because Onboarding.tsx signs the
-   * user into Amplify after creating their account.
-   */
   const {
     signedIn,
     checking,
-    refresh,
   } = useSignedIn();
+
+  /*
+   * IMPORTANT:
+   *
+   * Do NOT show a sign-in popup while Amplify is still
+   * checking/restoring the existing session.
+   *
+   * checking === true means we don't know the auth
+   * state yet.
+   *
+   * checking === false && signedIn === true means the
+   * user is authenticated and gets full playlist access.
+   *
+   * checking === false && signedIn === false means
+   * there genuinely isn't an authenticated session.
+   */
 
   useEffect(() => {
     if (!isBackendConfigured) {
@@ -422,7 +461,9 @@ export function PlaylistsView({
     };
   }, []);
 
-  function handleCreated(created: Playlist) {
+  function handleCreated(
+    created: Playlist,
+  ) {
     setPlaylists(prev => [
       ...prev,
       created,
@@ -471,34 +512,133 @@ export function PlaylistsView({
     />
   );
 
-  return (
-    <div className="p-6 max-w-3xl">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
+  /*
+   * Backend isn't configured.
+   */
+  if (!isBackendConfigured) {
+    return (
+      <div className="p-6 max-w-3xl">
+        <div className="mb-6">
           <h2
             className="font-display text-xl font-bold"
-            style={{ color: theme.foreground }}
+            style={{
+              color: theme.foreground,
+            }}
           >
             Playlists
           </h2>
 
           <p
             className="text-sm mt-0.5"
-            style={{ color: theme.mutedFg }}
+            style={{
+              color: theme.mutedFg,
+            }}
           >
-            Curate what plays when someone arrives and
-            when they start a session
+            Curate what plays when someone arrives
+            and when they start a session
           </p>
         </div>
 
-        {/*
-         * Once onboarding has authenticated the user
-         * with Amplify, signedIn === true and this button
-         * becomes available.
-         */}
-        {screen === "list" &&
-          !checking &&
-          signedIn && (
+        <div
+          className="rounded-xl px-4 py-3 text-sm"
+          style={{
+            background: theme.overlay(0.05),
+            border: `1px solid ${theme.border}`,
+            color: theme.mutedFg,
+          }}
+        >
+          Playlists are stored in the cloud. Deploy
+          a backend with{" "}
+          <code
+            style={{
+              color: theme.foreground,
+            }}
+          >
+            npx ampx sandbox
+          </code>{" "}
+          to create and play them.
+        </div>
+      </div>
+    );
+  }
+
+  /*
+   * IMPORTANT:
+   *
+   * While Amplify is checking the existing session,
+   * render nothing that asks the user to sign in.
+   *
+   * This prevents the sign-in popup from flashing
+   * when navigating from onboarding to the dashboard.
+   */
+  if (checking) {
+    return (
+      <div className="p-6 max-w-3xl">
+        <div className="mb-6">
+          <h2
+            className="font-display text-xl font-bold"
+            style={{
+              color: theme.foreground,
+            }}
+          >
+            Playlists
+          </h2>
+
+          <p
+            className="text-sm mt-0.5"
+            style={{
+              color: theme.mutedFg,
+            }}
+          >
+            Curate what plays when someone arrives
+            and when they start a session
+          </p>
+        </div>
+
+        <p
+          className="text-sm"
+          style={{
+            color: theme.mutedFg,
+          }}
+        >
+          Loading playlists…
+        </p>
+      </div>
+    );
+  }
+
+  /*
+   * From this point onward, Amplify has finished
+   * checking authentication.
+   *
+   * A signed-in user gets the complete playlist UI.
+   */
+  if (signedIn) {
+    return (
+      <div className="p-6 max-w-3xl">
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h2
+              className="font-display text-xl font-bold"
+              style={{
+                color: theme.foreground,
+              }}
+            >
+              Playlists
+            </h2>
+
+            <p
+              className="text-sm mt-0.5"
+              style={{
+                color: theme.mutedFg,
+              }}
+            >
+              Curate what plays when someone arrives
+              and when they start a session
+            </p>
+          </div>
+
+          {screen === "list" && (
             <button
               type="button"
               onClick={() =>
@@ -514,129 +654,168 @@ export function PlaylistsView({
               Create Playlist
             </button>
           )}
-      </div>
-
-      {!isBackendConfigured && (
-        <div
-          className="rounded-xl px-4 py-3 mb-5 text-sm"
-          style={{
-            background: theme.overlay(0.05),
-            border: `1px solid ${theme.border}`,
-            color: theme.mutedFg,
-          }}
-        >
-          Playlists are stored in the cloud. Deploy a
-          backend with{" "}
-          <code
-            style={{
-              color: theme.foreground,
-            }}
-          >
-            npx ampx sandbox
-          </code>{" "}
-          to create and play them.
         </div>
-      )}
 
-      {isBackendConfigured &&
-        !checking &&
-        !signedIn && (
-          <AudioAccountPanel
+        {loadError && (
+          <p
+            className="text-sm mb-4"
+            style={{
+              color: "#ef4444",
+            }}
+            role="alert"
+          >
+            {loadError}
+          </p>
+        )}
+
+        {screen === "create" && (
+          <CreatePlaylistScreen
             theme={theme}
-            onSignedIn={refresh}
-            purpose="create playlists"
-            browsingNote="Listening is open to everyone — building a playlist needs an account."
+            audioFiles={audioFiles}
+            onCancel={() =>
+              setScreen("list")
+            }
+            onCreated={handleCreated}
           />
         )}
 
-      {loadError && (
-        <p
-          className="text-sm mb-4"
-          style={{ color: "#ef4444" }}
-          role="alert"
-        >
-          {loadError}
-        </p>
-      )}
-
-      {screen === "create" && (
-        <CreatePlaylistScreen
-          theme={theme}
-          audioFiles={audioFiles}
-          onCancel={() =>
-            setScreen("list")
-          }
-          onCreated={handleCreated}
-        />
-      )}
-
-      {screen === "confirm" && (
-        <div>
-          <div
-            className="flex items-center gap-2 rounded-xl px-4 py-3 mb-5"
-            style={{
-              background: `${theme.primary}18`,
-              border: `1px solid ${theme.primary}40`,
-            }}
-          >
-            <Check
-              className="w-4 h-4 shrink-0"
+        {screen === "confirm" && (
+          <div>
+            <div
+              className="flex items-center gap-2 rounded-xl px-4 py-3 mb-5"
               style={{
-                color: theme.primary,
+                background: `${theme.primary}18`,
+                border: `1px solid ${theme.primary}40`,
               }}
-            />
+            >
+              <Check
+                className="w-4 h-4 shrink-0"
+                style={{
+                  color: theme.primary,
+                }}
+              />
 
-            <span
-              className="text-sm font-medium"
+              <span
+                className="text-sm font-medium"
+                style={{
+                  color: theme.foreground,
+                }}
+              >
+                Playlist saved
+              </span>
+            </div>
+
+            <h3
+              className="text-sm font-semibold mb-2.5"
               style={{
                 color: theme.foreground,
               }}
             >
-              Playlist saved
-            </span>
+              Playlists
+            </h3>
+
+            {list}
+
+            <button
+              type="button"
+              onClick={() =>
+                setScreen("list")
+              }
+              className="mt-5 rounded-xl px-4 py-2 text-sm font-medium"
+              style={{
+                background:
+                  theme.overlay(0.06),
+                border: `1px solid ${theme.border}`,
+                color: theme.foreground,
+              }}
+            >
+              Done
+            </button>
           </div>
+        )}
 
-          <h3
-            className="text-sm font-semibold mb-2.5"
-            style={{
-              color: theme.foreground,
-            }}
-          >
-            Playlists
-          </h3>
+        {screen === "list" &&
+          (loading ? (
+            <p
+              className="text-sm"
+              style={{
+                color: theme.mutedFg,
+              }}
+            >
+              Loading playlists…
+            </p>
+          ) : (
+            list
+          ))}
+      </div>
+    );
+  }
 
-          {list}
+  /*
+   * This is the ONLY situation where a signed-out
+   * user should be prompted to authenticate.
+   *
+   * Notice that there is no AudioAccountPanel here.
+   *
+   * The playlist page itself does not open a sign-in
+   * popup anymore.
+   */
+  return (
+    <div className="p-6 max-w-3xl">
+      <div className="mb-6">
+        <h2
+          className="font-display text-xl font-bold"
+          style={{
+            color: theme.foreground,
+          }}
+        >
+          Playlists
+        </h2>
 
-          <button
-            type="button"
-            onClick={() =>
-              setScreen("list")
-            }
-            className="mt-5 rounded-xl px-4 py-2 text-sm font-medium"
-            style={{
-              background: theme.overlay(0.06),
-              border: `1px solid ${theme.border}`,
-              color: theme.foreground,
-            }}
-          >
-            Done
-          </button>
-        </div>
-      )}
+        <p
+          className="text-sm mt-0.5"
+          style={{
+            color: theme.mutedFg,
+          }}
+        >
+          Curate what plays when someone arrives
+          and when they start a session
+        </p>
+      </div>
 
-      {screen === "list" &&
-        (loading ? (
-          <p
-            className="text-sm"
-            style={{
-              color: theme.mutedFg,
-            }}
-          >
-            Loading playlists…
-          </p>
-        ) : (
-          list
-        ))}
+      <div
+        className="rounded-2xl p-6"
+        style={{
+          background: theme.card,
+          border: `1px solid ${theme.border}`,
+        }}
+      >
+        <ListMusic
+          className="w-8 h-8 mb-3"
+          style={{
+            color: theme.mutedFg,
+          }}
+        />
+
+        <h3
+          className="font-semibold mb-1"
+          style={{
+            color: theme.foreground,
+          }}
+        >
+          Sign in required
+        </h3>
+
+        <p
+          className="text-sm"
+          style={{
+            color: theme.mutedFg,
+          }}
+        >
+          You need to be signed in to create and
+          manage playlists.
+        </p>
+      </div>
     </div>
   );
 }
