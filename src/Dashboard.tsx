@@ -11,6 +11,7 @@ import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from ".
 import { getDefaultPlaylist, type Playlist } from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
+import { ambientAudio, DEFAULT_TRACK, releaseAmbientMusic } from "./lib/ambientMusic";
 
 // ── Types ──────────────────────────────────────────────────────
 type Nav = "home" | "focus" | "music" | "playlists" | "sounds" | "analytics" | "themes";
@@ -1424,12 +1425,15 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
       : undefined;
 
   // ── Playlist & audio ──
-  const [playlist, setPlaylist] = useState<Track[]>([]);
-  const [queueName, setQueueName] = useState<string | null>(null);
-  const [currentTrackIdx, setCurrentTrackIdx] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef(new Audio());
-  const loadedIdRef = useRef<string | null>(null);
+  const sharedAudio = ambientAudio();
+  // The queue holds the music that has been playing since the homepage from the very
+  // first render, so there is never a moment where the dashboard thinks nothing is on.
+  const [playlist, setPlaylist] = useState<Track[]>(() => [{ ...DEFAULT_TRACK, duration: 0, size: "" }]);
+  const [queueName, setQueueName] = useState<string | null>(DEFAULT_TRACK.name);
+  const [currentTrackIdx, setCurrentTrackIdx] = useState<number | null>(0);
+  const [isPlaying, setIsPlaying] = useState(() => !sharedAudio.paused);
+  const audioRef = useRef(sharedAudio);
+  const loadedIdRef = useRef<string | null>(DEFAULT_TRACK.id);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -1477,9 +1481,13 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   // ── Audio playback ──
   useEffect(() => {
     const audio = audioRef.current;
-    if (currentTrackIdx === null) { audio.pause(); return; }
+    // Nothing queued is no reason to silence music that is already playing.
+    if (currentTrackIdx === null) { if (playlist.length) audio.pause(); return; }
     const track = playlist[currentTrackIdx];
     if (!track) return;
+
+    // A lone ambience track repeats rather than leaving silence behind.
+    audio.loop = playlist.length <= 1;
 
     if (loadedIdRef.current !== track.id) {
       loadedIdRef.current = track.id;
@@ -1517,21 +1525,29 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
     setIsPlaying(true);
   }, []);
 
-  /** Whoever arrives hears the default playlist without having chosen anything yet. */
+  /**
+   * The music that has been playing since the homepage carries straight into the
+   * dashboard, and the saved default playlist queues up behind it. From here the
+   * listener is in charge — play, pause and track changes are all theirs.
+   */
   useEffect(() => {
+    releaseAmbientMusic();
+
     if (!isBackendConfigured) return;
     let cancelled = false;
 
     getDefaultPlaylist()
       .then(defaultPlaylist => {
-        if (!cancelled && defaultPlaylist) startPlaylist(defaultPlaylist);
+        if (cancelled || !defaultPlaylist) return;
+        const queued = playlistTracks(defaultPlaylist);
+        if (queued.length) setPlaylist(prev => [...prev, ...queued]);
       })
       .catch((err: unknown) => console.warn("The default playlist could not be loaded", err));
 
     return () => {
       cancelled = true;
     };
-  }, [startPlaylist]);
+  }, []);
 
   // ── Track management ──
   const handleAddTracks = useCallback((files: FileList) => {

@@ -3,7 +3,10 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import './lib/amplify'
+import { startDefaultMusic } from './lib/ambientMusic'
 import App from './App.tsx'
+
+startDefaultMusic()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
