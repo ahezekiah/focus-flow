@@ -1,5 +1,5 @@
 {
- "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.11.2\",\"stackType\":\"auth-Cognito\",\"metadata\":{}}",
+ "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.11.2\",\"stackType\":\"auth-Cognito\",\"metadata\":{}}",
  "Resources": {
   "amplifyAuthUserPool4BA7F805": {
    "Type": "AWS::Cognito::UserPool",
@@ -20,6 +20,11 @@
     ],
     "EmailVerificationMessage": "The verification code to your new account is {####}",
     "EmailVerificationSubject": "Verify your new account",
+    "LambdaConfig": {
+     "PreSignUp": {
+      "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionpresignuplambdaBC064F98Arn"
+     }
+    },
     "Policies": {
      "PasswordPolicy": {
       "MinimumLength": 8,
@@ -64,6 +69,27 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifyAuth/UserPool/Resource"
+   }
+  },
+  "amplifyAuthUserPoolPreSignUpCognito55F45D8E": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionpresignuplambdaBC064F98Arn"
+    },
+    "Principal": "cognito-idp.amazonaws.com",
+    "SourceArn": {
+     "Fn::GetAtt": [
+      "amplifyAuthUserPool4BA7F805",
+      "Arn"
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/auth/amplifyAuth/UserPool/PreSignUpCognito"
    }
   },
   "amplifyAuthUserPoolAppClient2626C6F8": {
@@ -301,7 +327,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02LwQrCMBBEv6X3dJUUvEtPXkRaPEtMVt023UCzWiTk36VItaeZeTOjQe8q2BZmiqV1fenpCumIUdC1YmyvzBQvyYY7kwRI54jjKQSv6hv//GJqT8iyrv7k4JCF5L2c17kJHvcixj4GZMmKzABphvNw1pyz4uAQurh5aQ26Al10kagcnyw0IDRf/QAT4Ag8zgAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02LTQuCQBCGf4v3dTKL6BqeuoQYnWN1x5rcnQV3SmLxv4eE5el5P3PIdxvIEj2EtDFdaqmGeMIgaM6im07pIVxj429M4iFeAval91YVLf/0LApLyLKs/snRIAvJez4vfeUtHkR0c3fIMiqrXW00FC2X2DsKgTwr0g7itJzeE8dxVOwNwiOsXvkW1nvIkkcgSvsnCzmE6ssPIr1AtOMAAAA="
    },
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/auth/CDKMetadata/Default"
@@ -573,6 +599,11 @@
      ]
     }
    ]
+  }
+ },
+ "Parameters": {
+  "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionpresignuplambdaBC064F98Arn": {
+   "Type": "String"
   }
  },
  "Outputs": {

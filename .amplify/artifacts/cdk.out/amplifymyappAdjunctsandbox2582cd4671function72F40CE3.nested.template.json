@@ -1,6 +1,113 @@
 {
- "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.18.2\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+ "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.18.2\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
  "Resources": {
+  "presignuplambdaServiceRole3A164369": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "pre-sign-up"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/pre-sign-up-lambda/ServiceRole/Resource"
+   }
+  },
+  "presignuplambda88F2702A": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "x86_64"
+    ],
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "773c82ba27575fde2786d0597796d8933e533ad12f648a0be123515de7dd1fd9.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AMPLIFY_SSM_ENV_CONFIG": "{}"
+     }
+    },
+    "EphemeralStorage": {
+     "Size": 512
+    },
+    "Handler": "index.handler",
+    "MemorySize": 512,
+    "Role": {
+     "Fn::GetAtt": [
+      "presignuplambdaServiceRole3A164369",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs22.x",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "pre-sign-up"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "Timeout": 3
+   },
+   "DependsOn": [
+    "presignuplambdaServiceRole3A164369"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/pre-sign-up-lambda/Resource",
+    "aws:asset:path": "asset.773c82ba27575fde2786d0597796d8933e533ad12f648a0be123515de7dd1fd9",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
   "audiofileslambdaServiceRole4E9B6309": {
    "Type": "AWS::IAM::Role",
    "Properties": {
@@ -145,7 +252,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "d071f9d3c8ceda013aedb00ae248d8b88dfcebac554008f677cfb97aaef3a2fe.zip"
+     "S3Key": "6bbcec892ac1dbf842865ca1ade95784e9a71cfbc7acc106bfc4760ff2fad5aa.zip"
     },
     "Environment": {
      "Variables": {
@@ -194,7 +301,7 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/audio-files-lambda/Resource",
-    "aws:asset:path": "asset.d071f9d3c8ceda013aedb00ae248d8b88dfcebac554008f677cfb97aaef3a2fe",
+    "aws:asset:path": "asset.6bbcec892ac1dbf842865ca1ade95784e9a71cfbc7acc106bfc4760ff2fad5aa",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -364,7 +471,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "1f056a84d8e96701eb689345457c376f7816fa495d48f1135e34268b069a5e8b.zip"
+     "S3Key": "ec654695cee44f7f7eb8210ec2c5a6158d54ce4caa28aff00a119b37c36a60b5.zip"
     },
     "Environment": {
      "Variables": {
@@ -416,7 +523,171 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/playlists-lambda/Resource",
-    "aws:asset:path": "asset.1f056a84d8e96701eb689345457c376f7816fa495d48f1135e34268b069a5e8b",
+    "aws:asset:path": "asset.ec654695cee44f7f7eb8210ec2c5a6158d54ce4caa28aff00a119b37c36a60b5",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "sessionslambdaServiceRoleF796A3AC": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "sessions"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/sessions-lambda/ServiceRole/Resource"
+   }
+  },
+  "sessionslambdaServiceRoleDefaultPolicyEED8EBD4": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671SessionTable3E2181E6Arn"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671SessionTable3E2181E6Arn"
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "sessionslambdaServiceRoleDefaultPolicyEED8EBD4",
+    "Roles": [
+     {
+      "Ref": "sessionslambdaServiceRoleF796A3AC"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/sessions-lambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "sessionslambda03BD633D": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "x86_64"
+    ],
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "bcf2ace83afe5b26096f002b0d9cae1c777d5fb83c58ef844028fcfac55f319c.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AMPLIFY_SSM_ENV_CONFIG": "{}",
+      "SESSION_TABLE": {
+       "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671SessionTable3E2181E6Ref"
+      }
+     }
+    },
+    "EphemeralStorage": {
+     "Size": 512
+    },
+    "Handler": "index.handler",
+    "MemorySize": 512,
+    "Role": {
+     "Fn::GetAtt": [
+      "sessionslambdaServiceRoleF796A3AC",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs22.x",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "sessions"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "sessionslambdaServiceRoleDefaultPolicyEED8EBD4",
+    "sessionslambdaServiceRoleF796A3AC"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/sessions-lambda/Resource",
+    "aws:asset:path": "asset.bcf2ace83afe5b26096f002b0d9cae1c777d5fb83c58ef844028fcfac55f319c",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -424,7 +695,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zWNwQqDMBBEv8X7ui0J9F6FHkvRD5A1WSUaE+jGShH/vaj09GZgeKNQ3TReM1okN3bMvWtxfbIktnUiMwIt0qyeptZSE6LlQfB54DEHk1wM4GjCtYqeoezCwVf0znz3eqYNRDckwknwvgNEYzGbkVNBwnDqsezCX7rBsasT9S70G+zPOMjloxQqjSobxLn8PYfkJsbq5A/K0S9GzAAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zWNwQqDMBBEv8X7urVaSq+10KMU/QBZkyirMYFurBTx34tKT28GhjcpptcMk4hmiZUeYssNLoWRYHQVSA1As9SLpbHRVDuvTS9Y7HhOTgX2DphGXEpvDTxat/PlLavvVo+0gmQ1iZggeN8AkmE+qcGEnMTAocdH6/7SFfZdFahj162wPWMvp096wfMNk6gX5vg9ucCjwfLgD0hm2GvMAAAA"
    },
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function/CDKMetadata/Default"
@@ -698,6 +969,60 @@
    ]
   }
  },
+ "Outputs": {
+  "amplifymyappAdjunctsandbox2582cd4671functionpresignuplambdaBC064F98Arn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "presignuplambda88F2702A",
+     "Arn"
+    ]
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionpresignuplambdaBC064F98Ref": {
+   "Value": {
+    "Ref": "presignuplambda88F2702A"
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Ref": {
+   "Value": {
+    "Ref": "audiofileslambda980FDE60"
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Ref": {
+   "Value": {
+    "Ref": "playlistslambda83C94385"
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5ERef": {
+   "Value": {
+    "Ref": "sessionslambda03BD633D"
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "audiofileslambda980FDE60",
+     "Arn"
+    ]
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "playlistslambda83C94385",
+     "Arn"
+    ]
+   }
+  },
+  "amplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "sessionslambda03BD633D",
+     "Arn"
+    ]
+   }
+  }
+ },
  "Parameters": {
   "referencetoamplifymyappAdjunctsandbox2582cd4671AudioFileTable51CEAD0DArn": {
    "Type": "String"
@@ -716,34 +1041,12 @@
   },
   "referencetoamplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Ref": {
    "Type": "String"
-  }
- },
- "Outputs": {
-  "amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Ref": {
-   "Value": {
-    "Ref": "audiofileslambda980FDE60"
-   }
   },
-  "amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Ref": {
-   "Value": {
-    "Ref": "playlistslambda83C94385"
-   }
+  "referencetoamplifymyappAdjunctsandbox2582cd4671SessionTable3E2181E6Arn": {
+   "Type": "String"
   },
-  "amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Arn": {
-   "Value": {
-    "Fn::GetAtt": [
-     "audiofileslambda980FDE60",
-     "Arn"
-    ]
-   }
-  },
-  "amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn": {
-   "Value": {
-    "Fn::GetAtt": [
-     "playlistslambda83C94385",
-     "Arn"
-    ]
-   }
+  "referencetoamplifymyappAdjunctsandbox2582cd4671SessionTable3E2181E6Ref": {
+   "Type": "String"
   }
  }
 }
