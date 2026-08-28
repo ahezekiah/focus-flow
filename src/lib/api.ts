@@ -1,5 +1,4 @@
 import { fetchAuthSession } from "aws-amplify/auth";
-
 import { apiBaseUrl, isBackendConfigured } from "./amplify";
 
 export interface AudioFile {
@@ -13,6 +12,7 @@ export interface AudioFile {
   playUrl?: string;
 }
 
+/** One audio file as it sits in a playlist, ready to play. */
 export interface PlaylistTrack {
   id: string;
   name: string;
@@ -22,11 +22,39 @@ export interface PlaylistTrack {
 export interface Playlist {
   id: string;
   name: string;
+  /** True for the playlist a customer hears when they enter the experience. */
   isDefault: boolean;
   createdAt: string;
   tracks: PlaylistTrack[];
 }
 
+export type SessionStatus =
+  | "configured"
+  | "in_progress"
+  | "paused"
+  | "completed";
+
+export interface FocusSession {
+  id: string;
+  userId: string;
+
+  durationMinutes: number;
+  objective: string;
+  task: string;
+
+  audioId?: string;
+  audioName?: string;
+  audioType?: "playlist" | "track";
+
+  status: SessionStatus;
+
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+
+/** Thrown for any non-2xx response so callers can show the server's message. */
 export class ApiError extends Error {
   status: number;
 
@@ -40,253 +68,156 @@ export class ApiError extends Error {
 export const BACKEND_UNAVAILABLE =
   "No Amplify backend is connected yet. Run `npx ampx sandbox` to deploy one.";
 
-/**
- * Get the Cognito ID token.
- *
- * IMPORTANT:
- * The API Gateway Cognito User Pool authorizer is being used by
- * the backend, so send the ID token in the Authorization header.
- *
- * The header must be:
- *
- * Authorization: Bearer <id-token>
- */
 async function authHeaders(): Promise<Record<string, string>> {
   try {
-    const session = await fetchAuthSession();
-
-    const idToken = session.tokens?.idToken?.toString();
-
-    if (!idToken) {
-      console.warn("No Cognito ID token available.");
-      return {};
-    }
-
-    return {
-      Authorization: `Bearer ${idToken}`,
-    };
-  } catch (error) {
-    console.error("Could not retrieve Cognito auth session:", error);
+    const token = (await fetchAuthSession()).tokens?.idToken?.toString();
+    return token ? { Authorization: token } : {};
+  } catch {
     return {};
   }
 }
 
-/**
- * Shared API request helper.
- */
-async function request<T>(
-  path: string,
-  init: RequestInit = {},
-): Promise<T> {
-  if (!isBackendConfigured || !apiBaseUrl) {
-    throw new ApiError(0, BACKEND_UNAVAILABLE);
-  }
-
-  const auth = await authHeaders();
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  if (!isBackendConfigured || !apiBaseUrl) throw new ApiError(0, BACKEND_UNAVAILABLE);
 
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...auth,
-      ...(init.headers ?? {}),
+      ...(await authHeaders()),
+      ...init.headers,
     },
   });
 
   if (!response.ok) {
-    let message: string | undefined;
-
-    try {
-      const body = await response.json();
-
-      if (
-        body &&
-        typeof body === "object" &&
-        "message" in body &&
-        typeof (body as { message?: unknown }).message === "string"
-      ) {
-        message = (body as { message: string }).message;
-      }
-    } catch {
-      // Response wasn't JSON.
-    }
-
-    if (response.status === 401) {
-      throw new ApiError(
-        401,
-        "Unauthorized. Please sign in again.",
-      );
-    }
-
-    throw new ApiError(
-      response.status,
-      message ?? `Request failed (${response.status})`,
-    );
+    const message = await response
+      .json()
+      .then(body => (body as { message?: string }).message)
+      .catch(() => undefined);
+    throw new ApiError(response.status, message ?? `Request failed (${response.status})`);
   }
 
-  const text = await response.text();
-
-  if (!text) {
-    return undefined as T;
-  }
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    throw new ApiError(
-      response.status,
-      "The server returned an invalid response.",
-    );
-  }
+  return (await response.json()) as T;
 }
 
-/**
- * GET /api/audio-files
- *
- * Public endpoint.
- */
+/** GET /api/audio-files — every audio file that has finished being added. */
 export async function listAudioFiles(): Promise<AudioFile[]> {
-  const { audioFiles } = await request<{
-    audioFiles: AudioFile[];
-  }>("/audio-files");
-
+  const { audioFiles } = await request<{ audioFiles: AudioFile[] }>("/audio-files");
   return audioFiles;
 }
 
 /**
- * POST /api/audio-files
- *
- * Requires authentication.
+ * Adds one audio file: reserves the record, uploads the file to storage, then
+ * marks it ready. Resolves with the playable audio file.
  */
-export async function addAudioFile(
-  name: string,
-  file: File,
-): Promise<AudioFile> {
+export async function addAudioFile(name: string, file: File): Promise<AudioFile> {
   const contentType = file.type || "audio/mpeg";
 
-  const { audioFile, uploadUrl } = await request<{
-    audioFile: AudioFile;
-    uploadUrl: string;
-  }>("/audio-files", {
-    method: "POST",
-    body: JSON.stringify({
-      name,
-      fileName: file.name,
-      contentType,
-      sizeBytes: file.size,
-    }),
-  });
-
-  /**
-   * uploadUrl is a presigned S3 URL.
-   *
-   * IMPORTANT:
-   * Do not send the Cognito Authorization header to S3.
-   */
-  const upload = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": contentType,
-    },
-    body: file,
-  });
-
-  if (!upload.ok) {
-    throw new ApiError(
-      upload.status,
-      "The audio file could not be uploaded.",
-    );
-  }
-
-  /**
-   * Mark the file ready after S3 upload succeeds.
-   */
-  return request<AudioFile>(
-    `/audio-files/${encodeURIComponent(audioFile.id)}`,
+  const { audioFile, uploadUrl } = await request<{ audioFile: AudioFile; uploadUrl: string }>(
+    "/audio-files",
     {
-      method: "PATCH",
+      method: "POST",
       body: JSON.stringify({
-        status: "ready",
+        name,
+        fileName: file.name,
+        contentType,
+        sizeBytes: file.size,
       }),
     },
   );
+
+  const upload = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: file,
+  });
+  if (!upload.ok) throw new ApiError(upload.status, "The audio file could not be uploaded");
+
+  return request<AudioFile>(`/audio-files/${audioFile.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status: "ready" }),
+  });
 }
 
-/**
- * GET /api/playlists
- *
- * Public endpoint.
- */
+/** GET /playlists — every playlist a designer has saved, with its playable tracks. */
 export async function listPlaylists(): Promise<Playlist[]> {
-  const { playlists } = await request<{
-    playlists: Playlist[];
-  }>("/playlists");
-
+  const { playlists } = await request<{ playlists: Playlist[] }>("/playlists");
   return playlists;
 }
 
 /**
- * GET /api/playlists/default
- *
- * Public endpoint.
+ * GET /playlists/default — the playlist a customer hears on arrival.
+ * Resolves with `null` while no playlist has been created yet.
  */
 export async function getDefaultPlaylist(): Promise<Playlist | null> {
   try {
-    const { playlist } = await request<{
-      playlist: Playlist;
-    }>("/playlists/default");
-
+    const { playlist } = await request<{ playlist: Playlist }>("/playlists/default");
     return playlist;
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) {
-      return null;
-    }
-
+    if (error instanceof ApiError && error.status === 404) return null;
     throw error;
   }
 }
 
-/**
- * POST /api/playlists
- *
- * Requires authentication.
- */
-export async function createPlaylist(
-  name: string,
-  audioFileIds: string[],
-): Promise<Playlist> {
-  const { playlist } = await request<{
-    playlist: Playlist;
-  }>("/playlists", {
+/** POST /playlists — saves a playlist under the given name, holding only the chosen audio. */
+export async function createPlaylist(name: string, audioFileIds: string[]): Promise<Playlist> {
+  const { playlist } = await request<{ playlist: Playlist }>("/playlists", {
     method: "POST",
-    body: JSON.stringify({
-      name,
-      audioFileIds,
-    }),
+    body: JSON.stringify({ name, audioFileIds }),
   });
-
   return playlist;
 }
 
-/**
- * PATCH /api/playlists/{id}
- *
- * Requires authentication.
- */
-export async function makePlaylistDefault(
-  playlistId: string,
-): Promise<Playlist> {
-  const { playlist } = await request<{
-    playlist: Playlist;
-  }>(
-    `/playlists/${encodeURIComponent(playlistId)}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({
-        isDefault: true,
-      }),
-    },
-  );
-
+/** PATCH /playlists/{id} — makes this the playlist new customers hear. */
+export async function makePlaylistDefault(playlistId: string): Promise<Playlist> {
+  const { playlist } = await request<{ playlist: Playlist }>(`/playlists/${playlistId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ isDefault: true }),
+  });
   return playlist;
+}
+
+export async function createSession(input: {
+  durationMinutes: number;
+  objective: string;
+  task: string;
+
+  audioId?: string;
+  audioName?: string;
+  audioType?: "playlist" | "track";
+}): Promise<FocusSession> {
+  const { session } = await request<{
+    session: FocusSession;
+  }>("/sessions", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+  return session;
+}
+
+export async function updateSessionStatus(
+  sessionId: string,
+  status: SessionStatus
+): Promise<FocusSession> {
+  const { session } = await request<{
+    session: FocusSession;
+  }>(`/sessions/${sessionId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      status,
+    }),
+  });
+
+  return session;
+}
+
+export async function listSessions(): Promise<
+  FocusSession[]
+> {
+  const { sessions } = await request<{
+    sessions: FocusSession[];
+  }>("/sessions");
+
+  return sessions;
 }

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useRef, useCallback, type ElementType } from "react";
 import {
   Home, Music2, Waves, BarChart2, Timer, Palette,
@@ -8,21 +9,40 @@ import {
 import { ThemeSelectionView } from "./dash/ThemeSelectionView";
 import { PlaylistsView } from "./dash/PlaylistsView";
 import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from "./dash/themes";
-import { getDefaultPlaylist, type Playlist } from "./lib/api";
+import {
+  getDefaultPlaylist,
+  listPlaylists,
+  listAudioFiles,
+  createSession,
+  updateSessionStatus,
+  type FocusSession,
+  type Playlist,
+  type AudioFile,
+} from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
 import { ambientAudio, DEFAULT_TRACK, releaseAmbientMusic } from "./lib/ambientMusic";
 
 // ── Types ──────────────────────────────────────────────────────
 type Nav = "home" | "focus" | "music" | "playlists" | "sounds" | "analytics" | "themes";
-type FocusPhase = "idle" | "setup" | "active" | "complete";
+type FocusPhase = "idle" | "setup" | "review" | "active" | "complete";
 type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 
 interface FocusConfig {
   duration: number;
-  music: string;
-  ambience: string;
   objective: string;
+  task: string;
+  audio?: {
+    id: string;
+    name: string;
+    type: "playlist" | "track";
+  };
+}
+
+interface SessionErrors {
+  duration?: string;
+  objective?: string;
+  task?: string;
 }
 
 interface Task {
@@ -467,7 +487,7 @@ function HomeView({
               <button
                 key={i}
                 className="w-full flex items-center gap-3 p-2.5 rounded-xl text-left group transition-colors duration-150"
-                style={{} }
+                style={{}}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = theme.overlay(0.04); }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ""; }}
               >
@@ -568,111 +588,645 @@ function HomeView({
 
 // ── Focus Setup ────────────────────────────────────────────────
 function FocusSetupView({
-  onBegin, theme, defaultDuration = 45, defaultObjective = "Coding", defaultAmbience = "Rain",
+  onContinue,
+  theme,
 }: {
-  onBegin: (cfg: FocusConfig) => void;
+  onContinue: (config: FocusConfig) => void | Promise<void>;
   theme: DashTheme;
-  defaultDuration?: number;
-  defaultObjective?: string;
-  defaultAmbience?: string;
 }) {
-  const [duration, setDuration] = useState(defaultDuration);
-  const [music, setMusic] = useState("Coding");
-  const [ambience, setAmbience] = useState(defaultAmbience);
-  const [objective, setObjective] = useState(defaultObjective);
+  const [duration, setDuration] = useState<number | undefined>();
+  const [customSelected, setCustomSelected] = useState(false);
+  const [customDuration, setCustomDuration] = useState("");
+
+  const [objective, setObjective] = useState("");
+  const [task, setTask] = useState("");
+
+  const [errors, setErrors] = useState<SessionErrors>({});
+
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+
+  const [selectedAudio, setSelectedAudio] =
+    useState<FocusConfig["audio"]>();
 
   const durations = [25, 45, 60, 90];
-  const musicOpts = ["Coding", "Writing", "Math", "Reading", "Creative", "Exam Prep"];
-  const ambienceOpts = ["Rain", "Café", "Fireplace", "Ocean", "Forest", "Thunder"];
-  const objectiveOpts = ["Homework", "Coding", "Essay", "Design", "Reading", "Research"];
 
-  function OptionPill({ opts, value, onChange, color }: { opts: string[]; value: string; onChange: (v: string) => void; color: string }) {
-    return (
-      <div className="grid grid-cols-3 gap-2">
-        {opts.map(o => (
-          <button
-            key={o}
-            onClick={() => onChange(o)}
-            className="py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
-            style={{
-              background: value === o ? `${color}20` : "transparent",
-              border: `1px solid ${value === o ? color : theme.border}`,
-              color: value === o ? color : theme.mutedFg,
-            }}
-          >
-            {o}
-          </button>
-        ))}
-      </div>
-    );
+  useEffect(() => {
+    async function loadAudioOptions() {
+      if (!isBackendConfigured) return;
+
+      try {
+        const [playlistResults, audioResults] = await Promise.all([
+          listPlaylists(),
+          listAudioFiles(),
+        ]);
+
+        setPlaylists(playlistResults);
+        setAudioFiles(audioResults);
+      } catch (error) {
+        console.error("Could not load session audio:", error);
+      }
+    }
+
+    void loadAudioOptions();
+  }, []);
+
+  function choosePresetDuration(minutes: number) {
+    setDuration(minutes);
+    setCustomSelected(false);
+    setCustomDuration("");
+
+    setErrors(prev => ({
+      ...prev,
+      duration: undefined,
+    }));
+  }
+
+  function chooseCustom() {
+    setDuration(undefined);
+    setCustomSelected(true);
+
+    setErrors(prev => ({
+      ...prev,
+      duration: undefined,
+    }));
+  }
+
+  function handleContinue() {
+    let finalDuration: number | undefined = duration;
+
+    if (customSelected) {
+      const minutes = Number(customDuration);
+
+      if (
+        customDuration.trim() &&
+        Number.isFinite(minutes) &&
+        Number.isInteger(minutes) &&
+        minutes > 0
+      ) {
+        finalDuration = minutes;
+      } else {
+        finalDuration = undefined;
+      }
+    }
+
+    const nextErrors: SessionErrors = {};
+
+    if (finalDuration === undefined) {
+      nextErrors.duration = "Choose a valid session length.";
+    }
+
+    if (!objective.trim()) {
+      nextErrors.objective = "Enter an objective for this session.";
+    }
+
+    if (!task.trim()) {
+      nextErrors.task = "Enter a task for this session.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    // Explicit guard so TypeScript knows this is definitely a number.
+    if (finalDuration === undefined) {
+      return;
+    }
+
+    setErrors({});
+
+    const config: FocusConfig = {
+      duration: finalDuration,
+      objective: objective.trim(),
+      task: task.trim(),
+    };
+
+    if (selectedAudio) {
+      config.audio = selectedAudio;
+    }
+
+    onContinue(config);
   }
 
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-8">
-        <h2 className="font-display text-2xl font-bold mb-1" style={{ color: theme.foreground }}>New Focus Session</h2>
-        <p className="text-sm" style={{ color: theme.mutedFg }}>Set up your environment for deep work.</p>
+        <h2
+          className="font-display text-2xl font-bold mb-1"
+          style={{ color: theme.foreground }}
+        >
+          New Focus Session
+        </h2>
+
+        <p
+          className="text-sm"
+          style={{ color: theme.mutedFg }}
+        >
+          Choose your session length and define what you want to accomplish.
+        </p>
       </div>
 
       <div className="space-y-7">
+
+        {/* Duration */}
         <div>
-          <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Duration</label>
+          <label
+            className="text-xs uppercase tracking-wider block mb-3"
+            style={{ color: theme.mutedFg }}
+          >
+            Duration
+            <span
+              className="ml-1"
+              style={{ color: theme.accent }}
+            >
+              *
+            </span>
+          </label>
+
           <div className="flex gap-2">
-            {durations.map(d => (
+            {durations.map(minutes => (
               <button
-                key={d}
-                onClick={() => setDuration(d)}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-150"
+                key={minutes}
+                type="button"
+                onClick={() => choosePresetDuration(minutes)}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
                 style={{
-                  background: duration === d ? `${theme.primary}20` : "transparent",
-                  border: `1px solid ${duration === d ? theme.primary : theme.border}`,
-                  color: duration === d ? theme.primary : theme.mutedFg,
+                  background:
+                    duration === minutes && !customSelected
+                      ? `${theme.primary}20`
+                      : "transparent",
+                  border: `1px solid ${duration === minutes && !customSelected
+                      ? theme.primary
+                      : theme.border
+                    }`,
+                  color:
+                    duration === minutes && !customSelected
+                      ? theme.primary
+                      : theme.mutedFg,
                 }}
-              >{d}m</button>
+              >
+                {minutes}m
+              </button>
             ))}
+
             <button
-              className="px-4 py-3 rounded-xl text-sm font-medium transition-all"
-              style={{ border: `1px dashed ${theme.border}`, color: theme.mutedFg }}
-            >Custom</button>
+              type="button"
+              onClick={chooseCustom}
+              className="px-4 py-3 rounded-xl text-sm font-medium"
+              style={{
+                border: `1px solid ${customSelected ? theme.primary : theme.border
+                  }`,
+                color: customSelected
+                  ? theme.primary
+                  : theme.mutedFg,
+              }}
+            >
+              Custom
+            </button>
+          </div>
+
+          {customSelected && (
+            <div className="mt-3">
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={customDuration}
+                onChange={e => {
+                  setCustomDuration(e.target.value);
+
+                  setErrors(prev => ({
+                    ...prev,
+                    duration: undefined,
+                  }));
+                }}
+                placeholder="Enter minutes"
+                className="w-full px-4 py-3 rounded-xl outline-none"
+                style={{
+                  background: theme.card,
+                  border: `1px solid ${errors.duration ? "#ef4444" : theme.border
+                    }`,
+                  color: theme.foreground,
+                }}
+                aria-invalid={Boolean(errors.duration)}
+              />
+            </div>
+          )}
+
+          {errors.duration && (
+            <p
+              className="mt-2 text-sm"
+              style={{ color: "#ef4444" }}
+              role="alert"
+            >
+              {errors.duration}
+            </p>
+          )}
+        </div>
+
+        {/* Objective */}
+        <div>
+          <label
+            htmlFor="session-objective"
+            className="text-xs uppercase tracking-wider block mb-3"
+            style={{ color: theme.mutedFg }}
+          >
+            Objective
+            <span
+              className="ml-1"
+              style={{ color: theme.accent }}
+            >
+              *
+            </span>
+          </label>
+
+          <textarea
+            id="session-objective"
+            value={objective}
+            onChange={e => {
+              setObjective(e.target.value);
+
+              setErrors(prev => ({
+                ...prev,
+                objective: undefined,
+              }));
+            }}
+            placeholder="What do you want to accomplish?"
+            rows={3}
+            className="w-full px-4 py-3 rounded-xl outline-none resize-none"
+            style={{
+              background: theme.card,
+              border: `1px solid ${errors.objective ? "#ef4444" : theme.border
+                }`,
+              color: theme.foreground,
+            }}
+            aria-invalid={Boolean(errors.objective)}
+            aria-describedby={
+              errors.objective
+                ? "session-objective-error"
+                : undefined
+            }
+          />
+
+          {errors.objective && (
+            <p
+              id="session-objective-error"
+              className="mt-2 text-sm"
+              style={{ color: "#ef4444" }}
+              role="alert"
+            >
+              {errors.objective}
+            </p>
+          )}
+        </div>
+
+        {/* Task */}
+        <div>
+          <label
+            htmlFor="session-task"
+            className="text-xs uppercase tracking-wider block mb-3"
+            style={{ color: theme.mutedFg }}
+          >
+            Task
+            <span
+              className="ml-1"
+              style={{ color: theme.accent }}
+            >
+              *
+            </span>
+          </label>
+
+          <input
+            id="session-task"
+            type="text"
+            value={task}
+            onChange={e => {
+              setTask(e.target.value);
+
+              setErrors(prev => ({
+                ...prev,
+                task: undefined,
+              }));
+            }}
+            placeholder="What are you working on?"
+            className="w-full px-4 py-3 rounded-xl outline-none"
+            style={{
+              background: theme.card,
+              border: `1px solid ${errors.task ? "#ef4444" : theme.border
+                }`,
+              color: theme.foreground,
+            }}
+            aria-invalid={Boolean(errors.task)}
+            aria-describedby={
+              errors.task
+                ? "session-task-error"
+                : undefined
+            }
+          />
+
+          {errors.task && (
+            <p
+              id="session-task-error"
+              className="mt-2 text-sm"
+              style={{ color: "#ef4444" }}
+              role="alert"
+            >
+              {errors.task}
+            </p>
+          )}
+        </div>
+
+        {/* Background Audio */}
+        <div>
+          <label
+            className="text-xs uppercase tracking-wider block mb-3"
+            style={{ color: theme.mutedFg }}
+          >
+            Background Audio
+            <span className="normal-case ml-2">
+              (optional)
+            </span>
+          </label>
+
+          <div className="space-y-3">
+
+            <button
+              type="button"
+              onClick={() => setSelectedAudio(undefined)}
+              className="w-full text-left px-4 py-3 rounded-xl"
+              style={{
+                border: `1px solid ${!selectedAudio
+                    ? theme.primary
+                    : theme.border
+                  }`,
+                color: !selectedAudio
+                  ? theme.primary
+                  : theme.foreground,
+              }}
+            >
+              No background audio
+            </button>
+
+            {playlists.length > 0 && (
+              <div>
+                <p
+                  className="text-xs mb-2"
+                  style={{ color: theme.mutedFg }}
+                >
+                  Playlists
+                </p>
+
+                <div className="space-y-2">
+                  {playlists.map(playlist => {
+                    const selected =
+                      selectedAudio?.type === "playlist" &&
+                      selectedAudio.id === playlist.id;
+
+                    return (
+                      <button
+                        key={playlist.id}
+                        type="button"
+                        onClick={() =>
+                          setSelectedAudio({
+                            id: playlist.id,
+                            name: playlist.name,
+                            type: "playlist",
+                          })
+                        }
+                        className="w-full text-left px-4 py-3 rounded-xl"
+                        style={{
+                          background: selected
+                            ? `${theme.primary}15`
+                            : "transparent",
+                          border: `1px solid ${selected
+                              ? theme.primary
+                              : theme.border
+                            }`,
+                          color: theme.foreground,
+                        }}
+                      >
+                        🎵 {playlist.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {audioFiles.length > 0 && (
+              <div>
+                <p
+                  className="text-xs mb-2"
+                  style={{ color: theme.mutedFg }}
+                >
+                  Individual Tracks
+                </p>
+
+                <div className="space-y-2">
+                  {audioFiles.map(track => {
+                    const selected =
+                      selectedAudio?.type === "track" &&
+                      selectedAudio.id === track.id;
+
+                    return (
+                      <button
+                        key={track.id}
+                        type="button"
+                        onClick={() =>
+                          setSelectedAudio({
+                            id: track.id,
+                            name: track.name,
+                            type: "track",
+                          })
+                        }
+                        className="w-full text-left px-4 py-3 rounded-xl"
+                        style={{
+                          background: selected
+                            ? `${theme.accent}15`
+                            : "transparent",
+                          border: `1px solid ${selected
+                              ? theme.accent
+                              : theme.border
+                            }`,
+                          color: theme.foreground,
+                        }}
+                      >
+                        🎧 {track.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div>
-          <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Music Mode</label>
-          <OptionPill opts={musicOpts} value={music} onChange={setMusic} color={theme.primary} />
-        </div>
-
-        <div>
-          <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Ambience</label>
-          <OptionPill opts={ambienceOpts} value={ambience} onChange={setAmbience} color={theme.primary} />
-        </div>
-
-        <div>
-          <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Objective</label>
-          <OptionPill opts={objectiveOpts} value={objective} onChange={setObjective} color={theme.accent} />
-        </div>
-
         <button
-          onClick={() => onBegin({ duration, music, ambience, objective })}
-          className="w-full py-4 font-bold text-base rounded-xl transition-opacity duration-150"
-          style={{ background: theme.accent, color: theme.accentFg }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+          type="button"
+          onClick={handleContinue}
+          className="w-full py-4 font-bold text-base rounded-xl"
+          style={{
+            background: theme.accent,
+            color: theme.accentFg,
+          }}
         >
-          Begin Session →
+          Review Session →
         </button>
       </div>
     </div>
   );
 }
 
+// ── Review Session ─────────────────────────────────────────────
+function ReviewItem({
+  label,
+  value,
+  theme,
+}: {
+  label: string;
+  value: string;
+  theme: DashTheme;
+}) {
+  return (
+    <div>
+      <p
+        className="text-xs uppercase tracking-wider mb-1"
+        style={{ color: theme.mutedFg }}
+      >
+        {label}
+      </p>
+
+      <p
+        className="font-medium"
+        style={{ color: theme.foreground }}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function SessionReviewView({
+  config,
+  onStart,
+  onBack,
+  theme,
+}: {
+  config: FocusConfig;
+  onStart: () => void;
+  onBack: () => void;
+  theme: DashTheme;
+}) {
+
+
+  return (
+    <div className="p-8 max-w-2xl">
+      <div className="mb-8">
+        <h2
+          className="font-display text-2xl font-bold mb-1"
+          style={{ color: theme.foreground }}
+        >
+          Review Session
+        </h2>
+
+        <p
+          className="text-sm"
+          style={{ color: theme.mutedFg }}
+        >
+          Make sure everything looks right before you start.
+        </p>
+      </div>
+
+      <div
+        className="rounded-2xl p-6 space-y-5"
+        style={{
+          background: theme.card,
+          border: `1px solid ${theme.border}`,
+        }}
+      >
+
+        <ReviewItem
+          label="Duration"
+          value={`${config.duration} minutes`}
+          theme={theme}
+        />
+
+
+
+        <ReviewItem
+          label="Task"
+          value={config.task}
+          theme={theme}
+        />
+
+
+        <ReviewItem
+          label="Objective"
+          value={config.objective}
+          theme={theme}
+        />
+
+
+        {config.audio && (
+          <ReviewItem
+            label="Background Audio"
+            value={`${config.audio.name} ${config.audio.type === "playlist"
+                ? "(Playlist)"
+                : "(Track)"
+              }`}
+            theme={theme}
+          />
+        )}
+      </div>
+
+      <div className="flex gap-3 mt-6">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex-1 py-3 rounded-xl font-medium"
+          style={{
+            border: `1px solid ${theme.border}`,
+            color: theme.foreground,
+          }}
+        >
+          Back
+        </button>
+
+        <button
+          type="button"
+          onClick={onStart}
+          className="flex-1 py-3 rounded-xl font-semibold"
+          style={{
+            background: theme.primary,
+            color: theme.primaryFg,
+          }}
+        >
+          Start Session
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
 // ── Active Session ─────────────────────────────────────────────
 function ActiveSessionView({
-  config, secondsLeft, totalSeconds, onEnd, theme,
+  config,
+  secondsLeft,
+  totalSeconds,
+  isPaused,
+  onPause,
+  onResume,
+  onEnd,
+  theme,
 }: {
   config: FocusConfig;
   secondsLeft: number;
   totalSeconds: number;
+  isPaused: boolean;
+  onPause: () => void;
+  onResume: () => void;
   onEnd: () => void;
   theme: DashTheme;
 }) {
@@ -682,8 +1236,11 @@ function ActiveSessionView({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] px-8 py-12">
-      <p className="text-xs uppercase tracking-widest mb-10 font-data" style={{ color: theme.mutedFg }}>
-        Deep Work · {config.objective}
+      <p
+        className="text-xs uppercase tracking-widest mb-10 font-data"
+        style={{ color: theme.mutedFg }}
+      >
+        {config.task}
       </p>
 
       <div className="relative mb-10">
@@ -699,35 +1256,98 @@ function ActiveSessionView({
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-5xl font-bold tracking-tight font-data" style={{ color: theme.foreground }}>{fmt(secondsLeft)}</span>
-          <span className="text-xs mt-2" style={{ color: theme.mutedFg }}>remaining</span>
+          <span
+            className="text-xs mt-2"
+            style={{
+              color: isPaused ? theme.accent : theme.mutedFg,
+            }}
+          >
+            {isPaused ? "paused" : "remaining"}
+          </span>
         </div>
       </div>
 
-      <div className="flex gap-2.5 mb-14">
-        {[
-          { label: `🎵 ${config.music}`, color: theme.mutedFg },
-          { label: `🌧 ${config.ambience}`, color: theme.mutedFg },
-          { label: "🔔 Notifications Off", color: "#4ade80" },
-        ].map(({ label, color }) => (
+
+      <div className="flex gap-2.5 mb-14 flex-wrap justify-center">
+        {config.audio && (
           <span
-            key={label}
             className="px-3.5 py-1.5 rounded-full text-xs"
-            style={{ background: theme.overlay(0.04), border: `1px solid ${theme.overlay(0.07)}`, color }}
+            style={{
+              background: theme.overlay(0.04),
+              border: `1px solid ${theme.overlay(0.07)}`,
+              color: theme.mutedFg,
+            }}
           >
-            {label}
+            🎵 {config.audio.name}
           </span>
-        ))}
+        )}
+
+        {config.objective && (
+          <span
+            className="px-3.5 py-1.5 rounded-full text-xs"
+            style={{
+              background: theme.overlay(0.04),
+              border: `1px solid ${theme.overlay(0.07)}`,
+              color: theme.mutedFg,
+            }}
+          >
+            🎯 {config.objective}
+          </span>
+        )}
+
+        <span
+          className="px-3.5 py-1.5 rounded-full text-xs"
+          style={{
+            background: theme.overlay(0.04),
+            border: `1px solid ${theme.overlay(0.07)}`,
+            color: "#4ade80",
+          }}
+        >
+          🔔 Notifications Off
+        </span>
       </div>
 
-      <button
-        onClick={onEnd}
-        className="px-8 py-3 rounded-xl text-sm font-medium transition-all"
-        style={{ border: `1px solid ${theme.border}`, color: theme.mutedFg }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = theme.foreground; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = theme.mutedFg; }}
-      >
-        End Session
-      </button>
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={isPaused ? onResume : onPause}
+          className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold transition-all"
+          style={{
+            background: theme.primary,
+            color: theme.primaryFg,
+          }}
+        >
+          {isPaused ? (
+            <>
+              <Play className="w-4 h-4" />
+              Resume Session
+            </>
+          ) : (
+            <>
+              <Pause className="w-4 h-4" />
+              Pause Session
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={onEnd}
+          className="px-8 py-3 rounded-xl text-sm font-medium transition-all"
+          style={{
+            border: `1px solid ${theme.border}`,
+            color: theme.mutedFg,
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = theme.foreground;
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = theme.mutedFg;
+          }}
+        >
+          End Session
+        </button>
+      </div>
     </div>
   );
 }
@@ -738,8 +1358,18 @@ function SessionCompleteView({ config, onDone, theme }: { config: FocusConfig; o
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] px-8 py-12 text-center">
       <div className="text-6xl mb-6">🎉</div>
       <h2 className="font-display text-2xl font-bold mb-2" style={{ color: theme.foreground }}>Session Complete!</h2>
-      <p className="mb-8 max-w-xs text-sm" style={{ color: theme.mutedFg }}>
-        You focused for <span className="font-semibold" style={{ color: theme.primary }}>{config.duration} minutes</span> on {config.objective}.
+      <p
+        className="mb-8 max-w-xs text-sm"
+        style={{ color: theme.mutedFg }}
+      >
+        You focused for{" "}
+        <span
+          className="font-semibold"
+          style={{ color: theme.primary }}
+        >
+          {config.duration} minutes
+        </span>{" "}
+        working on {config.task}.
       </p>
       <div
         className="flex gap-6 rounded-2xl px-10 py-6 mb-8"
@@ -1401,6 +2031,8 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   const [phase, setPhase] = useState<FocusPhase>("idle");
   const [focusConfig, setFocusConfig] = useState<FocusConfig | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [isSessionPaused, setIsSessionPaused] = useState(false);
+  const [persistedSession, setPersistedSession] = useState<FocusSession | null>(null);
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [tasks, setTasks] = useState<Task[]>(() => {
     if (!account.task?.title) return INIT_TASKS;
@@ -1419,10 +2051,10 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   const progressPct = Math.min(100, Math.round((completedMinutes / goalMinutes) * 100));
   const remainingMinutes = Math.max(0, goalMinutes - completedMinutes);
   const goalLabel = DAILY_GOAL_LABEL;
-  const defaultAmbience =
-    account.playlist?.option && account.playlist.option !== "No Playlist"
-      ? account.playlist.option
-      : undefined;
+  // const defaultAmbience =
+  //   account.playlist?.option && account.playlist.option !== "No Playlist"
+  //     ? account.playlist.option
+  //     : undefined;
 
   // ── Playlist & audio ──
   const sharedAudio = ambientAudio();
@@ -1445,38 +2077,300 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
     if (n === "focus" && phase === "idle") setPhase("setup");
   };
 
-  const handleBegin = (cfg: FocusConfig) => {
-    setFocusConfig(cfg);
-    const s = cfg.duration * 60;
-    setSecondsLeft(s);
-    setTotalSeconds(s);
-    setPhase("active");
+
+  const handleReviewSession = async (
+    config: FocusConfig
+  ) => {
+    try {
+      const created =
+        await createSession({
+          durationMinutes:
+            config.duration,
+
+          objective:
+            config.objective,
+
+          task:
+            config.task,
+
+          audioId:
+            config.audio?.id,
+
+          audioName:
+            config.audio?.name,
+
+          audioType:
+            config.audio?.type,
+        });
+
+      setPersistedSession(created);
+      setFocusConfig(config);
+      setPhase("review");
+    } catch (error) {
+      console.error(
+        "Could not create session:",
+        error
+      );
+    }
   };
 
-  const handleEnd = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
+
+  const handleStartSession = async () => {
+    if (
+      !focusConfig ||
+      !persistedSession
+    ) {
+      return;
+    }
+
+    try {
+      const updated =
+        await updateSessionStatus(
+          persistedSession.id,
+          "in_progress"
+        );
+
+      setPersistedSession(updated);
+
+      const seconds =
+        focusConfig.duration * 60;
+
+      setSecondsLeft(seconds);
+      setTotalSeconds(seconds);
+      setIsSessionPaused(false);
+
+      setPhase("active");
+
+      void startSessionAudio(
+        focusConfig
+      );
+    } catch (error) {
+      console.error(
+        "Could not start session:",
+        error
+      );
+    }
+  };
+
+  const handlePauseSession =
+    async () => {
+      if (!persistedSession) return;
+
+      try {
+        const updated =
+          await updateSessionStatus(
+            persistedSession.id,
+            "paused"
+          );
+
+        setPersistedSession(updated);
+
+        setIsSessionPaused(true);
+
+        if (timerRef.current) {
+          clearInterval(
+            timerRef.current
+          );
+
+          timerRef.current = null;
+        }
+
+        setIsPlaying(false);
+        audioRef.current.pause();
+      } catch (error) {
+        console.error(
+          "Could not pause session:",
+          error
+        );
+      }
+    };
+
+  const handleResumeSession =
+    async () => {
+      if (!persistedSession) return;
+
+      try {
+        const updated =
+          await updateSessionStatus(
+            persistedSession.id,
+            "in_progress"
+          );
+
+        setPersistedSession(updated);
+
+        setIsSessionPaused(false);
+
+        if (
+          focusConfig?.audio &&
+          playlist.length > 0
+        ) {
+          setIsPlaying(true);
+        }
+      } catch (error) {
+        console.error(
+          "Could not resume session:",
+          error
+        );
+      }
+    };
+
+  async function startSessionAudio(config: FocusConfig) {
+    if (!config.audio) return;
+
+    try {
+      if (config.audio.type === "playlist") {
+        const availablePlaylists = await listPlaylists();
+
+        const selectedPlaylist = availablePlaylists.find(
+          playlist => playlist.id === config.audio?.id
+        );
+
+        if (!selectedPlaylist) return;
+
+        const tracks = playlistTracks(selectedPlaylist);
+
+        if (tracks.length === 0) return;
+
+        setPlaylist(tracks);
+        setQueueName(selectedPlaylist.name);
+        setCurrentTrackIdx(0);
+        setIsPlaying(true);
+      }
+
+      if (config.audio.type === "track") {
+        const files = await listAudioFiles();
+
+        const selectedTrack = files.find(
+          track => track.id === config.audio?.id
+        );
+
+        if (!selectedTrack?.playUrl) return;
+
+        setPlaylist([
+          {
+            id: `cloud:${selectedTrack.id}`,
+            name: selectedTrack.name,
+            url: selectedTrack.playUrl,
+            duration: 0,
+            size: "",
+          },
+        ]);
+
+        setQueueName(null);
+        setCurrentTrackIdx(0);
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error("Could not start session audio:", error);
+    }
+  }
+
+
+const handleEnd = async () => {
+  if (timerRef.current) {
+    clearInterval(
+      timerRef.current
+    );
+
+    timerRef.current = null;
+  }
+
+  setIsSessionPaused(false);
+  setIsPlaying(false);
+  audioRef.current.pause();
+
+  try {
+    if (persistedSession) {
+      const updated =
+        await updateSessionStatus(
+          persistedSession.id,
+          "completed"
+        );
+
+      setPersistedSession(updated);
+    }
+
     setPhase("complete");
-  };
+  } catch (error) {
+    console.error(
+      "Could not complete session:",
+      error
+    );
+  }
+};
 
-  const handleDone = () => {
-    setPhase("idle");
-    setNav("home");
-  };
+  const completeSession =
+    useCallback(async () => {
+      setIsSessionPaused(false);
+
+      setIsPlaying(false);
+      audioRef.current.pause();
+
+      try {
+        if (persistedSession) {
+          const updated =
+            await updateSessionStatus(
+              persistedSession.id,
+              "completed"
+            );
+
+          setPersistedSession(
+            updated
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Could not complete session:",
+          error
+        );
+      }
+
+      setPhase("complete");
+    }, [persistedSession]);
+
+    const handleDone = () => {
+      setPhase("idle");
+      setNav("home");
+      setFocusConfig(null);
+      setPersistedSession(null);
+      setSecondsLeft(0);
+      setTotalSeconds(0);
+      setIsSessionPaused(false);
+    };
 
   useEffect(() => {
-    if (phase !== "active") return;
+    if (phase !== "active" || isSessionPaused) {
+      return;
+    }
+
     timerRef.current = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(timerRef.current!);
-          setPhase("complete");
+      setSecondsLeft(current => {
+        if (current <= 1) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+
+          setIsPlaying(false);
+          audioRef.current.pause();
+
+          void completeSession();
+          setIsSessionPaused(false);
+
           return 0;
         }
-        return s - 1;
+
+        return current - 1;
       });
     }, 1000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [phase]);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [phase, isSessionPaused, completeSession]);
 
   // ── Audio playback ──
   useEffect(() => {
@@ -1660,14 +2554,34 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
               remainingLabel={fmtGoalShort(remainingMinutes)}
             />
           )}
+
           {nav === "focus" && phase === "setup" && (
-            <FocusSetupView onBegin={handleBegin} theme={theme} defaultDuration={account.session?.duration} defaultObjective={account.session?.type} defaultAmbience={defaultAmbience} />
+            <FocusSetupView
+              onContinue={handleReviewSession}
+              theme={theme}
+            />
           )}
-          {nav === "focus" && phase === "idle" && (
-            <FocusSetupView onBegin={handleBegin} theme={theme} defaultDuration={account.session?.duration} defaultObjective={account.session?.type} defaultAmbience={defaultAmbience} />
+
+          {nav === "focus" && phase === "review" && focusConfig && (
+            <SessionReviewView
+              config={focusConfig}
+              onBack={() => setPhase("setup")}
+              onStart={handleStartSession}
+              theme={theme}
+            />
           )}
+
           {nav === "focus" && phase === "active" && focusConfig && (
-            <ActiveSessionView config={focusConfig} secondsLeft={secondsLeft} totalSeconds={totalSeconds} onEnd={handleEnd} theme={theme} />
+            <ActiveSessionView
+              config={focusConfig}
+              secondsLeft={secondsLeft}
+              totalSeconds={totalSeconds}
+              isPaused={isSessionPaused}
+              onPause={handlePauseSession}
+              onResume={handleResumeSession}
+              onEnd={handleEnd}
+              theme={theme}
+            />
           )}
           {nav === "focus" && phase === "complete" && focusConfig && (
             <SessionCompleteView config={focusConfig} onDone={handleDone} theme={theme} />
