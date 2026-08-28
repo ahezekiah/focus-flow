@@ -9,7 +9,6 @@ import { parseParam, parseParamList } from "./params";
  */
 
 const WELCOME = "/";
-const DASHBOARD = "/dash";
 const START_FIRST_SESSION = "Start Your First Session";
 const AUDIO_FILES = "Audio Files";
 const ADD_AUDIO_FILE = "Add Audio File";
@@ -64,7 +63,8 @@ export class FocusFlowDsl {
   /** A designer with an account arrives on the audio files page, ready to add audio. */
   async signsInAsDesigner(emailParam = "email: designer@example.com"): Promise<void> {
     await this.driver.provideAccount(this.ctx.aliasEmail(parseParam(emailParam, "email")));
-    await this.driver.open(DASHBOARD);
+    // The dashboard is only reached by finishing setup, so the designer goes in that way.
+    await this.hasFinishedRegistration();
     await this.driver.clickNavItem(AUDIO_FILES);
     await this.driver.signInWithCredentials();
     await this.driver.waitForButton(ADD_AUDIO_FILE);

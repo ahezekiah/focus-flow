@@ -1,30 +1,22 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useRef, useCallback, type ElementType } from "react";
+import { useState, useEffect, useRef, useCallback, type ElementType, type SetStateAction } from "react";
 import {
   Home, Music2, Waves, BarChart2, Timer, Palette,
   Play, Pause, SkipForward, SkipBack, Volume2,
   Flame, Target, ChevronRight, Check, ArrowRight,
-  Clock, TrendingUp, Plus, Upload, X, ListMusic,
+  Clock, TrendingUp, Plus, Upload, X, ListMusic, Library,
 } from "lucide-react";
 import { ThemeSelectionView } from "./dash/ThemeSelectionView";
+import { AudioFilesView } from "./dash/AudioFilesView";
 import { PlaylistsView } from "./dash/PlaylistsView";
 import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from "./dash/themes";
-import {
-  getDefaultPlaylist,
-  listPlaylists,
-  listAudioFiles,
-  createSession,
-  updateSessionStatus,
-  type FocusSession,
-  type Playlist,
-  type AudioFile,
-} from "./lib/api";
+import { getDefaultPlaylist, listPlaylists, listAudioFiles, type AudioFile, type Playlist, type FocusSession, updateSessionStatus, createSession } from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
 import { ambientAudio, DEFAULT_TRACK, releaseAmbientMusic } from "./lib/ambientMusic";
 
 // ── Types ──────────────────────────────────────────────────────
-type Nav = "home" | "focus" | "music" | "playlists" | "sounds" | "analytics" | "themes";
+type Nav = "home" | "focus" | "music" | "audio" | "playlists" | "sounds" | "analytics" | "themes";
 type FocusPhase = "idle" | "setup" | "review" | "active" | "complete";
 type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 
@@ -187,6 +179,14 @@ const INIT_TASKS: Task[] = [
 
 const HEATMAP = generateHeatmap();
 
+/** An audio file from the Audio Files page, as a playable track. */
+const cloudTrack = (file: AudioFile): Track => ({
+  id: `cloud:${file.id}`,
+  name: file.name,
+  url: file.playUrl ?? "",
+  duration: 0,
+  size: fmtBytes(file.sizeBytes),
+});
 
 /** The tracks of a saved playlist, in the order the designer chose them. */
 const playlistTracks = (playlist: Playlist): Track[] =>
@@ -210,6 +210,7 @@ function Sidebar({
     { id: "home", icon: Home, label: "Home" },
     { id: "focus", icon: Timer, label: "Focus" },
     { id: "music", icon: Music2, label: "Music" },
+    { id: "audio", icon: Library, label: "Audio Files" },
     { id: "playlists", icon: ListMusic, label: "Playlists" },
     { id: "sounds", icon: Waves, label: "Sounds" },
     { id: "analytics", icon: BarChart2, label: "Analytics" },
@@ -2189,10 +2190,10 @@ const handlePauseSession = () => {
       persistedSession.id,
       "paused"
     )
-      .then(updated => {
+      .then((updated: SetStateAction<FocusSession | null>) => {
         setPersistedSession(updated);
       })
-      .catch(error => {
+      .catch((error: any) => {
         console.error(
           "Could not persist paused session:",
           error
@@ -2496,6 +2497,36 @@ const completeSession = useCallback(() => {
     });
   }, []);
 
+  // Audio files added through the Audio Files page — playable alongside local tracks
+  const handleLibraryChange = useCallback((files: AudioFile[]) => {
+    setPlaylist(prev => {
+      const known = new Set(prev.map(t => t.id));
+      const additions = files
+        .filter(f => f.playUrl && !known.has(`cloud:${f.id}`))
+        .map(cloudTrack);
+      if (!additions.length) return prev;
+
+      setQueueName(null);
+      return [...prev, ...additions];
+    });
+  }, []);
+
+  const handlePlayAudioFile = useCallback((file: AudioFile) => {
+    if (!file.playUrl) return;
+    setQueueName(null);
+    setPlaylist(prev => {
+      const existingIdx = prev.findIndex(t => t.id === `cloud:${file.id}`);
+      if (existingIdx >= 0) {
+        setCurrentTrackIdx(existingIdx);
+        setIsPlaying(true);
+        return prev;
+      }
+      setCurrentTrackIdx(prev.length);
+      setIsPlaying(true);
+      return [...prev, cloudTrack(file)];
+    });
+  }, []);
+
   const handleRemoveTrack = useCallback((id: string) => {
     setPlaylist(prev => {
       const idx = prev.findIndex(t => t.id === id);
@@ -2613,6 +2644,13 @@ const completeSession = useCallback(() => {
               onSelectTrack={handleSelectTrack}
               onAddTracks={handleAddTracks}
               onRemoveTrack={handleRemoveTrack}
+            />
+          )}
+          {nav === "audio" && (
+            <AudioFilesView
+              theme={theme}
+              onPlay={handlePlayAudioFile}
+              onLibraryChange={handleLibraryChange}
             />
           )}
           {nav === "playlists" && <PlaylistsView theme={theme} onPlay={startPlaylist} />}

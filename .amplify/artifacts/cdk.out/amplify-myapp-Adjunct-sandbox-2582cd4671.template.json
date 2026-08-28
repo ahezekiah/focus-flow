@@ -1,5 +1,5 @@
 {
- "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.24.0\",\"stackType\":\"root\",\"metadata\":{}}",
+ "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.24.0\",\"stackType\":\"root\",\"metadata\":{}}",
  "Metadata": {
   "AWS::Amplify::Platform": {
    "version": "1",
@@ -158,6 +158,13 @@
       {
        "Fn::GetAtt": [
         "function1351588B",
+        "Outputs.amplifymyappAdjunctsandbox2582cd4671functionpresignuplambdaBC064F98Ref"
+       ]
+      },
+      "\",\"",
+      {
+       "Fn::GetAtt": [
+        "function1351588B",
         "Outputs.amplifymyappAdjunctsandbox2582cd4671functionaudiofileslambda151288C7Ref"
        ]
       },
@@ -166,6 +173,13 @@
        "Fn::GetAtt": [
         "function1351588B",
         "Outputs.amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Ref"
+       ]
+      },
+      "\",\"",
+      {
+       "Fn::GetAtt": [
+        "function1351588B",
+        "Outputs.amplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5ERef"
        ]
       },
       "\"]"
@@ -244,6 +258,14 @@
   "auth179371D7": {
    "Type": "AWS::CloudFormation::Stack",
    "Properties": {
+    "Parameters": {
+     "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionpresignuplambdaBC064F98Arn": {
+      "Fn::GetAtt": [
+       "function1351588B",
+       "Outputs.amplifymyappAdjunctsandbox2582cd4671functionpresignuplambdaBC064F98Arn"
+      ]
+     }
+    },
     "Tags": [
      {
       "Key": "amplify:deployment-type",
@@ -270,7 +292,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/c29c19fdd06c7ba1a03a6e46b289cbcbcedf0f2b5de0cc9a4b4ced8407e4f7da.json"
+       "/f8c3f5c9cf1d94a32b0822f69f4fcefba5097d730891993faed5c8534caee329.json"
       ]
      ]
     }
@@ -280,48 +302,6 @@
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/auth.NestedStack/auth.NestedStackResource",
     "aws:asset:path": "amplifymyappAdjunctsandbox2582cd4671auth459C6921.nested.template.json",
-    "aws:asset:property": "TemplateURL"
-   }
-  },
-  "storage0EC3F24A": {
-   "Type": "AWS::CloudFormation::Stack",
-   "Properties": {
-    "Tags": [
-     {
-      "Key": "amplify:deployment-type",
-      "Value": "sandbox"
-     },
-     {
-      "Key": "created-by",
-      "Value": "amplify"
-     }
-    ],
-    "TemplateURL": {
-     "Fn::Join": [
-      "",
-      [
-       "https://s3.",
-       {
-        "Ref": "AWS::Region"
-       },
-       ".",
-       {
-        "Ref": "AWS::URLSuffix"
-       },
-       "/",
-       {
-        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
-       },
-       "/93d53da46da03433f0cb9ffae1a0e552cd84805d20c2d86fe7ab63d38b7e2547.json"
-      ]
-     ]
-    }
-   },
-   "UpdateReplacePolicy": "Delete",
-   "DeletionPolicy": "Delete",
-   "Metadata": {
-    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/storage.NestedStack/storage.NestedStackResource",
-    "aws:asset:path": "amplifymyappAdjunctsandbox2582cd4671storage055BD0C9.nested.template.json",
     "aws:asset:property": "TemplateURL"
    }
   },
@@ -358,6 +338,15 @@
      },
      "referencetoamplifymyappAdjunctsandbox2582cd4671PlaylistTable5910BFE0Ref": {
       "Ref": "PlaylistTable8EB88AED"
+     },
+     "referencetoamplifymyappAdjunctsandbox2582cd4671SessionTable3E2181E6Arn": {
+      "Fn::GetAtt": [
+       "SessionTableA016F679",
+       "Arn"
+      ]
+     },
+     "referencetoamplifymyappAdjunctsandbox2582cd4671SessionTable3E2181E6Ref": {
+      "Ref": "SessionTableA016F679"
      }
     },
     "Tags": [
@@ -386,7 +375,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/3bbc27cb7c12433122be68df9f68eb7bce19d818f3351fcaa7de7cad8295b9ca.json"
+       "/4e8b9f42ec0209a531c9de9ba311b2513ff47e95a99a1621f1eee1320688e4aa.json"
       ]
      ]
     }
@@ -396,6 +385,48 @@
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/function.NestedStack/function.NestedStackResource",
     "aws:asset:path": "amplifymyappAdjunctsandbox2582cd4671function72F40CE3.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "storage0EC3F24A": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/224c1c9c53c667b413f95e8ec911b6b15f3943caa18a5eb4e6e9d51e82c4e672.json"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/storage.NestedStack/storage.NestedStackResource",
+    "aws:asset:path": "amplifymyappAdjunctsandbox2582cd4671storage055BD0C9.nested.template.json",
     "aws:asset:property": "TemplateURL"
    }
   },
@@ -413,6 +444,12 @@
       "Fn::GetAtt": [
        "function1351588B",
        "Outputs.amplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn"
+      ]
+     },
+     "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn": {
+      "Fn::GetAtt": [
+       "function1351588B",
+       "Outputs.amplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
       ]
      },
      "referencetoamplifymyappAdjunctsandbox2582cd4671authNestedStackauthNestedStackResource72674CCCOutputsamplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BArn": {
@@ -448,7 +485,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/4b2f278a5a49ed4e88cb7423764bafc21574ee005f1b6dab526e429e7ce8d268.json"
+       "/5b38f4bd0434e9689f2328faef4d9430376aaeb1c336cc8ec8bf2f1dc57ecb7c.json"
       ]
      ]
     }
@@ -527,10 +564,43 @@
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/PlaylistTable/Resource"
    }
   },
+  "SessionTableA016F679": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "id",
+      "KeyType": "HASH"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/SessionTable/Resource"
+   }
+  },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yWJWwqDMBAAz+J/spYVegEPIKj/skm2EB9JcRNFxLsX69cMMwj4ruBV0C7auknP3sDZJbKTqj+hyemb021Pol0GdwRaojNw9mRmvudfLtWyxLxavlSIjmGUckMErACLUbzXaw7JLwztwx90BD7iewAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yWJywqDMBAAv8V7stpUpPd+QEG9l02yQnwk4iaVIv67qKcZZhSo6glFhitLYwc5Og1bE9EM4t35T4pziqfdCVf+2r/HKVgNW4t6pHNesouaOKTF0C58sAQ95z9VwuMFRdazc3JJPrqJoL55APazyc97AAAA"
    },
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/CDKMetadata/Default"

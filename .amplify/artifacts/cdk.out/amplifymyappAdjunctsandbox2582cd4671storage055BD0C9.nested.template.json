@@ -1,5 +1,5 @@
 {
- "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.5.0\",\"stackType\":\"storage-S3\",\"metadata\":{}}",
+ "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.5.0\",\"stackType\":\"storage-S3\",\"metadata\":{}}",
  "Resources": {
   "focusFlowAudioBucketAF62A820": {
    "Type": "AWS::S3::Bucket",
@@ -241,7 +241,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/5WMywrCMBBFv8Wu01FScOHOx1qLXYpITEeZPhLoTHxQ+u+iEdSlq7nDufdo0NMMJiNz5dSWddrQEfo1smBZiLG1Mlc+cAb9ItgaRS1PLqZdn7R0I5fMku/tu/5CDLE6D+JX2KDg5lihFU6GvYoo9w3Z+8ca/z/ccVCIEWzRvdSDWgYW326RfegsPu2f/IPyzl+oxG5hGNWcGaUQcyZ3HpTzJULF44vWoDPQo4qJ0i44oRZhG+8DDSSQIz4BAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/5WMywrCQAxFv8Wup1GriLizulaxSxEZp1HSxww0GR+U/rvoCOrSVW44954EkskIBj195djkZVzREdoVsmCeiTal0lc+8Aja1JsSRS1ONqRdG9V0IxvNou/tu/5CDKE69+KWWKHg+ligEY66vQpo4yoy9481/H+4wyATLVijfak7tfAsrt4iO98YfNo/+QdtGnehHJtUM6o5M0om+kz23CnrcoSC+5dkDMMpDHoFE8WNt0I1wjbcB4+TZw4+AQAA"
    },
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/storage/CDKMetadata/Default"
