@@ -15,7 +15,22 @@ import {
   type OnboardingPlaylist,
   type OnboardingTheme,
 } from "./lib/accounts";
+import { registerIdentity } from "./lib/identity";
 import { THEMES, THEME_ORDER } from "./dash/themes";
+
+/**
+ * What the account store will accept. Kept in step with the cloud password policy so
+ * registration never passes here only to be turned down when the account is created.
+ */
+function isStrongEnough(password: string): boolean {
+  return (
+    password.length >= 8 &&
+    /[a-z]/.test(password) &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  );
+}
 
 // ── Shared step data ─────────────────────────────────────────────
 const STEP_ORDER: OnboardingStep[] = ["sessions", "tasks", "playlist", "theme", "done"];
@@ -132,14 +147,26 @@ function AccountStep({ onContinue }: { onContinue: (account: AccountRecord) => v
 
     if (!password) {
       nextErrors.password = "Please create a password.";
-    } else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-      nextErrors.password = "Use at least 8 characters, with a letter and a number.";
+    } else if (!isStrongEnough(password)) {
+      nextErrors.password =
+        "Use at least 8 characters, with an upper and lower case letter, a number and a symbol.";
     }
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     setSubmitting(true);
+    try {
+      // The account is only useful once it can reach audio files and playlists too.
+      await registerIdentity(trimmedEmail, password);
+    } catch (error) {
+      setSubmitting(false);
+      setErrors({
+        email: error instanceof Error ? error.message : "Your account could not be created.",
+      });
+      return;
+    }
+
     const account = await createAccount(trimmedName, trimmedEmail, password);
     setSubmitting(false);
     onContinue(account);
@@ -165,7 +192,7 @@ function AccountStep({ onContinue }: { onContinue: (account: AccountRecord) => v
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="ob-password">Password</Label>
-            <Input id="ob-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" aria-invalid={!!errors.password} />
+            <Input id="ob-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters, mixed case, a number and a symbol" aria-invalid={!!errors.password} />
             {errors.password && <p className="text-sm text-destructive" role="alert">{errors.password}</p>}
           </div>
         </CardContent>
