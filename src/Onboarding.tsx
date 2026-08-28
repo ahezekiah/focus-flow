@@ -16,8 +16,24 @@ import {
   type OnboardingPlaylist,
   type OnboardingTheme,
 } from "./lib/accounts";
+import { registerIdentity } from "./lib/identity";
 import { THEMES, THEME_ORDER } from "./dash/themes";
 
+/**
+ * What the account store will accept. Kept in step with the cloud password policy so
+ * registration never passes here only to be turned down when the account is created.
+ */
+function isStrongEnough(password: string): boolean {
+  return (
+    password.length >= 8 &&
+    /[a-z]/.test(password) &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  );
+}
+
+// ── Shared step data ─────────────────────────────────────────────
 const STEP_ORDER: OnboardingStep[] = ["sessions", "tasks", "playlist", "theme", "done"];
 
 const OWN_CHOICE = "Custom";
@@ -175,13 +191,9 @@ function AccountStep({
 
     if (!password) {
       nextErrors.password = "Please create a password.";
-    } else if (
-      password.length < 8 ||
-      !/[A-Za-z]/.test(password) ||
-      !/\d/.test(password)
-    ) {
+    } else if (!isStrongEnough(password)) {
       nextErrors.password =
-        "Use at least 8 characters, with a letter and a number.";
+        "Use at least 8 characters, with an upper and lower case letter, a number and a symbol.";
     }
 
     setErrors(nextErrors);
@@ -191,105 +203,20 @@ function AccountStep({
     }
 
     setSubmitting(true);
-    setErrors({});
-
     try {
-      /*
-       * STEP 1:
-       * Create the application's AccountRecord.
-       */
-      const account = await createAccount(
-        trimmedName,
-        trimmedEmail,
-        password,
-      );
-
-      /*
-       * STEP 2:
-       * Create the same user in AWS Amplify Auth.
-       *
-       * Amplify becomes the authentication source of truth for
-       * features such as playlists.
-       */
-      const signUpResult = await signUp({
-        username: trimmedEmail,
-        password,
-        options: {
-          userAttributes: {
-            email: trimmedEmail,
-          },
-          autoSignIn: {
-            enabled: true,
-          },
-        },
-      });
-
-      /*
-       * If the Amplify configuration requires email confirmation,
-       * the user cannot be authenticated yet.
-       *
-       * This prevents us from pretending the user is signed in
-       * when Amplify has not actually established a session.
-       */
-      if (
-        signUpResult.nextStep.signUpStep === "CONFIRM_SIGN_UP"
-      ) {
-        setErrors({
-          email:
-            "Your account was created, but your email must be confirmed before you can access playlists. Please confirm your email and sign in.",
-        });
-
-        setSubmitting(false);
-        return;
-      }
-
-      /*
-       * STEP 3:
-       * Explicitly sign in after signup.
-       *
-       * This guarantees that useSignedIn() in PlaylistsView
-       * sees an authenticated Amplify session.
-       */
-      try {
-        await signIn({
-          username: trimmedEmail,
-          password,
-        });
-      } catch (signInError) {
-        /*
-         * If autoSignIn already established the session,
-         * signIn may report that the user is already signed in.
-         * In that case we can safely continue.
-         */
-        const message =
-          signInError instanceof Error
-            ? signInError.message.toLowerCase()
-            : "";
-
-        if (
-          !message.includes("already") &&
-          !message.includes("signed in")
-        ) {
-          throw signInError;
-        }
-      }
-
+      // The account is only useful once it can reach audio files and playlists too.
+      await registerIdentity(trimmedEmail, password);
+    } catch (error) {
       setSubmitting(false);
-      onContinue(account);
-    } catch (err) {
-      console.error("Onboarding account creation failed:", err);
-
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Unable to create your account.";
-
       setErrors({
-        email: message,
+        email: error instanceof Error ? error.message : "Your account could not be created.",
       });
-
-      setSubmitting(false);
+      return;
     }
+
+    const account = await createAccount(trimmedName, trimmedEmail, password);
+    setSubmitting(false);
+    onContinue(account);
   }
 
   return (
@@ -346,21 +273,8 @@ function AccountStep({
 
           <div className="space-y-1.5">
             <Label htmlFor="ob-password">Password</Label>
-
-            <Input
-              id="ob-password"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="At least 8 characters"
-              aria-invalid={!!errors.password}
-            />
-
-            {errors.password && (
-              <p className="text-sm text-destructive" role="alert">
-                {errors.password}
-              </p>
-            )}
+            <Input id="ob-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters, mixed case, a number and a symbol" aria-invalid={!!errors.password} />
+            {errors.password && <p className="text-sm text-destructive" role="alert">{errors.password}</p>}
           </div>
         </CardContent>
 

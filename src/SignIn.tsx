@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "./components/ui/input";
 import { Label } from "./components/ui/label";
 import { getAccountByEmail, verifyPassword, setSession, type AccountRecord } from "./lib/accounts";
+import { restoreIdentity } from "./lib/identity";
 
 export default function SignIn({ onSignedIn }: { onSignedIn: (account: AccountRecord) => void }) {
   const [email, setEmail] = useState("");
@@ -23,12 +24,22 @@ export default function SignIn({ onSignedIn }: { onSignedIn: (account: AccountRe
     setSubmitting(true);
     const account = getAccountByEmail(trimmedEmail);
     const valid = account ? await verifyPassword(trimmedEmail, password) : false;
-    setSubmitting(false);
 
     if (!account || !valid) {
+      setSubmitting(false);
       setError("Incorrect email or password.");
       return;
     }
+
+    // Audio files and playlists need the cloud identity, not just the local account.
+    try {
+      await restoreIdentity(account.email, password);
+    } catch (error) {
+      setSubmitting(false);
+      setError(error instanceof Error ? error.message : "You could not be signed in.");
+      return;
+    }
+    setSubmitting(false);
 
     setError(null);
     setSession(account.email);

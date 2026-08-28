@@ -5,6 +5,7 @@ import Dashboard from './Dashboard'
 import Onboarding from './Onboarding'
 import SignIn from './SignIn'
 import { getCurrentAccount, signOut, type AccountRecord } from './lib/accounts'
+import { releaseIdentity } from './lib/identity'
 
 function App() {
   const [account, setAccount] = useState<AccountRecord | undefined>(getCurrentAccount);
@@ -14,6 +15,7 @@ function App() {
 
   function handleSignOut() {
     signOut();
+    void releaseIdentity();
     setAccount(undefined);
   }
 
