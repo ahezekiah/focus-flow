@@ -8,7 +8,6 @@ import {
 import { ThemeSelectionView } from "./dash/ThemeSelectionView";
 import { PlaylistsView } from "./dash/PlaylistsView";
 import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from "./dash/themes";
-// import { getDefaultPlaylist, type Playlist } from "./lib/api";
 import { getDefaultPlaylist, listPlaylists, listAudioFiles, type Playlist, type AudioFile } from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
@@ -19,16 +18,20 @@ type FocusPhase = "idle" | "setup" | "review" | "active" | "complete";
 type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 
 interface FocusConfig {
-  duration?: number;
-  // music: string;
-  // ambience: string;
-  objective?: string;
-  task?: string;
+  duration: number;
+  objective: string;
+  task: string;
   audio?: {
     id: string;
     name: string;
     type: "playlist" | "track";
-  }
+  };
+}
+
+interface SessionErrors {
+  duration?: string;
+  objective?: string;
+  task?: string;
 }
 
 interface Task {
@@ -573,106 +576,6 @@ function HomeView({
 }
 
 // ── Focus Setup ────────────────────────────────────────────────
-
-// function FocusSetupView({
-//   onBegin, theme, defaultDuration = 45, defaultObjective = "Coding", defaultAmbience = "Rain",
-// }: {
-//   onBegin: (cfg: FocusConfig) => void;
-//   theme: DashTheme;
-//   defaultDuration?: number;
-//   defaultObjective?: string;
-//   defaultAmbience?: string;
-// }) {
-//   const [duration, setDuration] = useState(defaultDuration);
-//   const [music, setMusic] = useState("Coding");
-//   const [ambience, setAmbience] = useState(defaultAmbience);
-//   const [objective, setObjective] = useState(defaultObjective);
-
-//   const durations = [25, 45, 60, 90];
-//   const musicOpts = ["Coding", "Writing", "Math", "Reading", "Creative", "Exam Prep"];
-//   const ambienceOpts = ["Rain", "Café", "Fireplace", "Ocean", "Forest", "Thunder"];
-//   const objectiveOpts = ["Homework", "Coding", "Essay", "Design", "Reading", "Research"];
-
-//   function OptionPill({ opts, value, onChange, color }: { opts: string[]; value: string; onChange: (v: string) => void; color: string }) {
-//     return (
-//       <div className="grid grid-cols-3 gap-2">
-//         {opts.map(o => (
-//           <button
-//             key={o}
-//             onClick={() => onChange(o)}
-//             className="py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
-//             style={{
-//               background: value === o ? `${color}20` : "transparent",
-//               border: `1px solid ${value === o ? color : theme.border}`,
-//               color: value === o ? color : theme.mutedFg,
-//             }}
-//           >
-//             {o}
-//           </button>
-//         ))}
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="p-8 max-w-2xl">
-//       <div className="mb-8">
-//         <h2 className="font-display text-2xl font-bold mb-1" style={{ color: theme.foreground }}>New Focus Session</h2>
-//         <p className="text-sm" style={{ color: theme.mutedFg }}>Set up your environment for deep work.</p>
-//       </div>
-
-//       <div className="space-y-7">
-//         <div>
-//           <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Duration</label>
-//           <div className="flex gap-2">
-//             {durations.map(d => (
-//               <button
-//                 key={d}
-//                 onClick={() => setDuration(d)}
-//                 className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-150"
-//                 style={{
-//                   background: duration === d ? `${theme.primary}20` : "transparent",
-//                   border: `1px solid ${duration === d ? theme.primary : theme.border}`,
-//                   color: duration === d ? theme.primary : theme.mutedFg,
-//                 }}
-//               >{d}m</button>
-//             ))}
-//             <button
-//               className="px-4 py-3 rounded-xl text-sm font-medium transition-all"
-//               style={{ border: `1px dashed ${theme.border}`, color: theme.mutedFg }}
-//             >Custom</button>
-//           </div>
-//         </div>
-
-//         <div>
-//           <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Music Mode</label>
-//           <OptionPill opts={musicOpts} value={music} onChange={setMusic} color={theme.primary} />
-//         </div>
-
-//         <div>
-//           <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Ambience</label>
-//           <OptionPill opts={ambienceOpts} value={ambience} onChange={setAmbience} color={theme.primary} />
-//         </div>
-
-//         <div>
-//           <label className="text-xs uppercase tracking-wider block mb-3" style={{ color: theme.mutedFg }}>Objective</label>
-//           <OptionPill opts={objectiveOpts} value={objective} onChange={setObjective} color={theme.accent} />
-//         </div>
-
-//         <button
-//           onClick={() => onBegin({ duration, music, ambience, objective })}
-//           className="w-full py-4 font-bold text-base rounded-xl transition-opacity duration-150"
-//           style={{ background: theme.accent, color: theme.accentFg }}
-//           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
-//           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
-//         >
-//           Begin Session →
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
 function FocusSetupView({
   onContinue,
   theme,
@@ -686,6 +589,8 @@ function FocusSetupView({
 
   const [objective, setObjective] = useState("");
   const [task, setTask] = useState("");
+
+  const [errors, setErrors] = useState<SessionErrors>({});
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
@@ -719,44 +624,79 @@ function FocusSetupView({
     setDuration(minutes);
     setCustomSelected(false);
     setCustomDuration("");
+
+    setErrors(prev => ({
+      ...prev,
+      duration: undefined,
+    }));
   }
 
   function chooseCustom() {
     setDuration(undefined);
     setCustomSelected(true);
+
+    setErrors(prev => ({
+      ...prev,
+      duration: undefined,
+    }));
   }
 
-  function handleContinue() {
-    let finalDuration = duration;
+function handleContinue() {
+  let finalDuration: number | undefined = duration;
 
-    if (customSelected && customDuration.trim()) {
-      const minutes = Number(customDuration);
+  if (customSelected) {
+    const minutes = Number(customDuration);
 
-      if (Number.isFinite(minutes) && minutes > 0) {
-        finalDuration = Math.round(minutes);
-      }
+    if (
+      customDuration.trim() &&
+      Number.isFinite(minutes) &&
+      Number.isInteger(minutes) &&
+      minutes > 0
+    ) {
+      finalDuration = minutes;
+    } else {
+      finalDuration = undefined;
     }
-
-    const config: FocusConfig = {};
-
-    if (finalDuration) {
-      config.duration = finalDuration;
-    }
-
-    if (objective.trim()) {
-      config.objective = objective.trim();
-    }
-
-    if (task.trim()) {
-      config.task = task.trim();
-    }
-
-    if (selectedAudio) {
-      config.audio = selectedAudio;
-    }
-
-    onContinue(config);
   }
+
+  const nextErrors: SessionErrors = {};
+
+  if (finalDuration === undefined) {
+    nextErrors.duration = "Choose a valid session length.";
+  }
+
+  if (!objective.trim()) {
+    nextErrors.objective = "Enter an objective for this session.";
+  }
+
+  if (!task.trim()) {
+    nextErrors.task = "Enter a task for this session.";
+  }
+
+  if (Object.keys(nextErrors).length > 0) {
+    setErrors(nextErrors);
+    return;
+  }
+
+  // Explicit guard so TypeScript knows this is definitely a number.
+  if (finalDuration === undefined) {
+    return;
+  }
+
+  setErrors({});
+
+  const config: FocusConfig = {
+    duration: finalDuration,
+    objective: objective.trim(),
+    task: task.trim(),
+  };
+
+  if (selectedAudio) {
+    config.audio = selectedAudio;
+  }
+
+  onContinue(config);
+}
 
   return (
     <div className="p-8 max-w-2xl">
@@ -772,7 +712,7 @@ function FocusSetupView({
           className="text-sm"
           style={{ color: theme.mutedFg }}
         >
-          Add as much or as little as you want.
+          Choose your session length and define what you want to accomplish.
         </p>
       </div>
 
@@ -785,7 +725,12 @@ function FocusSetupView({
             style={{ color: theme.mutedFg }}
           >
             Duration
-            <span className="normal-case ml-2">(optional)</span>
+            <span
+              className="ml-1"
+              style={{ color: theme.accent }}
+            >
+              *
+            </span>
           </label>
 
           <div className="flex gap-2">
@@ -837,17 +782,38 @@ function FocusSetupView({
               <input
                 type="number"
                 min="1"
+                step="1"
                 value={customDuration}
-                onChange={e => setCustomDuration(e.target.value)}
+                onChange={e => {
+                  setCustomDuration(e.target.value);
+
+                  setErrors(prev => ({
+                    ...prev,
+                    duration: undefined,
+                  }));
+                }}
                 placeholder="Enter minutes"
                 className="w-full px-4 py-3 rounded-xl outline-none"
                 style={{
                   background: theme.card,
-                  border: `1px solid ${theme.border}`,
+                  border: `1px solid ${
+                    errors.duration ? "#ef4444" : theme.border
+                  }`,
                   color: theme.foreground,
                 }}
+                aria-invalid={Boolean(errors.duration)}
               />
             </div>
+          )}
+
+          {errors.duration && (
+            <p
+              className="mt-2 text-sm"
+              style={{ color: "#ef4444" }}
+              role="alert"
+            >
+              {errors.duration}
+            </p>
           )}
         </div>
 
@@ -859,22 +825,53 @@ function FocusSetupView({
             style={{ color: theme.mutedFg }}
           >
             Objective
-            <span className="normal-case ml-2">(optional)</span>
+            <span
+              className="ml-1"
+              style={{ color: theme.accent }}
+            >
+              *
+            </span>
           </label>
 
           <textarea
             id="session-objective"
             value={objective}
-            onChange={e => setObjective(e.target.value)}
+            onChange={e => {
+              setObjective(e.target.value);
+
+              setErrors(prev => ({
+                ...prev,
+                objective: undefined,
+              }));
+            }}
             placeholder="What do you want to accomplish?"
             rows={3}
             className="w-full px-4 py-3 rounded-xl outline-none resize-none"
             style={{
               background: theme.card,
-              border: `1px solid ${theme.border}`,
+              border: `1px solid ${
+                errors.objective ? "#ef4444" : theme.border
+              }`,
               color: theme.foreground,
             }}
+            aria-invalid={Boolean(errors.objective)}
+            aria-describedby={
+              errors.objective
+                ? "session-objective-error"
+                : undefined
+            }
           />
+
+          {errors.objective && (
+            <p
+              id="session-objective-error"
+              className="mt-2 text-sm"
+              style={{ color: "#ef4444" }}
+              role="alert"
+            >
+              {errors.objective}
+            </p>
+          )}
         </div>
 
         {/* Task */}
@@ -885,22 +882,53 @@ function FocusSetupView({
             style={{ color: theme.mutedFg }}
           >
             Task
-            <span className="normal-case ml-2">(optional)</span>
+            <span
+              className="ml-1"
+              style={{ color: theme.accent }}
+            >
+              *
+            </span>
           </label>
 
           <input
             id="session-task"
             type="text"
             value={task}
-            onChange={e => setTask(e.target.value)}
+            onChange={e => {
+              setTask(e.target.value);
+
+              setErrors(prev => ({
+                ...prev,
+                task: undefined,
+              }));
+            }}
             placeholder="What are you working on?"
             className="w-full px-4 py-3 rounded-xl outline-none"
             style={{
               background: theme.card,
-              border: `1px solid ${theme.border}`,
+              border: `1px solid ${
+                errors.task ? "#ef4444" : theme.border
+              }`,
               color: theme.foreground,
             }}
+            aria-invalid={Boolean(errors.task)}
+            aria-describedby={
+              errors.task
+                ? "session-task-error"
+                : undefined
+            }
           />
+
+          {errors.task && (
+            <p
+              id="session-task-error"
+              className="mt-2 text-sm"
+              style={{ color: "#ef4444" }}
+              role="alert"
+            >
+              {errors.task}
+            </p>
+          )}
         </div>
 
         {/* Background Audio */}
@@ -910,12 +938,13 @@ function FocusSetupView({
             style={{ color: theme.mutedFg }}
           >
             Background Audio
-            <span className="normal-case ml-2">(optional)</span>
+            <span className="normal-case ml-2">
+              (optional)
+            </span>
           </label>
 
           <div className="space-y-3">
 
-            {/* None */}
             <button
               type="button"
               onClick={() => setSelectedAudio(undefined)}
@@ -934,7 +963,6 @@ function FocusSetupView({
               No background audio
             </button>
 
-            {/* Playlists */}
             {playlists.length > 0 && (
               <div>
                 <p
@@ -982,7 +1010,6 @@ function FocusSetupView({
               </div>
             )}
 
-            {/* Individual tracks */}
             {audioFiles.length > 0 && (
               <div>
                 <p
@@ -1088,11 +1115,7 @@ function SessionReviewView({
   onBack: () => void;
   theme: DashTheme;
 }) {
-  const hasDetails =
-    config.duration ||
-    config.objective ||
-    config.task ||
-    config.audio;
+
 
   return (
     <div className="p-8 max-w-2xl">
@@ -1119,29 +1142,28 @@ function SessionReviewView({
           border: `1px solid ${theme.border}`,
         }}
       >
-        {config.duration && (
+
           <ReviewItem
             label="Duration"
             value={`${config.duration} minutes`}
             theme={theme}
           />
-        )}
 
-        {config.task && (
+
+
           <ReviewItem
             label="Task"
             value={config.task}
             theme={theme}
           />
-        )}
 
-        {config.objective && (
+
           <ReviewItem
             label="Objective"
             value={config.objective}
             theme={theme}
           />
-        )}
+
 
         {config.audio && (
           <ReviewItem
@@ -1153,13 +1175,6 @@ function SessionReviewView({
             }`}
             theme={theme}
           />
-        )}
-
-        {!hasDetails && (
-          <p style={{ color: theme.mutedFg }}>
-            No session details selected. You can still start your
-            focus session.
-          </p>
         )}
       </div>
 
@@ -1195,11 +1210,21 @@ function SessionReviewView({
 
 // ── Active Session ─────────────────────────────────────────────
 function ActiveSessionView({
-  config, secondsLeft, totalSeconds, onEnd, theme,
+  config,
+  secondsLeft,
+  totalSeconds,
+  isPaused,
+  onPause,
+  onResume,
+  onEnd,
+  theme,
 }: {
   config: FocusConfig;
   secondsLeft: number;
   totalSeconds: number;
+  isPaused: boolean;
+  onPause: () => void;
+  onResume: () => void;
   onEnd: () => void;
   theme: DashTheme;
 }) {
@@ -1209,18 +1234,11 @@ function ActiveSessionView({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] px-8 py-12">
-      {/* <p className="text-xs uppercase tracking-widest mb-10 font-data" style={{ color: theme.mutedFg }}>
-        Deep Work · {config.objective}
-      </p> */}
       <p
         className="text-xs uppercase tracking-widest mb-10 font-data"
         style={{ color: theme.mutedFg }}
       >
-        {config.task
-          ? config.task
-          : config.objective
-            ? config.objective
-            : "Focus Session"}
+            {config.task}
       </p>
 
       <div className="relative mb-10">
@@ -1236,25 +1254,17 @@ function ActiveSessionView({
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-5xl font-bold tracking-tight font-data" style={{ color: theme.foreground }}>{fmt(secondsLeft)}</span>
-          <span className="text-xs mt-2" style={{ color: theme.mutedFg }}>remaining</span>
+          <span
+            className="text-xs mt-2"
+            style={{
+              color: isPaused ? theme.accent : theme.mutedFg,
+            }}
+          >
+            {isPaused ? "paused" : "remaining"}
+          </span>
         </div>
       </div>
 
-      {/* <div className="flex gap-2.5 mb-14">
-        {[
-          { label: `🎵 ${config.music}`, color: theme.mutedFg },
-          { label: `🌧 ${config.ambience}`, color: theme.mutedFg },
-          { label: "🔔 Notifications Off", color: "#4ade80" },
-        ].map(({ label, color }) => (
-          <span
-            key={label}
-            className="px-3.5 py-1.5 rounded-full text-xs"
-            style={{ background: theme.overlay(0.04), border: `1px solid ${theme.overlay(0.07)}`, color }}
-          >
-            {label}
-          </span>
-        ))}
-      </div> */}
 
       <div className="flex gap-2.5 mb-14 flex-wrap justify-center">
       {config.audio && (
@@ -1295,15 +1305,47 @@ function ActiveSessionView({
       </span>
     </div>
 
-      <button
-        onClick={onEnd}
-        className="px-8 py-3 rounded-xl text-sm font-medium transition-all"
-        style={{ border: `1px solid ${theme.border}`, color: theme.mutedFg }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = theme.foreground; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = theme.mutedFg; }}
-      >
-        End Session
-      </button>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={isPaused ? onResume : onPause}
+            className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold transition-all"
+            style={{
+              background: theme.primary,
+              color: theme.primaryFg,
+            }}
+          >
+            {isPaused ? (
+              <>
+                <Play className="w-4 h-4" />
+                Resume Session
+              </>
+            ) : (
+              <>
+                <Pause className="w-4 h-4" />
+                Pause Session
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={onEnd}
+            className="px-8 py-3 rounded-xl text-sm font-medium transition-all"
+            style={{
+              border: `1px solid ${theme.border}`,
+              color: theme.mutedFg,
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = theme.foreground;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = theme.mutedFg;
+            }}
+          >
+            End Session
+          </button>
+      </div>
     </div>
   );
 }
@@ -1314,32 +1356,24 @@ function SessionCompleteView({ config, onDone, theme }: { config: FocusConfig; o
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] px-8 py-12 text-center">
       <div className="text-6xl mb-6">🎉</div>
       <h2 className="font-display text-2xl font-bold mb-2" style={{ color: theme.foreground }}>Session Complete!</h2>
-      {/* <p className="mb-8 max-w-xs text-sm" style={{ color: theme.mutedFg }}>
-        You focused for <span className="font-semibold" style={{ color: theme.primary }}>{config.duration} minutes</span> on {config.objective}.
-      </p> */}
       <p
         className="mb-8 max-w-xs text-sm"
         style={{ color: theme.mutedFg }}
       >
-        Session finished
-        {config.duration && (
-          <>
-            {" "}after{" "}
-            <span
-              className="font-semibold"
-              style={{ color: theme.primary }}
-            >
-              {config.duration} minutes
-            </span>
-          </>
-        )}
-        {config.task && <> working on {config.task}</>}.
+        You focused for{" "}
+        <span
+          className="font-semibold"
+          style={{ color: theme.primary }}
+        >
+          {config.duration} minutes
+        </span>{" "}
+        working on {config.task}.
       </p>
       <div
         className="flex gap-6 rounded-2xl px-10 py-6 mb-8"
         style={{ background: theme.card, border: `1px solid ${theme.border}` }}
       >
-        {[/*["Focused", `${config.duration}m`]*/ ["Focused", config.duration ? `${config.duration}m` : "Complete",], ["Streak Day", "+1"], ["Total Hours", "413h"]].map(([label, val], i, arr) => (
+        {[["Focused", `${config.duration}m`], ["Streak Day", "+1"], ["Total Hours", "413h"]].map(([label, val], i, arr) => (
           <div key={label} className="flex items-center gap-6">
             <div className="text-center">
               <p className="text-3xl font-bold font-data" style={{ color: theme.foreground }}>{val}</p>
@@ -1995,6 +2029,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   const [phase, setPhase] = useState<FocusPhase>("idle");
   const [focusConfig, setFocusConfig] = useState<FocusConfig | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [isSessionPaused, setIsSessionPaused] = useState(false);
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [tasks, setTasks] = useState<Task[]>(() => {
     if (!account.task?.title) return INIT_TASKS;
@@ -2036,29 +2071,39 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
     if (n === "focus" && phase === "idle") setPhase("setup");
   };
 
-  // const handleBegin = (cfg: FocusConfig) => {
-  //   setFocusConfig(cfg);
-  //   const s = cfg.duration * 60;
-  //   setSecondsLeft(s);
-  //   setTotalSeconds(s);
-  //   setPhase("active");
-  // };
 
   const handleReviewSession = (config: FocusConfig) => {
     setFocusConfig(config);
     setPhase("review");
   };
 
+
   const handleStartSession = () => {
     if (!focusConfig) return;
-    // Since duration is optional, use 25 minutes internally
-    // when no duration was supplied.
-    const sessionMinutes = focusConfig.duration ?? 25;
-    const seconds = sessionMinutes * 60;
+    const seconds = focusConfig.duration * 60;
     setSecondsLeft(seconds);
     setTotalSeconds(seconds);
     setPhase("active");
-    startSessionAudio(focusConfig);
+    void startSessionAudio(focusConfig);
+  };
+
+  const handlePauseSession = () => {
+    setIsSessionPaused(true);
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    audioRef.current.pause();
+  };
+
+  const handleResumeSession = () => {
+    setIsSessionPaused(false);
+
+    if (focusConfig?.audio && playlist.length > 0) {
+      setIsPlaying(true);
+    }
   };
 
   async function startSessionAudio(config: FocusConfig) {
@@ -2114,7 +2159,15 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
 
 
   const handleEnd = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setIsSessionPaused(false);
+    setIsPlaying(false);
+    audioRef.current.pause();
+
     setPhase("complete");
   };
 
@@ -2123,20 +2176,40 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
     setNav("home");
   };
 
+
   useEffect(() => {
-    if (phase !== "active") return;
+    if (phase !== "active" || isSessionPaused) {
+      return;
+    }
+
     timerRef.current = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(timerRef.current!);
+      setSecondsLeft(current => {
+        if (current <= 1) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+
+          setIsPlaying(false);
+          audioRef.current.pause();
+
           setPhase("complete");
+          setIsSessionPaused(false);
+
           return 0;
         }
-        return s - 1;
+
+        return current - 1;
       });
     }, 1000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [phase]);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [phase, isSessionPaused]);
 
   // ── Audio playback ──
   useEffect(() => {
@@ -2308,15 +2381,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
               remainingLabel={fmtGoalShort(remainingMinutes)}
             />
           )}
-          {/* {nav === "focus" && phase === "setup" && (
-            <FocusSetupView onBegin={handleBegin} theme={theme} defaultDuration={account.session?.duration} defaultObjective={account.session?.type} defaultAmbience={defaultAmbience} />
-          )}
-          {nav === "focus" && phase === "idle" && (
-            <FocusSetupView onBegin={handleBegin} theme={theme} defaultDuration={account.session?.duration} defaultObjective={account.session?.type} defaultAmbience={defaultAmbience} />
-          )}
-          {nav === "focus" && phase === "active" && focusConfig && (
-            <ActiveSessionView config={focusConfig} secondsLeft={secondsLeft} totalSeconds={totalSeconds} onEnd={handleEnd} theme={theme} />
-          )} */}
+
           {nav === "focus" && phase === "setup" && (
             <FocusSetupView
               onContinue={handleReviewSession}
@@ -2334,13 +2399,23 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
           )}
 
           {nav === "focus" && phase === "active" && focusConfig && (
+            // <ActiveSessionView
+            //   config={focusConfig}
+            //   secondsLeft={secondsLeft}
+            //   totalSeconds={totalSeconds}
+            //   onEnd={handleEnd}
+            //   theme={theme}
+            // />
             <ActiveSessionView
-              config={focusConfig}
-              secondsLeft={secondsLeft}
-              totalSeconds={totalSeconds}
-              onEnd={handleEnd}
-              theme={theme}
-            />
+            config={focusConfig}
+            secondsLeft={secondsLeft}
+            totalSeconds={totalSeconds}
+            isPaused={isSessionPaused}
+            onPause={handlePauseSession}
+            onResume={handleResumeSession}
+            onEnd={handleEnd}
+            theme={theme}
+          />
           )}
           {nav === "focus" && phase === "complete" && focusConfig && (
             <SessionCompleteView config={focusConfig} onDone={handleDone} theme={theme} />
