@@ -1,5 +1,5 @@
 {
- "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.24.0\",\"stackType\":\"custom\",\"metadata\":{}}",
+ "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.24.0\",\"stackType\":\"custom\",\"metadata\":{}}",
  "Resources": {
   "FocusFlowRestApiFCD56347": {
    "Type": "AWS::ApiGateway::RestApi",
@@ -87,7 +87,7 @@
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Account"
    }
   },
-  "FocusFlowRestApiDeployment27C50ED9af2c5da4b3919a0e976da63873c679e1": {
+  "FocusFlowRestApiDeployment27C50ED950854c0451742ef43dd0c2630a90c555": {
    "Type": "AWS::ApiGateway::Deployment",
    "Properties": {
     "Description": "Automatically created by the RestApi construct",
@@ -115,7 +115,15 @@
     "FocusFlowRestApiplaylistsGET4B162494",
     "FocusFlowRestApiplaylistsOPTIONS3F1FDCB6",
     "FocusFlowRestApiplaylistsPOST3155E341",
-    "FocusFlowRestApiplaylistsBF3E9429"
+    "FocusFlowRestApiplaylistsBF3E9429",
+    "FocusFlowRestApisessionssessionIdGETD453653C",
+    "FocusFlowRestApisessionssessionIdOPTIONS5755853B",
+    "FocusFlowRestApisessionssessionIdPATCH8D416438",
+    "FocusFlowRestApisessionssessionIdCAE0753D",
+    "FocusFlowRestApisessionsGET5A50FB95",
+    "FocusFlowRestApisessionsOPTIONS27A05962",
+    "FocusFlowRestApisessionsPOSTBD7A548D",
+    "FocusFlowRestApisessions77356CFE"
    ],
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
@@ -128,7 +136,7 @@
    "Type": "AWS::ApiGateway::Stage",
    "Properties": {
     "DeploymentId": {
-     "Ref": "FocusFlowRestApiDeployment27C50ED9af2c5da4b3919a0e976da63873c679e1"
+     "Ref": "FocusFlowRestApiDeployment27C50ED950854c0451742ef43dd0c2630a90c555"
     },
     "RestApiId": {
      "Ref": "FocusFlowRestApiFCD56347"
@@ -1646,6 +1654,641 @@
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/playlists/{playlistId}/PATCH/Resource"
    }
   },
+  "FocusFlowRestApisessions77356CFE": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "FocusFlowRestApiFCD56347",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "sessions",
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/Resource"
+   }
+  },
+  "FocusFlowRestApisessionsOPTIONS27A05962": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PATCH,OPTIONS'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "FocusFlowRestApisessions77356CFE"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/OPTIONS/Resource"
+   }
+  },
+  "FocusFlowRestApisessionsGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETsessionsEFBF34C4": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/GET/sessions"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..sessions"
+   }
+  },
+  "FocusFlowRestApisessionsGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETsessionsB6B1ECC8": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/GET/sessions"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..sessions"
+   }
+  },
+  "FocusFlowRestApisessionsGET5A50FB95": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "FocusFlowAuthorizer0EA7C201"
+    },
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApisessions77356CFE"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/GET/Resource"
+   }
+  },
+  "FocusFlowRestApisessionsPOSTApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTsessions86E56807": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/POST/sessions"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/POST/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..sessions"
+   }
+  },
+  "FocusFlowRestApisessionsPOSTApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0POSTsessionsB57D7CA2": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/POST/sessions"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/POST/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.POST..sessions"
+   }
+  },
+  "FocusFlowRestApisessionsPOSTBD7A548D": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "FocusFlowAuthorizer0EA7C201"
+    },
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApisessions77356CFE"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/POST/Resource"
+   }
+  },
+  "FocusFlowRestApisessionssessionIdCAE0753D": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "FocusFlowRestApisessions77356CFE"
+    },
+    "PathPart": "{sessionId}",
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/{sessionId}/Resource"
+   }
+  },
+  "FocusFlowRestApisessionssessionIdOPTIONS5755853B": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,PATCH,OPTIONS'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "FocusFlowRestApisessionssessionIdCAE0753D"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/{sessionId}/OPTIONS/Resource"
+   }
+  },
+  "FocusFlowRestApisessionssessionIdGETApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETsessionssessionId365B3279": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/GET/sessions/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/{sessionId}/GET/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..sessions.{sessionId}"
+   }
+  },
+  "FocusFlowRestApisessionssessionIdGETApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0GETsessionssessionId12C7980B": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/GET/sessions/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/{sessionId}/GET/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.GET..sessions.{sessionId}"
+   }
+  },
+  "FocusFlowRestApisessionssessionIdGETD453653C": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "FocusFlowAuthorizer0EA7C201"
+    },
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApisessionssessionIdCAE0753D"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/{sessionId}/GET/Resource"
+   }
+  },
+  "FocusFlowRestApisessionssessionIdPATCHApiPermissionamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHsessionssessionIdD93015FC": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/",
+       {
+        "Ref": "FocusFlowRestApiDeploymentStageapi35F23768"
+       },
+       "/PATCH/sessions/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/{sessionId}/PATCH/ApiPermission.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..sessions.{sessionId}"
+   }
+  },
+  "FocusFlowRestApisessionssessionIdPATCHApiPermissionTestamplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0PATCHsessionssessionId0932308C": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "FocusFlowRestApiFCD56347"
+       },
+       "/test-invoke-stage/PATCH/sessions/*"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/{sessionId}/PATCH/ApiPermission.Test.amplifymyappAdjunctsandbox2582cd4671FocusFlowApiFocusFlowRestApi30AEE4A0.PATCH..sessions.{sessionId}"
+   }
+  },
+  "FocusFlowRestApisessionssessionIdPATCH8D416438": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "FocusFlowAuthorizer0EA7C201"
+    },
+    "HttpMethod": "PATCH",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Ref": "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "FocusFlowRestApisessionssessionIdCAE0753D"
+    },
+    "RestApiId": {
+     "Ref": "FocusFlowRestApiFCD56347"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/FocusFlowRestApi/Default/sessions/{sessionId}/PATCH/Resource"
+   }
+  },
   "FocusFlowAuthorizer0EA7C201": {
    "Type": "AWS::ApiGateway::Authorizer",
    "Properties": {
@@ -1670,7 +2313,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02OwU7DMAyGn2X3NKBM4l7GFZg6cUZe43XekriKHapR9d1RaUE7+fv/T5btrHva2scNDFK1/loFOtrxDUXRHxTaq4FBPkfoqQPFAW52bFC07snsTukO67blktS8YB/4FjHp3N6lg0KHc7dAg8Ilt/gMguYV9cx+liv92fXIytwlUv4QzHvmIHXRM2f6xvz7wH+aDEG0Y8Nh2eeAkwkQjx7s7pT2mCOJEKdp1u9F+6KTSezRXuThyznrttZtLkJU5ZKUItpmmT//O9aoLgEAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02OwU7DMAyGn2X3NIyCENeyXYGpE2fkpV7nLYmr2KEaVd8dlRa0k7///2TZpS2fHux6Bb0UrrkUng52eENRbPYK7mKgl88BOmpBsYerHWoUrToym2O8wco5zlHNFjvP14BRp/Ym7RVanLoZahTOyeELCJpX1BM3k1zozy5HFuY2kvKHYNoxe6mynjjRN6bfB/7TaAiCHWr28z57HI2HcGjAbo5xhymQCHEcJ/2etcs6msgN2rPcfZWP9v7ZrldnISpSjkoBbT3PH32MIYUuAQAA"
    },
    "Metadata": {
     "aws:cdk:path": "amplify-myapp-Adjunct-sandbox-2582cd4671/FocusFlowApi/CDKMetadata/Default"
@@ -1987,6 +2630,9 @@
    "Type": "String"
   },
   "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionplaylistslambda9FC8BCC9Arn": {
+   "Type": "String"
+  },
+  "referencetoamplifymyappAdjunctsandbox2582cd4671functionNestedStackfunctionNestedStackResource1F7C61D8OutputsamplifymyappAdjunctsandbox2582cd4671functionsessionslambda90D52F5EArn": {
    "Type": "String"
   },
   "referencetoamplifymyappAdjunctsandbox2582cd4671authNestedStackauthNestedStackResource72674CCCOutputsamplifymyappAdjunctsandbox2582cd4671authamplifyAuthUserPool68CB8A2BArn": {

@@ -1,19 +1,19 @@
 {
   "version": "54.0.0",
   "artifacts": {
-    "amplify-myapp-mandabratmad-sandbox-74aed33ce3.assets": {
+    "amplify-myapp-Adjunct-sandbox-2582cd4671.assets": {
       "type": "cdk:asset-manifest",
       "properties": {
-        "file": "amplify-myapp-mandabratmad-sandbox-74aed33ce3.assets.json",
+        "file": "amplify-myapp-Adjunct-sandbox-2582cd4671.assets.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
       }
     },
-    "amplify-myapp-mandabratmad-sandbox-74aed33ce3": {
+    "amplify-myapp-Adjunct-sandbox-2582cd4671": {
       "type": "aws:cloudformation:stack",
       "environment": "aws://unknown-account/unknown-region",
       "properties": {
-        "templateFile": "amplify-myapp-mandabratmad-sandbox-74aed33ce3.template.json",
+        "templateFile": "amplify-myapp-Adjunct-sandbox-2582cd4671.template.json",
         "terminationProtection": false,
         "tags": {
           "amplify:deployment-type": "sandbox",
@@ -22,11 +22,11 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/ed4393d80a600db6352c9adac6e9995a83f902499cd8625c73f1e12330a96f67.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0e2bcb14d09f2e0bf56e16cb57bb8161a1a14714189263e5539d46858e6dff59.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
-          "amplify-myapp-mandabratmad-sandbox-74aed33ce3.assets"
+          "amplify-myapp-Adjunct-sandbox-2582cd4671.assets"
         ],
         "lookupRole": {
           "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
@@ -35,10 +35,10 @@
         }
       },
       "dependencies": [
-        "amplify-myapp-mandabratmad-sandbox-74aed33ce3.assets"
+        "amplify-myapp-Adjunct-sandbox-2582cd4671.assets"
       ],
-      "additionalMetadataFile": "amplify-myapp-mandabratmad-sandbox-74aed33ce3.metadata.json",
-      "displayName": "amplify-myapp-mandabratmad-sandbox-74aed33ce3"
+      "additionalMetadataFile": "amplify-myapp-Adjunct-sandbox-2582cd4671.metadata.json",
+      "displayName": "amplify-myapp-Adjunct-sandbox-2582cd4671"
     },
     "Tree": {
       "type": "cdk:tree",
