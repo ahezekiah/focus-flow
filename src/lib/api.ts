@@ -13,9 +13,6 @@ export interface AudioFile {
   playUrl?: string;
 }
 
-/**
- * One audio file as it sits in a playlist, ready to play.
- */
 export interface PlaylistTrack {
   id: string;
   name: string;
@@ -25,19 +22,11 @@ export interface PlaylistTrack {
 export interface Playlist {
   id: string;
   name: string;
-
-  /**
-   * True for the playlist a customer hears when they enter the experience.
-   */
   isDefault: boolean;
-
   createdAt: string;
   tracks: PlaylistTrack[];
 }
 
-/**
- * Thrown for any non-2xx response so callers can show the server's message.
- */
 export class ApiError extends Error {
   status: number;
 
@@ -52,29 +41,32 @@ export const BACKEND_UNAVAILABLE =
   "No Amplify backend is connected yet. Run `npx ampx sandbox` to deploy one.";
 
 /**
- * Gets the Cognito access token used to authorize API requests.
+ * Get the Cognito ID token.
  *
  * IMPORTANT:
- * Use accessToken here, not idToken.
+ * The API Gateway Cognito User Pool authorizer is being used by
+ * the backend, so send the ID token in the Authorization header.
  *
- * The Authorization header is:
- * Authorization: Bearer <access-token>
+ * The header must be:
+ *
+ * Authorization: Bearer <id-token>
  */
 async function authHeaders(): Promise<Record<string, string>> {
   try {
     const session = await fetchAuthSession();
 
-    const token = session.tokens?.accessToken?.toString();
+    const idToken = session.tokens?.idToken?.toString();
 
-    if (!token) {
+    if (!idToken) {
+      console.warn("No Cognito ID token available.");
       return {};
     }
 
     return {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${idToken}`,
     };
   } catch (error) {
-    console.warn("Could not retrieve Amplify auth session:", error);
+    console.error("Could not retrieve Cognito auth session:", error);
     return {};
   }
 }
@@ -90,33 +82,41 @@ async function request<T>(
     throw new ApiError(0, BACKEND_UNAVAILABLE);
   }
 
-  const headers = await authHeaders();
+  const auth = await authHeaders();
 
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...headers,
-      ...init.headers,
+      ...auth,
+      ...(init.headers ?? {}),
     },
   });
 
   if (!response.ok) {
-    const message = await response
-      .json()
-      .then(body => {
-        if (
-          body &&
-          typeof body === "object" &&
-          "message" in body &&
-          typeof (body as { message?: unknown }).message === "string"
-        ) {
-          return (body as { message: string }).message;
-        }
+    let message: string | undefined;
 
-        return undefined;
-      })
-      .catch(() => undefined);
+    try {
+      const body = await response.json();
+
+      if (
+        body &&
+        typeof body === "object" &&
+        "message" in body &&
+        typeof (body as { message?: unknown }).message === "string"
+      ) {
+        message = (body as { message: string }).message;
+      }
+    } catch {
+      // Response wasn't JSON.
+    }
+
+    if (response.status === 401) {
+      throw new ApiError(
+        401,
+        "Unauthorized. Please sign in again.",
+      );
+    }
 
     throw new ApiError(
       response.status,
@@ -124,22 +124,26 @@ async function request<T>(
     );
   }
 
-  /*
-   * Some successful endpoints may return an empty body.
-   */
   const text = await response.text();
 
   if (!text) {
     return undefined as T;
   }
 
-  return JSON.parse(text) as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new ApiError(
+      response.status,
+      "The server returned an invalid response.",
+    );
+  }
 }
 
 /**
  * GET /api/audio-files
  *
- * Every audio file that has finished being added.
+ * Public endpoint.
  */
 export async function listAudioFiles(): Promise<AudioFile[]> {
   const { audioFiles } = await request<{
@@ -150,9 +154,9 @@ export async function listAudioFiles(): Promise<AudioFile[]> {
 }
 
 /**
- * Adds one audio file:
- * reserves the record, uploads the file to storage,
- * then marks it ready.
+ * POST /api/audio-files
+ *
+ * Requires authentication.
  */
 export async function addAudioFile(
   name: string,
@@ -173,9 +177,11 @@ export async function addAudioFile(
     }),
   });
 
-  /*
-   * The upload URL is a presigned S3 URL.
-   * Do NOT send the Cognito Authorization header to it.
+  /**
+   * uploadUrl is a presigned S3 URL.
+   *
+   * IMPORTANT:
+   * Do not send the Cognito Authorization header to S3.
    */
   const upload = await fetch(uploadUrl, {
     method: "PUT",
@@ -188,10 +194,13 @@ export async function addAudioFile(
   if (!upload.ok) {
     throw new ApiError(
       upload.status,
-      "The audio file could not be uploaded",
+      "The audio file could not be uploaded.",
     );
   }
 
+  /**
+   * Mark the file ready after S3 upload succeeds.
+   */
   return request<AudioFile>(
     `/audio-files/${encodeURIComponent(audioFile.id)}`,
     {
@@ -206,8 +215,7 @@ export async function addAudioFile(
 /**
  * GET /api/playlists
  *
- * Every playlist a designer has saved,
- * with its playable tracks.
+ * Public endpoint.
  */
 export async function listPlaylists(): Promise<Playlist[]> {
   const { playlists } = await request<{
@@ -220,8 +228,7 @@ export async function listPlaylists(): Promise<Playlist[]> {
 /**
  * GET /api/playlists/default
  *
- * The playlist a customer hears on arrival.
- * Resolves with null while no playlist exists.
+ * Public endpoint.
  */
 export async function getDefaultPlaylist(): Promise<Playlist | null> {
   try {
@@ -242,8 +249,7 @@ export async function getDefaultPlaylist(): Promise<Playlist | null> {
 /**
  * POST /api/playlists
  *
- * Saves a playlist under the given name,
- * holding only the chosen audio files.
+ * Requires authentication.
  */
 export async function createPlaylist(
   name: string,
@@ -265,7 +271,7 @@ export async function createPlaylist(
 /**
  * PATCH /api/playlists/{id}
  *
- * Makes this playlist the one new customers hear.
+ * Requires authentication.
  */
 export async function makePlaylistDefault(
   playlistId: string,
