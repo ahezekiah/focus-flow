@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useRef, useCallback, type ElementType } from "react";
 import {
   Home, Music2, Waves, BarChart2, Timer, Palette,
@@ -8,7 +9,16 @@ import {
 import { ThemeSelectionView } from "./dash/ThemeSelectionView";
 import { PlaylistsView } from "./dash/PlaylistsView";
 import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from "./dash/themes";
-import { getDefaultPlaylist, listPlaylists, listAudioFiles, type Playlist, type AudioFile } from "./lib/api";
+import {
+  getDefaultPlaylist,
+  listPlaylists,
+  listAudioFiles,
+  createSession,
+  updateSessionStatus,
+  type FocusSession,
+  type Playlist,
+  type AudioFile,
+} from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
 import { updateAccount, type AccountRecord } from "./lib/accounts";
 
@@ -476,7 +486,7 @@ function HomeView({
               <button
                 key={i}
                 className="w-full flex items-center gap-3 p-2.5 rounded-xl text-left group transition-colors duration-150"
-                style={{} }
+                style={{}}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = theme.overlay(0.04); }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ""; }}
               >
@@ -580,7 +590,7 @@ function FocusSetupView({
   onContinue,
   theme,
 }: {
-  onContinue: (config: FocusConfig) => void;
+  onContinue: (config: FocusConfig) => void | Promise<void>;
   theme: DashTheme;
 }) {
   const [duration, setDuration] = useState<number | undefined>();
@@ -641,62 +651,62 @@ function FocusSetupView({
     }));
   }
 
-function handleContinue() {
-  let finalDuration: number | undefined = duration;
+  function handleContinue() {
+    let finalDuration: number | undefined = duration;
 
-  if (customSelected) {
-    const minutes = Number(customDuration);
+    if (customSelected) {
+      const minutes = Number(customDuration);
 
-    if (
-      customDuration.trim() &&
-      Number.isFinite(minutes) &&
-      Number.isInteger(minutes) &&
-      minutes > 0
-    ) {
-      finalDuration = minutes;
-    } else {
-      finalDuration = undefined;
+      if (
+        customDuration.trim() &&
+        Number.isFinite(minutes) &&
+        Number.isInteger(minutes) &&
+        minutes > 0
+      ) {
+        finalDuration = minutes;
+      } else {
+        finalDuration = undefined;
+      }
     }
+
+    const nextErrors: SessionErrors = {};
+
+    if (finalDuration === undefined) {
+      nextErrors.duration = "Choose a valid session length.";
+    }
+
+    if (!objective.trim()) {
+      nextErrors.objective = "Enter an objective for this session.";
+    }
+
+    if (!task.trim()) {
+      nextErrors.task = "Enter a task for this session.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    // Explicit guard so TypeScript knows this is definitely a number.
+    if (finalDuration === undefined) {
+      return;
+    }
+
+    setErrors({});
+
+    const config: FocusConfig = {
+      duration: finalDuration,
+      objective: objective.trim(),
+      task: task.trim(),
+    };
+
+    if (selectedAudio) {
+      config.audio = selectedAudio;
+    }
+
+    onContinue(config);
   }
-
-  const nextErrors: SessionErrors = {};
-
-  if (finalDuration === undefined) {
-    nextErrors.duration = "Choose a valid session length.";
-  }
-
-  if (!objective.trim()) {
-    nextErrors.objective = "Enter an objective for this session.";
-  }
-
-  if (!task.trim()) {
-    nextErrors.task = "Enter a task for this session.";
-  }
-
-  if (Object.keys(nextErrors).length > 0) {
-    setErrors(nextErrors);
-    return;
-  }
-
-  // Explicit guard so TypeScript knows this is definitely a number.
-  if (finalDuration === undefined) {
-    return;
-  }
-
-  setErrors({});
-
-  const config: FocusConfig = {
-    duration: finalDuration,
-    objective: objective.trim(),
-    task: task.trim(),
-  };
-
-  if (selectedAudio) {
-    config.audio = selectedAudio;
-  }
-
-  onContinue(config);
-}
 
   return (
     <div className="p-8 max-w-2xl">
@@ -745,11 +755,10 @@ function handleContinue() {
                     duration === minutes && !customSelected
                       ? `${theme.primary}20`
                       : "transparent",
-                  border: `1px solid ${
-                    duration === minutes && !customSelected
+                  border: `1px solid ${duration === minutes && !customSelected
                       ? theme.primary
                       : theme.border
-                  }`,
+                    }`,
                   color:
                     duration === minutes && !customSelected
                       ? theme.primary
@@ -765,9 +774,8 @@ function handleContinue() {
               onClick={chooseCustom}
               className="px-4 py-3 rounded-xl text-sm font-medium"
               style={{
-                border: `1px solid ${
-                  customSelected ? theme.primary : theme.border
-                }`,
+                border: `1px solid ${customSelected ? theme.primary : theme.border
+                  }`,
                 color: customSelected
                   ? theme.primary
                   : theme.mutedFg,
@@ -796,9 +804,8 @@ function handleContinue() {
                 className="w-full px-4 py-3 rounded-xl outline-none"
                 style={{
                   background: theme.card,
-                  border: `1px solid ${
-                    errors.duration ? "#ef4444" : theme.border
-                  }`,
+                  border: `1px solid ${errors.duration ? "#ef4444" : theme.border
+                    }`,
                   color: theme.foreground,
                 }}
                 aria-invalid={Boolean(errors.duration)}
@@ -849,9 +856,8 @@ function handleContinue() {
             className="w-full px-4 py-3 rounded-xl outline-none resize-none"
             style={{
               background: theme.card,
-              border: `1px solid ${
-                errors.objective ? "#ef4444" : theme.border
-              }`,
+              border: `1px solid ${errors.objective ? "#ef4444" : theme.border
+                }`,
               color: theme.foreground,
             }}
             aria-invalid={Boolean(errors.objective)}
@@ -906,9 +912,8 @@ function handleContinue() {
             className="w-full px-4 py-3 rounded-xl outline-none"
             style={{
               background: theme.card,
-              border: `1px solid ${
-                errors.task ? "#ef4444" : theme.border
-              }`,
+              border: `1px solid ${errors.task ? "#ef4444" : theme.border
+                }`,
               color: theme.foreground,
             }}
             aria-invalid={Boolean(errors.task)}
@@ -950,11 +955,10 @@ function handleContinue() {
               onClick={() => setSelectedAudio(undefined)}
               className="w-full text-left px-4 py-3 rounded-xl"
               style={{
-                border: `1px solid ${
-                  !selectedAudio
+                border: `1px solid ${!selectedAudio
                     ? theme.primary
                     : theme.border
-                }`,
+                  }`,
                 color: !selectedAudio
                   ? theme.primary
                   : theme.foreground,
@@ -994,11 +998,10 @@ function handleContinue() {
                           background: selected
                             ? `${theme.primary}15`
                             : "transparent",
-                          border: `1px solid ${
-                            selected
+                          border: `1px solid ${selected
                               ? theme.primary
                               : theme.border
-                          }`,
+                            }`,
                           color: theme.foreground,
                         }}
                       >
@@ -1041,11 +1044,10 @@ function handleContinue() {
                           background: selected
                             ? `${theme.accent}15`
                             : "transparent",
-                          border: `1px solid ${
-                            selected
+                          border: `1px solid ${selected
                               ? theme.accent
                               : theme.border
-                          }`,
+                            }`,
                           color: theme.foreground,
                         }}
                       >
@@ -1143,36 +1145,35 @@ function SessionReviewView({
         }}
       >
 
-          <ReviewItem
-            label="Duration"
-            value={`${config.duration} minutes`}
-            theme={theme}
-          />
+        <ReviewItem
+          label="Duration"
+          value={`${config.duration} minutes`}
+          theme={theme}
+        />
 
 
 
-          <ReviewItem
-            label="Task"
-            value={config.task}
-            theme={theme}
-          />
+        <ReviewItem
+          label="Task"
+          value={config.task}
+          theme={theme}
+        />
 
 
-          <ReviewItem
-            label="Objective"
-            value={config.objective}
-            theme={theme}
-          />
+        <ReviewItem
+          label="Objective"
+          value={config.objective}
+          theme={theme}
+        />
 
 
         {config.audio && (
           <ReviewItem
             label="Background Audio"
-            value={`${config.audio.name} ${
-              config.audio.type === "playlist"
+            value={`${config.audio.name} ${config.audio.type === "playlist"
                 ? "(Playlist)"
                 : "(Track)"
-            }`}
+              }`}
             theme={theme}
           />
         )}
@@ -1238,7 +1239,7 @@ function ActiveSessionView({
         className="text-xs uppercase tracking-widest mb-10 font-data"
         style={{ color: theme.mutedFg }}
       >
-            {config.task}
+        {config.task}
       </p>
 
       <div className="relative mb-10">
@@ -1267,84 +1268,84 @@ function ActiveSessionView({
 
 
       <div className="flex gap-2.5 mb-14 flex-wrap justify-center">
-      {config.audio && (
-        <span
-          className="px-3.5 py-1.5 rounded-full text-xs"
-          style={{
-            background: theme.overlay(0.04),
-            border: `1px solid ${theme.overlay(0.07)}`,
-            color: theme.mutedFg,
-          }}
-        >
-          🎵 {config.audio.name}
-        </span>
-      )}
-
-      {config.objective && (
-        <span
-          className="px-3.5 py-1.5 rounded-full text-xs"
-          style={{
-            background: theme.overlay(0.04),
-            border: `1px solid ${theme.overlay(0.07)}`,
-            color: theme.mutedFg,
-          }}
-        >
-          🎯 {config.objective}
-        </span>
-      )}
-
-      <span
-        className="px-3.5 py-1.5 rounded-full text-xs"
-        style={{
-          background: theme.overlay(0.04),
-          border: `1px solid ${theme.overlay(0.07)}`,
-          color: "#4ade80",
-        }}
-      >
-        🔔 Notifications Off
-      </span>
-    </div>
-
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={isPaused ? onResume : onPause}
-            className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold transition-all"
+        {config.audio && (
+          <span
+            className="px-3.5 py-1.5 rounded-full text-xs"
             style={{
-              background: theme.primary,
-              color: theme.primaryFg,
-            }}
-          >
-            {isPaused ? (
-              <>
-                <Play className="w-4 h-4" />
-                Resume Session
-              </>
-            ) : (
-              <>
-                <Pause className="w-4 h-4" />
-                Pause Session
-              </>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={onEnd}
-            className="px-8 py-3 rounded-xl text-sm font-medium transition-all"
-            style={{
-              border: `1px solid ${theme.border}`,
+              background: theme.overlay(0.04),
+              border: `1px solid ${theme.overlay(0.07)}`,
               color: theme.mutedFg,
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.color = theme.foreground;
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.color = theme.mutedFg;
+          >
+            🎵 {config.audio.name}
+          </span>
+        )}
+
+        {config.objective && (
+          <span
+            className="px-3.5 py-1.5 rounded-full text-xs"
+            style={{
+              background: theme.overlay(0.04),
+              border: `1px solid ${theme.overlay(0.07)}`,
+              color: theme.mutedFg,
             }}
           >
-            End Session
-          </button>
+            🎯 {config.objective}
+          </span>
+        )}
+
+        <span
+          className="px-3.5 py-1.5 rounded-full text-xs"
+          style={{
+            background: theme.overlay(0.04),
+            border: `1px solid ${theme.overlay(0.07)}`,
+            color: "#4ade80",
+          }}
+        >
+          🔔 Notifications Off
+        </span>
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={isPaused ? onResume : onPause}
+          className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold transition-all"
+          style={{
+            background: theme.primary,
+            color: theme.primaryFg,
+          }}
+        >
+          {isPaused ? (
+            <>
+              <Play className="w-4 h-4" />
+              Resume Session
+            </>
+          ) : (
+            <>
+              <Pause className="w-4 h-4" />
+              Pause Session
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={onEnd}
+          className="px-8 py-3 rounded-xl text-sm font-medium transition-all"
+          style={{
+            border: `1px solid ${theme.border}`,
+            color: theme.mutedFg,
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = theme.foreground;
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = theme.mutedFg;
+          }}
+        >
+          End Session
+        </button>
       </div>
     </div>
   );
@@ -2030,6 +2031,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   const [focusConfig, setFocusConfig] = useState<FocusConfig | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isSessionPaused, setIsSessionPaused] = useState(false);
+  const [persistedSession, setPersistedSession] = useState<FocusSession | null>(null);
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [tasks, setTasks] = useState<Task[]>(() => {
     if (!account.task?.title) return INIT_TASKS;
@@ -2048,10 +2050,10 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   const progressPct = Math.min(100, Math.round((completedMinutes / goalMinutes) * 100));
   const remainingMinutes = Math.max(0, goalMinutes - completedMinutes);
   const goalLabel = DAILY_GOAL_LABEL;
-  const defaultAmbience =
-    account.playlist?.option && account.playlist.option !== "No Playlist"
-      ? account.playlist.option
-      : undefined;
+  // const defaultAmbience =
+  //   account.playlist?.option && account.playlist.option !== "No Playlist"
+  //     ? account.playlist.option
+  //     : undefined;
 
   // ── Playlist & audio ──
   const [playlist, setPlaylist] = useState<Track[]>([]);
@@ -2072,39 +2074,141 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   };
 
 
-  const handleReviewSession = (config: FocusConfig) => {
-    setFocusConfig(config);
-    setPhase("review");
+  const handleReviewSession = async (
+    config: FocusConfig
+  ) => {
+    try {
+      const created =
+        await createSession({
+          durationMinutes:
+            config.duration,
+
+          objective:
+            config.objective,
+
+          task:
+            config.task,
+
+          audioId:
+            config.audio?.id,
+
+          audioName:
+            config.audio?.name,
+
+          audioType:
+            config.audio?.type,
+        });
+
+      setPersistedSession(created);
+      setFocusConfig(config);
+      setPhase("review");
+    } catch (error) {
+      console.error(
+        "Could not create session:",
+        error
+      );
+    }
   };
 
 
-  const handleStartSession = () => {
-    if (!focusConfig) return;
-    const seconds = focusConfig.duration * 60;
-    setSecondsLeft(seconds);
-    setTotalSeconds(seconds);
-    setPhase("active");
-    void startSessionAudio(focusConfig);
-  };
-
-  const handlePauseSession = () => {
-    setIsSessionPaused(true);
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+  const handleStartSession = async () => {
+    if (
+      !focusConfig ||
+      !persistedSession
+    ) {
+      return;
     }
 
-    audioRef.current.pause();
-  };
+    try {
+      const updated =
+        await updateSessionStatus(
+          persistedSession.id,
+          "in_progress"
+        );
 
-  const handleResumeSession = () => {
-    setIsSessionPaused(false);
+      setPersistedSession(updated);
 
-    if (focusConfig?.audio && playlist.length > 0) {
-      setIsPlaying(true);
+      const seconds =
+        focusConfig.duration * 60;
+
+      setSecondsLeft(seconds);
+      setTotalSeconds(seconds);
+      setIsSessionPaused(false);
+
+      setPhase("active");
+
+      void startSessionAudio(
+        focusConfig
+      );
+    } catch (error) {
+      console.error(
+        "Could not start session:",
+        error
+      );
     }
   };
+
+  const handlePauseSession =
+    async () => {
+      if (!persistedSession) return;
+
+      try {
+        const updated =
+          await updateSessionStatus(
+            persistedSession.id,
+            "paused"
+          );
+
+        setPersistedSession(updated);
+
+        setIsSessionPaused(true);
+
+        if (timerRef.current) {
+          clearInterval(
+            timerRef.current
+          );
+
+          timerRef.current = null;
+        }
+
+        setIsPlaying(false);
+        audioRef.current.pause();
+      } catch (error) {
+        console.error(
+          "Could not pause session:",
+          error
+        );
+      }
+    };
+
+  const handleResumeSession =
+    async () => {
+      if (!persistedSession) return;
+
+      try {
+        const updated =
+          await updateSessionStatus(
+            persistedSession.id,
+            "in_progress"
+          );
+
+        setPersistedSession(updated);
+
+        setIsSessionPaused(false);
+
+        if (
+          focusConfig?.audio &&
+          playlist.length > 0
+        ) {
+          setIsPlaying(true);
+        }
+      } catch (error) {
+        console.error(
+          "Could not resume session:",
+          error
+        );
+      }
+    };
 
   async function startSessionAudio(config: FocusConfig) {
     if (!config.audio) return;
@@ -2158,24 +2262,77 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   }
 
 
-  const handleEnd = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+const handleEnd = async () => {
+  if (timerRef.current) {
+    clearInterval(
+      timerRef.current
+    );
+
+    timerRef.current = null;
+  }
+
+  setIsSessionPaused(false);
+  setIsPlaying(false);
+  audioRef.current.pause();
+
+  try {
+    if (persistedSession) {
+      const updated =
+        await updateSessionStatus(
+          persistedSession.id,
+          "completed"
+        );
+
+      setPersistedSession(updated);
     }
 
-    setIsSessionPaused(false);
-    setIsPlaying(false);
-    audioRef.current.pause();
-
     setPhase("complete");
-  };
+  } catch (error) {
+    console.error(
+      "Could not complete session:",
+      error
+    );
+  }
+};
 
-  const handleDone = () => {
-    setPhase("idle");
-    setNav("home");
-  };
+  const completeSession =
+    useCallback(async () => {
+      setIsSessionPaused(false);
 
+      setIsPlaying(false);
+      audioRef.current.pause();
+
+      try {
+        if (persistedSession) {
+          const updated =
+            await updateSessionStatus(
+              persistedSession.id,
+              "completed"
+            );
+
+          setPersistedSession(
+            updated
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Could not complete session:",
+          error
+        );
+      }
+
+      setPhase("complete");
+    }, [persistedSession]);
+
+    const handleDone = () => {
+      setPhase("idle");
+      setNav("home");
+      setFocusConfig(null);
+      setPersistedSession(null);
+      setSecondsLeft(0);
+      setTotalSeconds(0);
+      setIsSessionPaused(false);
+    };
 
   useEffect(() => {
     if (phase !== "active" || isSessionPaused) {
@@ -2193,7 +2350,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
           setIsPlaying(false);
           audioRef.current.pause();
 
-          setPhase("complete");
+          void completeSession();
           setIsSessionPaused(false);
 
           return 0;
@@ -2209,7 +2366,7 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
         timerRef.current = null;
       }
     };
-  }, [phase, isSessionPaused]);
+  }, [phase, isSessionPaused, completeSession]);
 
   // ── Audio playback ──
   useEffect(() => {
@@ -2399,23 +2556,16 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
           )}
 
           {nav === "focus" && phase === "active" && focusConfig && (
-            // <ActiveSessionView
-            //   config={focusConfig}
-            //   secondsLeft={secondsLeft}
-            //   totalSeconds={totalSeconds}
-            //   onEnd={handleEnd}
-            //   theme={theme}
-            // />
             <ActiveSessionView
-            config={focusConfig}
-            secondsLeft={secondsLeft}
-            totalSeconds={totalSeconds}
-            isPaused={isSessionPaused}
-            onPause={handlePauseSession}
-            onResume={handleResumeSession}
-            onEnd={handleEnd}
-            theme={theme}
-          />
+              config={focusConfig}
+              secondsLeft={secondsLeft}
+              totalSeconds={totalSeconds}
+              isPaused={isSessionPaused}
+              onPause={handlePauseSession}
+              onResume={handleResumeSession}
+              onEnd={handleEnd}
+              theme={theme}
+            />
           )}
           {nav === "focus" && phase === "complete" && focusConfig && (
             <SessionCompleteView config={focusConfig} onDone={handleDone} theme={theme} />

@@ -11,8 +11,9 @@ import { auth } from "./auth/resource";
 import { storage } from "./storage/resource";
 import { audioFiles } from "./functions/audio-files/resource";
 import { playlists } from "./functions/playlists/resource";
+import { sessions } from "./functions/sessions/resource";
 
-const backend = defineBackend({ auth, storage, audioFiles, playlists });
+const backend = defineBackend({ auth, storage, audioFiles, playlists, sessions });
 
 const apiStack = backend.createStack("FocusFlowApi");
 
@@ -27,9 +28,15 @@ const playlistTable = new Table(backend.stack, "PlaylistTable", {
   billingMode: BillingMode.PAY_PER_REQUEST,
 });
 
+const sessionTable = new Table(backend.stack, "SessionTable", {
+    partitionKey: { name: "id", type: AttributeType.STRING },
+    billingMode: BillingMode.PAY_PER_REQUEST,
+});
+
 const bucket = backend.storage.resources.bucket;
 const audioFilesLambda = backend.audioFiles.resources.lambda;
 const playlistsLambda = backend.playlists.resources.lambda;
+const sessionsLambda = backend.sessions.resources.lambda;
 
 backend.audioFiles.addEnvironment("AUDIO_FILE_TABLE", audioFileTable.tableName);
 backend.audioFiles.addEnvironment("AUDIO_BUCKET", bucket.bucketName);
@@ -41,10 +48,14 @@ bucket.grantReadWrite(audioFilesLambda);
 backend.playlists.addEnvironment("PLAYLIST_TABLE", playlistTable.tableName);
 backend.playlists.addEnvironment("AUDIO_FILE_TABLE", audioFileTable.tableName);
 backend.playlists.addEnvironment("AUDIO_BUCKET", bucket.bucketName);
+backend.sessions.addEnvironment("SESSION_TABLE", sessionTable.tableName);
+
+
 
 playlistTable.grantReadWriteData(playlistsLambda);
 audioFileTable.grantReadData(playlistsLambda);
 bucket.grantRead(playlistsLambda);
+sessionTable.grantReadWriteData(sessionsLambda);
 
 // ── REST API ───────────────────────────────────────────────────
 const api = new RestApi(apiStack, "FocusFlowRestApi", {
@@ -93,6 +104,43 @@ playlistsResource.addResource("default").addMethod("GET", playlistIntegration);
 const playlistResource = playlistsResource.addResource("{playlistId}");
 playlistResource.addMethod("GET", playlistIntegration);
 playlistResource.addMethod("PATCH", playlistIntegration, signedIn);
+
+const sessionIntegration =
+  new LambdaIntegration(sessionsLambda);
+
+// /sessions
+const sessionsResource =
+  api.root.addResource("sessions");
+
+sessionsResource.addMethod(
+  "GET",
+  sessionIntegration,
+  signedIn
+);
+
+sessionsResource.addMethod(
+  "POST",
+  sessionIntegration,
+  signedIn
+);
+
+// /sessions/{sessionId}
+const sessionResource =
+  sessionsResource.addResource(
+    "{sessionId}"
+  );
+
+sessionResource.addMethod(
+  "GET",
+  sessionIntegration,
+  signedIn
+);
+
+sessionResource.addMethod(
+  "PATCH",
+  sessionIntegration,
+  signedIn
+);
 
 // Surfaced to the frontend through amplify_outputs.json
 backend.addOutput({
