@@ -7,7 +7,7 @@
 
 ## Acceptance Criteria
 - New user can create an account in under a few minutes
-- Onboarding introduces key features (sessions, projects, tasks, music, streaks)
+- Onboarding introduces key features (sessions, tasks, playlist, theme)
 - User reaches their personalized dashboard by the end of onboarding
 - Onboarding can be skipped for returning/experienced users
 
@@ -27,7 +27,7 @@ The guided first-time selection of theme, playlist, task, and session lives in [
 
 * **Given** a new user has started onboarding  
 * **When** they progress through the onboarding flow  
-* **Then** the system shall introduce sessions, projects, tasks, music, and streaks before onboarding is completed.
+* **Then** the system shall introduce sessions, tasks, playlist, and theme before onboarding is completed.
 
 ---
 

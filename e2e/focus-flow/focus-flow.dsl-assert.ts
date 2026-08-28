@@ -87,6 +87,83 @@ export class FocusFlowDslAssert {
     await this.dsl.driver.expectListItemsInOrder("Now playing tracks", names);
   }
 
+  // ── Guided registration ──────────────────────────────────────
+  /** The step of registration they are on is the one named. */
+  async registrationStepIsShowing(stepParam: string): Promise<void> {
+    await this.dsl.waitForStep(parseParam(stepParam, "step"));
+  }
+
+  /** The details were not taken, and the user is still on the registration screen. */
+  async registrationWasRefused(): Promise<void> {
+    await this.dsl.driver.waitForHeading("Create your account");
+  }
+
+  /** The field is marked as needing attention, with a message beside it. */
+  async fieldWasQueried(fieldParam: string): Promise<void> {
+    await this.dsl.driver.expectFieldQueried(parseParam(fieldParam, "field"));
+  }
+
+  /** The step says what the feature is, before asking anything of the user. */
+  async stepExplainsItself(stepParam: string): Promise<void> {
+    await this.dsl.driver.expectExplanationUnderHeading(parseParam(stepParam, "step"));
+  }
+
+  /** The step asks the user for each of these. */
+  async stepAsksFor(choicesParam: string): Promise<void> {
+    for (const ask of parseParamList(choicesParam, "choices")) {
+      await this.dsl.driver.waitForLabelText(ask);
+    }
+  }
+
+  /** They are still on the step, and have been told what is missing. */
+  async registrationIsHeldOn(stepParam: string): Promise<void> {
+    await this.dsl.driver.waitForHeading(parseParam(stepParam, "step"));
+    await this.dsl.driver.expectPromptShowing();
+  }
+
+  /** The session carries the length and focus type the user entered. */
+  async sessionIsSetTo(lengthParam: string, typeParam: string): Promise<void> {
+    await this.dsl.driver.expectFieldValue(
+      "Session length in minutes",
+      parseParam(lengthParam, "length"),
+    );
+    await this.dsl.driver.expectFieldValue("Your focus type", parseParam(typeParam, "type"));
+  }
+
+  /** Several playlists are on offer to choose between. */
+  async playlistsAreOffered(): Promise<void> {
+    await this.dsl.driver.expectGroupOffersAtLeast("Playlist choices", 3);
+  }
+
+  /** Going without a playlist is one of the choices. */
+  async goingWithoutAPlaylistIsOffered(): Promise<void> {
+    await this.dsl.driver.expectChoiceInGroup("Playlist choices", "No Playlist");
+  }
+
+  /** Every look named is on offer. */
+  async looksAreOffered(themesParam: string): Promise<void> {
+    for (const look of parseParamList(themesParam, "themes")) {
+      await this.dsl.driver.expectChoiceInGroup("Theme choices", look);
+    }
+  }
+
+  /** That look is among the ones on offer. */
+  async lookIsOffered(themeParam: string): Promise<void> {
+    await this.dsl.driver.expectChoiceInGroup("Theme choices", parseParam(themeParam, "theme"));
+  }
+
+  /** The user is on their own dashboard. */
+  async dashboardIsShowing(): Promise<void> {
+    await this.dsl.driver.waitForButton("Sign out");
+    await this.dsl.driver.waitForButton("Focus");
+  }
+
+  /** The dashboard is wearing the look the user picked during registration. */
+  async dashboardWearsTheLook(themeParam: string): Promise<void> {
+    await this.dsl.driver.clickNavItem("Themes");
+    await this.dsl.driver.expectControlChosen(parseParam(themeParam, "theme"));
+  }
+
   private alias(nameParam: string): string {
     return this.dsl.ctx.alias(parseParam(nameParam, "name"));
   }

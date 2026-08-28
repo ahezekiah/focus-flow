@@ -28,6 +28,32 @@ export interface Playlist {
   tracks: PlaylistTrack[];
 }
 
+export type SessionStatus =
+  | "configured"
+  | "in_progress"
+  | "paused"
+  | "completed";
+
+export interface FocusSession {
+  id: string;
+  userId: string;
+
+  durationMinutes: number;
+  objective: string;
+  task: string;
+
+  audioId?: string;
+  audioName?: string;
+  audioType?: "playlist" | "track";
+
+  status: SessionStatus;
+
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+
 /** Thrown for any non-2xx response so callers can show the server's message. */
 export class ApiError extends Error {
   status: number;
@@ -149,4 +175,49 @@ export async function makePlaylistDefault(playlistId: string): Promise<Playlist>
     body: JSON.stringify({ isDefault: true }),
   });
   return playlist;
+}
+
+export async function createSession(input: {
+  durationMinutes: number;
+  objective: string;
+  task: string;
+
+  audioId?: string;
+  audioName?: string;
+  audioType?: "playlist" | "track";
+}): Promise<FocusSession> {
+  const { session } = await request<{
+    session: FocusSession;
+  }>("/sessions", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+  return session;
+}
+
+export async function updateSessionStatus(
+  sessionId: string,
+  status: SessionStatus
+): Promise<FocusSession> {
+  const { session } = await request<{
+    session: FocusSession;
+  }>(`/sessions/${sessionId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      status,
+    }),
+  });
+
+  return session;
+}
+
+export async function listSessions(): Promise<
+  FocusSession[]
+> {
+  const { sessions } = await request<{
+    sessions: FocusSession[];
+  }>("/sessions");
+
+  return sessions;
 }

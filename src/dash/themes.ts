@@ -382,9 +382,19 @@ function readStoredThemeId(): ThemeId | null {
   }
 }
 
-/** Holds the selected environment and remembers it between visits. */
-export function useThemeSelection() {
-  const [themeId, setThemeId] = useState<ThemeId>(() => readStoredThemeId() ?? DEFAULT_THEME_ID);
+/** The theme id when it names a look we have, and nothing when it does not. */
+export function asThemeId(value?: string | null): ThemeId | undefined {
+  return value && value in THEMES ? (value as ThemeId) : undefined;
+}
+
+/**
+ * Holds the selected environment and remembers it between visits. A look chosen during
+ * setup is passed in as `preferred`, so the dashboard opens wearing it.
+ */
+export function useThemeSelection(preferred?: string | null) {
+  const [themeId, setThemeId] = useState<ThemeId>(
+    () => asThemeId(preferred) ?? readStoredThemeId() ?? DEFAULT_THEME_ID,
+  );
 
   useEffect(() => {
     try {

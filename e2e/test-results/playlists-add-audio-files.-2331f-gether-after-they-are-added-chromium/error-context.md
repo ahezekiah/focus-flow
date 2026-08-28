@@ -12,212 +12,215 @@
 # Error details
 
 ```
-CredentialsProviderError: Token is expired. To refresh this SSO session run 'aws sso login' with the corresponding profile.
+Error: locator.click: Target page, context or browser has been closed
+Call log:
+  - waiting for getByRole('button', { name: 'Audio Files', exact: true })
+
 ```
 
 # Test source
 
 ```ts
-  159 | 
-  160 |   async expectControlEnabled(name: string): Promise<void> {
-  161 |     await expect(this.button(name)).toBeEnabled();
+  11  | import {
+  12  |   API_BASE_URL,
+  13  |   AUDIO_BUCKET,
+  14  |   AUDIO_FILE_TABLE,
+  15  |   AWS_REGION,
+  16  |   PLAYLIST_TABLE,
+  17  |   PROVIDED_EMAIL,
+  18  |   PROVIDED_PASSWORD,
+  19  |   USER_POOL_ID,
+  20  | } from "../support/api-config";
+  21  | import type { AudioPayload } from "../support/audio-asset";
+  22  | 
+  23  | /**
+  24  |  * The only layer that knows about Playwright, selectors, the API protocol and AWS.
+  25  |  * Method names describe mechanisms, never intent — intent belongs in the DSL.
+  26  |  */
+  27  | 
+  28  | /** Which collection a record came from, so teardown knows where to release it. */
+  29  | type RecordKind = "audio" | "playlist";
+  30  | 
+  31  | /** A record as the API returns it. Only the fields the driver needs to act on. */
+  32  | interface ApiRecord {
+  33  |   id: string;
+  34  |   kind: RecordKind;
+  35  |   name?: string;
+  36  |   playUrl?: string;
+  37  |   storageKey?: string;
+  38  |   tracks?: { id: string; name: string }[];
+  39  | }
+  40  | 
+  41  | /** Meets the pool's policy: 8+ characters with upper, lower, number and symbol. */
+  42  | const ACCOUNT_PASSWORD = "E2e-Passw0rd!";
+  43  | const RECORD_WAIT_MS = 15_000;
+  44  | const RECORD_POLL_MS = 250;
+  45  | const PLAYBACK_WAIT_MS = 20_000;
+  46  | 
+  47  | /** Rows on the audio list are the list items carrying a "Play <name>" control. */
+  48  | const PLAY_CONTROL = /^Play .+/;
+  49  | 
+  50  | /** What the elapsed-time counter reads before any audio has been heard. */
+  51  | const NOTHING_PLAYED_YET = "0:00";
+  52  | 
+  53  | function isRecord(candidate: unknown): boolean {
+  54  |   return !!candidate && typeof (candidate as { id?: unknown }).id === "string";
+  55  | }
+  56  | 
+  57  | function manyOrOne(many: unknown, one: unknown): unknown[] {
+  58  |   if (Array.isArray(many)) return many;
+  59  |   return one === undefined ? [] : [one];
+  60  | }
+  61  | 
+  62  | function recordsIn(body: unknown): ApiRecord[] {
+  63  |   if (!body || typeof body !== "object") return [];
+  64  |   const payload = body as Record<string, unknown>;
+  65  | 
+  66  |   const groups: [RecordKind, unknown[]][] = [
+  67  |     ["audio", manyOrOne(payload.audioFiles, payload.audioFile)],
+  68  |     ["playlist", manyOrOne(payload.playlists, payload.playlist)],
+  69  |   ];
+  70  | 
+  71  |   const wrapped = groups.flatMap(([kind, candidates]) =>
+  72  |     candidates.filter(isRecord).map(candidate => ({ ...(candidate as ApiRecord), kind })),
+  73  |   );
+  74  |   if (wrapped.length > 0) return wrapped;
+  75  | 
+  76  |   // A bare record with no wrapper around it — how the audio-files update answers.
+  77  |   return isRecord(payload) ? [{ ...(payload as unknown as ApiRecord), kind: "audio" }] : [];
+  78  | }
+  79  | 
+  80  | function tableFor(kind: RecordKind): string {
+  81  |   return kind === "playlist" ? PLAYLIST_TABLE : AUDIO_FILE_TABLE;
+  82  | }
+  83  | 
+  84  | export class FocusFlowBrowserDriver {
+  85  |   /** Every record the API has mentioned this test, keyed by id. */
+  86  |   private readonly seen = new Map<string, ApiRecord>();
+  87  |   /** Ids this test created, so teardown only ever touches its own data. */
+  88  |   private readonly created = new Set<string>();
+  89  |   /** Accounts created here, so teardown never touches a pre-provisioned one. */
+  90  |   private readonly accounts = new Set<string>();
+  91  |   private account?: { email: string; password: string };
+  92  |   private cognitoClient?: CognitoIdentityProviderClient;
+  93  | 
+  94  |   constructor(
+  95  |     private readonly page: Page,
+  96  |     private readonly api: APIRequestContext,
+  97  |   ) {
+  98  |     this.watchApiTraffic();
+  99  |   }
+  100 | 
+  101 |   // ── Navigation ───────────────────────────────────────────────
+  102 |   async open(routePath: string): Promise<void> {
+  103 |     await this.page.goto(routePath);
+  104 |   }
+  105 | 
+  106 |   async reload(): Promise<void> {
+  107 |     await this.page.reload();
+  108 |   }
+  109 | 
+  110 |   async clickNavItem(label: string): Promise<void> {
+> 111 |     await this.button(label).click();
+      |                              ^ Error: locator.click: Target page, context or browser has been closed
+  112 |   }
+  113 | 
+  114 |   // ── Forms and controls ───────────────────────────────────────
+  115 |   async clickButtonByName(name: string): Promise<void> {
+  116 |     await this.button(name).click();
+  117 |   }
+  118 | 
+  119 |   /** For steps that must tolerate either starting screen. */
+  120 |   async clickButtonIfPresent(name: string): Promise<void> {
+  121 |     const control = this.button(name);
+  122 |     if ((await control.count()) > 0) await control.click();
+  123 |   }
+  124 | 
+  125 |   async fillInputByPlaceholder(placeholder: string, value: string): Promise<void> {
+  126 |     await this.page.getByPlaceholder(placeholder, { exact: true }).fill(value);
+  127 |   }
+  128 | 
+  129 |   async fillFieldByLabel(label: string, value: string): Promise<void> {
+  130 |     await this.page.getByLabel(label, { exact: true }).fill(value);
+  131 |   }
+  132 | 
+  133 |   /** For steps where the form may have been skipped past by a redirect. */
+  134 |   async fillFieldIfPresent(label: string, value: string): Promise<void> {
+  135 |     const field = this.page.getByLabel(label, { exact: true });
+  136 |     if ((await field.count()) > 0) await field.fill(value);
+  137 |   }
+  138 | 
+  139 |   async waitForHeading(name: string): Promise<void> {
+  140 |     await expect(this.page.getByRole("heading", { name, exact: true })).toBeVisible();
+  141 |   }
+  142 | 
+  143 |   async waitForLabelText(text: string): Promise<void> {
+  144 |     await expect(this.page.getByText(text, { exact: true }).first()).toBeVisible();
+  145 |   }
+  146 | 
+  147 |   async expectFieldValue(label: string, value: string): Promise<void> {
+  148 |     await expect(this.page.getByLabel(label, { exact: true })).toHaveValue(value);
+  149 |   }
+  150 | 
+  151 |   /** The field is flagged as needing attention, with its own message beside it. */
+  152 |   async expectFieldQueried(label: string): Promise<void> {
+  153 |     const field = this.page.getByLabel(label, { exact: true });
+  154 | 
+  155 |     await expect(field).toHaveAttribute("aria-invalid", "true");
+  156 |     await expect(field.locator("xpath=..").getByRole("alert")).toBeVisible();
+  157 |   }
+  158 | 
+  159 |   /** Something on screen is telling the user what still needs doing. */
+  160 |   async expectPromptShowing(): Promise<void> {
+  161 |     await expect(this.page.getByRole("alert").first()).toBeVisible();
   162 |   }
   163 | 
-  164 |   /** "Listed together" — every row sits in one and the same list. */
-  165 |   async expectRowsShareOneList(): Promise<void> {
-  166 |     await expect(
-  167 |       this.page.getByRole("list").filter({ has: this.page.getByRole("button", { name: PLAY_CONTROL }) }),
-  168 |     ).toHaveCount(1);
-  169 |   }
-  170 | 
-  171 |   // ── Named lists and panels ───────────────────────────────────
-  172 |   async waitForItemInList(listName: string, text: string): Promise<void> {
-  173 |     await expect(this.itemsIn(listName).filter({ hasText: text })).toHaveCount(1);
-  174 |   }
-  175 | 
-  176 |   async expectItemMissingFromList(listName: string, text: string): Promise<void> {
-  177 |     await expect(this.itemsIn(listName).filter({ hasText: text })).toHaveCount(0);
-  178 |   }
-  179 | 
-  180 |   /** One row, found by one piece of its text, showing another. */
-  181 |   async waitForItemInListShowing(listName: string, itemText: string, text: string): Promise<void> {
-  182 |     await expect(
-  183 |       this.itemsIn(listName).filter({ hasText: itemText }).filter({ hasText: text }),
-  184 |     ).toHaveCount(1);
-  185 |   }
-  186 | 
-  187 |   /** The list holds exactly these entries, in this order. */
-  188 |   async expectListItemsInOrder(listName: string, texts: string[]): Promise<void> {
-  189 |     const items = this.itemsIn(listName);
-  190 |     await expect(items).toHaveCount(texts.length);
-  191 | 
-  192 |     for (const [index, text] of texts.entries()) {
-  193 |       await expect(items.nth(index)).toContainText(text);
-  194 |     }
+  164 |   /** The card under this heading carries an explanation of its own. */
+  165 |   async expectExplanationUnderHeading(name: string): Promise<void> {
+  166 |     const card = this.page
+  167 |       .locator('[data-slot="card"]')
+  168 |       .filter({ has: this.page.getByRole("heading", { name, exact: true }) });
+  169 | 
+  170 |     await expect(card.locator('[data-slot="card-description"]')).not.toBeEmpty();
+  171 |   }
+  172 | 
+  173 |   // ── Choice groups ────────────────────────────────────────────
+  174 |   async clickChoiceInGroup(groupName: string, name: string): Promise<void> {
+  175 |     await this.choicesIn(groupName).getByRole("button", { name, exact: true }).click();
+  176 |   }
+  177 | 
+  178 |   async expectChoiceInGroup(groupName: string, name: string): Promise<void> {
+  179 |     await expect(this.choicesIn(groupName).getByRole("button", { name, exact: true })).toBeVisible();
+  180 |   }
+  181 | 
+  182 |   async expectGroupOffersAtLeast(groupName: string, count: number): Promise<void> {
+  183 |     await expect(this.choicesIn(groupName).getByRole("button").nth(count - 1)).toBeVisible();
+  184 |   }
+  185 | 
+  186 |   /** The control carrying this text is the one currently chosen. */
+  187 |   async expectControlChosen(text: string): Promise<void> {
+  188 |     await expect(
+  189 |       this.page.getByRole("button", { pressed: true }).filter({ hasText: text }),
+  190 |     ).toHaveCount(1);
+  191 |   }
+  192 | 
+  193 |   async checkBoxByName(name: string): Promise<void> {
+  194 |     await this.page.getByRole("checkbox", { name, exact: true }).check();
   195 |   }
   196 | 
-  197 |   async waitForTextInPanel(panelName: string, text: string): Promise<void> {
-  198 |     await expect(this.panel(panelName).getByText(text, { exact: true }).first()).toBeVisible();
-  199 |   }
-  200 | 
-  201 |   async waitForButtonInPanel(panelName: string, buttonName: string): Promise<void> {
-  202 |     await expect(this.panel(panelName).getByRole("button", { name: buttonName, exact: true })).toBeVisible();
-  203 |   }
-  204 | 
-  205 |   // ── Audio actually running ───────────────────────────────────
-  206 |   /** The elapsed counter moving off zero is the browser reporting real playback. */
-  207 |   async expectPlaybackToProgress(): Promise<void> {
-  208 |     await expect(this.page.getByRole("timer", { name: "Elapsed time" })).not.toHaveText(
-  209 |       NOTHING_PLAYED_YET,
-  210 |       { timeout: PLAYBACK_WAIT_MS },
-  211 |     );
-  212 |   }
-  213 | 
-  214 |   // ── What the system itself holds ─────────────────────────────
-  215 |   /** Fetches what storage serves back for a record and compares it to what was uploaded. */
-  216 |   async expectStoredBytes(recordName: string, byteLength: number): Promise<void> {
-  217 |     const record = await this.recordNamed(recordName, candidate => !!candidate.playUrl);
-  218 |     if (!record.playUrl) {
-  219 |       throw new Error(`The API returned "${recordName}" without a play url, so it cannot be played`);
-  220 |     }
-  221 | 
-  222 |     const response = await this.api.get(record.playUrl);
-  223 |     expect(response.status(), `stored audio for "${recordName}" could not be fetched`).toBe(200);
-  224 |     expect((await response.body()).byteLength).toBe(byteLength);
-  225 |   }
-  226 | 
-  227 |   /** The API has answered with a playlist under this name, so the system holds it. */
-  228 |   async expectStoredPlaylistNamed(recordName: string): Promise<void> {
-  229 |     await this.playlistNamed(recordName);
-  230 |   }
-  231 | 
-  232 |   /** The playlist the API answers with holds exactly these tracks, in this order. */
-  233 |   async expectStoredPlaylistTracks(recordName: string, trackNames: string[]): Promise<void> {
-  234 |     const record = await this.playlistNamed(recordName);
-  235 | 
-  236 |     expect(
-  237 |       (record.tracks ?? []).map(track => track.name),
-  238 |       `tracks the system holds for "${recordName}"`,
-  239 |     ).toEqual(trackNames);
-  240 |   }
-  241 | 
-  242 |   // ── Accounts ─────────────────────────────────────────────────
-  243 |   /**
-  244 |    * Settles which account this test signs in with: the pre-provisioned one when
-  245 |    * E2E_EMAIL/E2E_PASSWORD are set, otherwise a fresh confirmed account created here.
-  246 |    */
-  247 |   async provideAccount(preferredEmail: string): Promise<void> {
-  248 |     if (PROVIDED_EMAIL && PROVIDED_PASSWORD) {
-  249 |       this.account = { email: PROVIDED_EMAIL, password: PROVIDED_PASSWORD };
-  250 |       return;
-  251 |     }
-  252 |     await this.createConfirmedAccount(preferredEmail);
-  253 |   }
-  254 | 
-  255 |   /** Creates an already-confirmed account so specs never need a mailbox. */
-  256 |   private async createConfirmedAccount(email: string): Promise<void> {
-  257 |     const cognito = this.cognito();
-  258 | 
-> 259 |     await cognito.send(
-      |     ^ CredentialsProviderError: Token is expired. To refresh this SSO session run 'aws sso login' with the corresponding profile.
-  260 |       new AdminCreateUserCommand({
-  261 |         UserPoolId: USER_POOL_ID,
-  262 |         Username: email,
-  263 |         MessageAction: "SUPPRESS",
-  264 |         UserAttributes: [
-  265 |           { Name: "email", Value: email },
-  266 |           { Name: "email_verified", Value: "true" },
-  267 |         ],
-  268 |       }),
-  269 |     );
-  270 |     await cognito.send(
-  271 |       new AdminSetUserPasswordCommand({
-  272 |         UserPoolId: USER_POOL_ID,
-  273 |         Username: email,
-  274 |         Password: ACCOUNT_PASSWORD,
-  275 |         Permanent: true,
-  276 |       }),
-  277 |     );
-  278 | 
-  279 |     this.account = { email, password: ACCOUNT_PASSWORD };
-  280 |     this.accounts.add(email);
-  281 |   }
-  282 | 
-  283 |   async signInWithCredentials(): Promise<void> {
-  284 |     if (!this.account) throw new Error("No account has been provided for this test");
-  285 | 
-  286 |     await this.fillInputByPlaceholder("Email", this.account.email);
-  287 |     await this.fillInputByPlaceholder("Password", this.account.password);
-  288 |     await this.clickButtonByName("Sign in");
-  289 |   }
-  290 | 
-  291 |   // ── Teardown ─────────────────────────────────────────────────
-  292 |   /** Idempotent: safe to call after a failure, and safe to call twice. */
-  293 |   async cleanUp(): Promise<void> {
-  294 |     await this.releaseRecords();
-  295 |     await this.disableAccounts();
-  296 |   }
-  297 | 
-  298 |   private async releaseRecords(): Promise<void> {
-  299 |     if ((!AUDIO_FILE_TABLE && !PLAYLIST_TABLE) || this.created.size === 0) return;
-  300 | 
-  301 |     const documents = DynamoDBDocumentClient.from(new DynamoDBClient({ region: AWS_REGION }));
-  302 |     const s3 = AUDIO_BUCKET ? new S3Client({ region: AWS_REGION }) : undefined;
-  303 | 
-  304 |     for (const id of this.created) {
-  305 |       const record = this.seen.get(id);
-  306 |       const table = tableFor(record?.kind ?? "audio");
-  307 |       if (!table) continue;
-  308 | 
-  309 |       try {
-  310 |         await documents.send(new DeleteCommand({ TableName: table, Key: { id } }));
-  311 |         if (s3 && record?.storageKey) {
-  312 |           await s3.send(new DeleteObjectCommand({ Bucket: AUDIO_BUCKET, Key: record.storageKey }));
-  313 |         }
-  314 |       } catch (error) {
-  315 |         console.warn(`Could not release ${record?.kind ?? "audio"} record ${id}:`, error);
-  316 |       }
-  317 |     }
-  318 |   }
-  319 | 
-  320 |   /** Accounts are disabled rather than deleted, so no real account can be lost. */
-  321 |   private async disableAccounts(): Promise<void> {
-  322 |     if (!USER_POOL_ID) return;
-  323 | 
-  324 |     for (const email of this.accounts) {
-  325 |       try {
-  326 |         await this.cognito().send(
-  327 |           new AdminDisableUserCommand({ UserPoolId: USER_POOL_ID, Username: email }),
-  328 |         );
-  329 |       } catch (error) {
-  330 |         console.warn(`Could not disable ${email}:`, error);
-  331 |       }
-  332 |     }
-  333 |     this.accounts.clear();
-  334 |   }
-  335 | 
-  336 |   // ── Internals ────────────────────────────────────────────────
-  337 |   private button(name: string): Locator {
-  338 |     return this.page.getByRole("button", { name, exact: true });
-  339 |   }
-  340 | 
-  341 |   private rows(): Locator {
-  342 |     return this.page
-  343 |       .getByRole("listitem")
-  344 |       .filter({ has: this.page.getByRole("button", { name: PLAY_CONTROL }) });
-  345 |   }
-  346 | 
-  347 |   private itemsIn(listName: string): Locator {
-  348 |     return this.page.getByRole("list", { name: listName, exact: true }).getByRole("listitem");
-  349 |   }
-  350 | 
-  351 |   private panel(panelName: string): Locator {
-  352 |     return this.page.getByRole("region", { name: panelName, exact: true });
-  353 |   }
-  354 | 
-  355 |   /**
-  356 |    * Records are learned from the app's own API traffic rather than by re-querying, so
-  357 |    * the driver never needs a second set of credentials to read what the app can see.
-  358 |    */
-  359 |   private watchApiTraffic(): void {
+  197 |   /**
+  198 |    * The picker is a hidden input. Scoped away from the multi-select uploader on the
+  199 |    * music page so it stays unambiguous if both are ever mounted at once.
+  200 |    */
+  201 |   async chooseFile(payload: AudioPayload): Promise<void> {
+  202 |     await this.page
+  203 |       .locator('input[type="file"][accept="audio/*"]:not([multiple])')
+  204 |       .setInputFiles({ name: payload.name, mimeType: payload.mimeType, buffer: payload.buffer });
+  205 |   }
+  206 | 
+  207 |   // ── Waits and assertions on what is displayed ────────────────
+  208 |   async waitForButton(name: string): Promise<void> {
+  209 |     await expect(this.button(name)).toBeVisible();
+  210 |   }
+  211 | 
 ```
