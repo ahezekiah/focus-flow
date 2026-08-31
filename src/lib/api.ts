@@ -70,10 +70,16 @@ export const BACKEND_UNAVAILABLE =
 
 async function authHeaders(): Promise<Record<string, string>> {
   try {
-    const token = (await fetchAuthSession()).tokens?.idToken?.toString();
-    return token ? { Authorization: token } : {};
-  } catch {
-    return {};
+    const session = await fetchAuthSession();
+    const token = session.tokens?.idToken?.toString();
+    
+    if(!token){
+      throw new ApiError(401, "User is not authenticated");
+    }
+    return { Authorization: `Bearer ${token}`}
+  } catch(err) {
+    if(err instanceof ApiError) throw err;
+    throw new ApiError(401, "Failed to retrieve authentication token");
   }
 }
 

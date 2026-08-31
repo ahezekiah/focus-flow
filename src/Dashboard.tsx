@@ -12,7 +12,7 @@ import { PlaylistsView } from "./dash/PlaylistsView";
 import { themeCssVars, useThemeSelection, type DashTheme, type ThemeId } from "./dash/themes";
 import { getDefaultPlaylist, listPlaylists, listAudioFiles, type AudioFile, type Playlist, type FocusSession, updateSessionStatus, createSession } from "./lib/api";
 import { isBackendConfigured } from "./lib/amplify";
-import { updateAccount, type AccountRecord } from "./lib/accounts";
+import { updateAccount, type AccountRecord, type AccountTask } from "./lib/accounts";
 import { ambientAudio, DEFAULT_TRACK, releaseAmbientMusic } from "./lib/ambientMusic";
 
 // ── Types ──────────────────────────────────────────────────────
@@ -37,11 +37,8 @@ interface SessionErrors {
   task?: string;
 }
 
-interface Task {
-  id: number;
-  text: string;
-  done: boolean;
-}
+/** The task list is saved on the account, so the dashboard works in its shape. */
+type Task = AccountTask;
 
 interface Track {
   id: string;
@@ -353,11 +350,90 @@ function NowPlayingCard({
   );
 }
 
+// ── Add Task ───────────────────────────────────────────────────
+/**
+ * Puts a new item on today's list. It stays a quiet dashed prompt until it is
+ * needed, then opens into a single line so a task can be jotted down and kept
+ * without leaving the home page.
+ */
+function AddTaskRow({ theme, onAdd }: { theme: DashTheme; onAdd: (text: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const submit = () => {
+    const text = draft.trim();
+    if (!text) return;
+    onAdd(text);
+    // Keeping the line open lets several tasks be added in a row.
+    setDraft("");
+  };
+
+  const close = () => {
+    setOpen(false);
+    setDraft("");
+  };
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs transition-all"
+        style={{ border: `1px dashed ${theme.border}`, color: theme.mutedFg }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = theme.foreground; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = theme.mutedFg; }}
+      >
+        <Plus className="w-3 h-3" /> Add task
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-3 flex items-center gap-2">
+      <input
+        autoFocus
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === "Enter") submit();
+          if (e.key === "Escape") close();
+        }}
+        onBlur={() => { if (!draft.trim()) close(); }}
+        placeholder="What needs doing?"
+        aria-label="New task"
+        className="flex-1 min-w-0 px-3 py-2 rounded-xl text-sm outline-none"
+        style={{
+          background: theme.overlay(0.04),
+          border: `1px solid ${theme.border}`,
+          color: theme.foreground,
+        }}
+      />
+      <button
+        onClick={submit}
+        aria-label="Save task"
+        disabled={!draft.trim()}
+        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-opacity disabled:opacity-40"
+        style={{ background: theme.primary, color: theme.primaryFg }}
+      >
+        <Plus className="w-4 h-4" />
+      </button>
+      <button
+        onClick={close}
+        aria-label="Cancel"
+        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+        style={{ background: theme.overlay(0.05), color: theme.mutedFg }}
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
+
 // ── Home View ──────────────────────────────────────────────────
 function HomeView({
   onStartFocus,
   tasks,
   onToggleTask,
+  onAddTask,
   theme,
   queueName,
   playlist,
@@ -371,6 +447,7 @@ function HomeView({
   onStartFocus: () => void;
   tasks: Task[];
   onToggleTask: (id: number) => void;
+  onAddTask: (text: string) => void;
   theme: DashTheme;
   queueName: string | null;
   playlist: Track[];
@@ -544,14 +621,7 @@ function HomeView({
               </button>
             ))}
           </div>
-          <button
-            className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs transition-all"
-            style={{ border: `1px dashed ${theme.border}`, color: theme.mutedFg }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = theme.foreground; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = theme.mutedFg; }}
-          >
-            <Plus className="w-3 h-3" /> Add task
-          </button>
+          <AddTaskRow theme={theme} onAdd={onAddTask} />
         </div>
       </div>
 
@@ -2035,7 +2105,10 @@ export default function Dashboard({ account, onSignOut, onAccountChange }: { acc
   const [isSessionPaused, setIsSessionPaused] = useState(false);
   const [persistedSession, setPersistedSession] = useState<FocusSession | null>(null);
   const [totalSeconds, setTotalSeconds] = useState(0);
+  // A list saved on a previous visit wins; otherwise the account starts from the
+  // task named during setup plus the suggested few.
   const [tasks, setTasks] = useState<Task[]>(() => {
+    if (account.tasks) return account.tasks;
     if (!account.task?.title) return INIT_TASKS;
     return [{ id: 0, text: account.task.title, done: false }, ...INIT_TASKS];
   });
@@ -2570,8 +2643,26 @@ const completeSession = useCallback(() => {
     setIsPlaying(true);
   }, [playlist.length]);
 
-  const toggleTask = (id: number) =>
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  /**
+   * Every change to the list is kept on the account straight away, so a task that
+   * has been written down is still there after a refresh or a later sign in.
+   */
+  const commitTasks = useCallback((next: Task[]) => {
+    setTasks(next);
+    onAccountChange(updateAccount(account.email, { tasks: next }));
+  }, [account.email, onAccountChange]);
+
+  const toggleTask = useCallback((id: number) => {
+    commitTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  }, [commitTasks, tasks]);
+
+  /** Adds a task to today's list, newest at the bottom so the order stays familiar. */
+  const addTask = useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const nextId = tasks.reduce((max, t) => Math.max(max, t.id), 0) + 1;
+    commitTasks([...tasks, { id: nextId, text: trimmed, done: false }]);
+  }, [commitTasks, tasks]);
 
   return (
     <div
@@ -2592,6 +2683,7 @@ const completeSession = useCallback(() => {
               onStartFocus={() => { setNav("focus"); setPhase("setup"); }}
               tasks={tasks}
               onToggleTask={toggleTask}
+              onAddTask={addTask}
               theme={theme}
               queueName={queueName}
               playlist={playlist}

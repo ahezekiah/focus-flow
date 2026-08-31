@@ -15,6 +15,13 @@ export interface OnboardingTheme {
   id: string;
 }
 
+/** One item on the account's task list, kept between visits. */
+export interface AccountTask {
+  id: number;
+  text: string;
+  done: boolean;
+}
+
 export type OnboardingStep = "sessions" | "tasks" | "playlist" | "theme" | "done";
 
 export interface AccountRecord {
@@ -27,6 +34,8 @@ export interface AccountRecord {
   task?: OnboardingTask;
   playlist?: OnboardingPlaylist;
   theme?: OnboardingTheme;
+  /** Today's task list. Absent until the account has its list for the first time. */
+  tasks?: AccountTask[];
 }
 
 /** Where someone part way through setup lands, now Projects and Streaks are not steps. */
