@@ -1854,16 +1854,9 @@ function AnalyticsView({ theme }: { theme: DashTheme }) {
               border: `1px solid ${theme.primary}35`,
             }}
           >
-            Demo preview
+            View your Analytics Below
           </span>
         </div>
-
-        <p
-          className="text-sm mt-0.5"
-          style={{ color: theme.mutedFg }}
-        >
-          Sample insights show how completed-session analytics will look.
-        </p>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
