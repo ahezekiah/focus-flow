@@ -10,6 +10,7 @@ export default defineConfig([
     'dist',
     '.amplify',
     'e2e',
+    'Theme selection feature (1)',
     'src/components/ui',
   ]),
   {
@@ -26,8 +27,7 @@ export default defineConfig([
     rules: {
       'react-refresh/only-export-components': 'off',
 
-      // Async initialization effects intentionally update loading
-      // and authentication state.
+      // These effects intentionally initialize loading and authentication state.
       'react-hooks/set-state-in-effect': 'off',
     },
   },
