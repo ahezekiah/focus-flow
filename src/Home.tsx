@@ -117,6 +117,17 @@ export default function Home({ signedIn, completed }: { signedIn: boolean; compl
             Already have an account? Sign in
           </button>
         )}
+        <p
+          className="max-w-md text-xs leading-relaxed"
+          style={{
+            color: "#655846",
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          Portfolio demo · Account preferences and tasks are saved in this
+          browser. Focus sessions, playlists, and audio use the connected AWS
+          backend.
+        </p>
       </div>
     </div>
   );

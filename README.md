@@ -2004,3 +2004,9 @@ npm run dev
 ```
 
 Once the app opens, create an account, complete onboarding, and enter the FocusFlow dashboard to start building and tracking focused work sessions.
+
+> **Portfolio demo:** The complete focus-session, task, theme, playlist, and audio experience is available for demonstration. Profile preferences, onboarding progress, and tasks are intentionally browser-local in this version. Analytics are labeled sample preview data. See [PORTFOLIO_DEMO.md](PORTFOLIO_DEMO.md) for the presentation flow and production follow-up work.
+
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![AWS Amplify](https://img.shields.io/badge/AWS-Amplify-FF9900?logo=awsamplify&logoColor=white)](https://aws.amazon.com/amplify/)
